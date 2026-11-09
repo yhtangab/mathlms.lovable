@@ -1,0 +1,3 @@
+CREATE POLICY math_notes_read ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'chapter-notes');
+CREATE POLICY math_notes_insert ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'chapter-notes' AND public.has_role(auth.uid(), 'teacher'));
+CREATE POLICY math_notes_update ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'chapter-notes' AND public.has_role(auth.uid(), 'teacher')) WITH CHECK (bucket_id = 'chapter-notes' AND public.has_role(auth.uid(), 'teacher'));

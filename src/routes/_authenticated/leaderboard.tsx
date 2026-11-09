@@ -1,17 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Crown, Flame } from "lucide-react";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, TeacherOnly } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
 import { average, improvement, ranked } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/leaderboard")({
+export const Route = createFileRoute("/_authenticated/leaderboard")({
   head: () => ({
     meta: [
-      { title: "Leaderboard — HLC MathQuest" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Leaderboard — HLC Math" },
       { name: "description", content: "S2 Math rankings across S2M3 and S2M5." },
-      { property: "og:title", content: "Leaderboard — HLC MathQuest" },
+      { property: "og:title", content: "Leaderboard — HLC Math" },
       { property: "og:description", content: "Who's topping S2 Math this month?" },
     ],
   }),
@@ -33,7 +35,7 @@ function Leaderboard() {
   const order = [1, 0, 2];
 
   return (
-    <AppShell>
+    <AppShell><TeacherOnly>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">🏆 Leaderboard</h1>
         <div className="flex rounded-2xl bg-muted p-1">
@@ -56,7 +58,8 @@ function Leaderboard() {
         {order.map((i) => {
           const s = top[i];
           if (!s) return null;
-          const p = PODIUM[i]!;
+          const p = PODIUM[i];
+          if (!p) return null;
           return (
             <div key={s.id} className={cn("rounded-3xl border-4 p-6 text-center", p.ring, p.h)}>
               {i === 0 && <Crown className="mx-auto h-8 w-8 text-gold" />}
@@ -101,6 +104,6 @@ function Leaderboard() {
           );
         })}
       </div>
-    </AppShell>
+    </TeacherOnly></AppShell>
   );
 }

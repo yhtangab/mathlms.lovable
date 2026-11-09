@@ -1,69 +1,65 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { STUDENTS, type Student } from "./data";
-
-type Role = "student" | "teacher";
-interface Session {
-  email: string;
-  name: string;
-}
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
+import type { Student } from './data';
+import type { Database } from '@/integrations/supabase/types';
+type Content = Database['public']['Tables']['chapter_content']['Row'];
 interface Store {
-  session: Session | null;
-  role: Role;
+  session: { email: string; name: string } | null;
+  role: 'student' | 'teacher';
   students: Student[];
   me: Student;
-  login: (s: Session) => void;
-  logout: () => void;
-  setRole: (r: Role) => void;
-  setStudents: (s: Student[]) => void;
+  ready: boolean;
+  error: string | null;
+  content: Content[];
+  refresh: () => Promise<unknown>;
+  logout: () => Promise<void>;
 }
-
-// Keep one context instance across hot reloads so provider and consumers always match.
-const g = globalThis as unknown as { __hlcAppCtx?: React.Context<Store | null> };
-const Ctx = (g.__hlcAppCtx ??= createContext<Store | null>(null));
-
+const g = globalThis as unknown as { __hlcCloudCtx?: ReturnType<typeof createContext<Store | null>> };
+const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<Role>("student");
-  const [students, setStudents] = useState<Student[]>(STUDENTS);
-
+  const [user, setUser] = useState<User | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const qc = useQueryClient();
   useEffect(() => {
-    const s = localStorage.getItem("hlc-session");
-    if (s) setSession(JSON.parse(s));
-    const r = localStorage.getItem("hlc-role") as Role | null;
-    if (r) setRole(r);
-  }, []);
-
-  const me = students.find((s) => s.email === session?.email) ?? students[0]!;
-
-  return (
-    <Ctx.Provider
-      value={{
-        session,
-        role,
-        students,
-        me,
-        login: (s) => {
-          localStorage.setItem("hlc-session", JSON.stringify(s));
-          setSession(s);
-        },
-        logout: () => {
-          localStorage.removeItem("hlc-session");
-          setSession(null);
-        },
-        setRole: (r) => {
-          localStorage.setItem("hlc-role", r);
-          setRole(r);
-        },
-        setStudents,
-      }}
-    >
-      {children}
-    </Ctx.Provider>
-  );
+    let active = true;
+    const verify = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (active) { setUser(data.user); setHydrated(true); }
+    };
+    const { data: listener } = supabase.auth.onAuthStateChange(event => {
+      if (!['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) return;
+      if (event === 'SIGNED_OUT') { setUser(null); qc.clear(); }
+      else { setHydrated(false); setTimeout(() => { void verify(); }, 0); }
+    });
+    void verify();
+    return () => { active = false; listener.subscription.unsubscribe(); };
+  }, [qc]);
+  const query = useQuery({
+    queryKey: ['math-records', user?.id], enabled: Boolean(user),
+    queryFn: async () => {
+      const claim = await supabase.rpc('claim_student');
+      if (claim.error) throw claim.error;
+      const [roles, roster, scores, marks, videos, content] = await Promise.all([
+        supabase.from('user_roles').select('role'), supabase.from('students').select('*'),
+        supabase.from('chapter_scores').select('*'), supabase.from('daily_marks').select('*'),
+        supabase.from('video_completions').select('*'), supabase.from('chapter_content').select('*'),
+      ]);
+      for (const r of [roles, roster, scores, marks, videos, content]) if (r.error) throw r.error;
+      const students: Student[] = (roster.data ?? []).map(s => ({
+        id: s.id, userId: s.user_id, name: s.name, email: s.email, set: s.math_set as Student['set'],
+        scores: Array.from({ length: 7 }, (_, i) => scores.data?.find(v => v.student_id === s.id && v.chapter === i + 1)?.score ?? null),
+        lastMonthAvg: s.last_month_avg, lastMonthFormRank: s.last_month_form_rank, xp: s.xp, streak: s.streak,
+        dailyMarks: marks.data?.filter(m => m.student_id === s.id).reduce((a, m) => a + m.marks, 0) ?? 0,
+        videoMarks: videos.data?.filter(v => v.student_id === s.id).length ?? 0,
+        completedVideos: videos.data?.filter(v => v.student_id === s.id).map(v => v.chapter) ?? [],
+      }));
+      return { students, role: roles.data?.some(r => r.role === 'teacher') ? 'teacher' as const : 'student' as const, content: content.data ?? [] };
+    }, retry: false,
+  });
+  const students = user ? query.data?.students ?? [] : [];
+  const me = students.find(s => s.userId === user?.id) ?? { id: '', name: user?.user_metadata?.['full_name'] ?? 'Student', email: user?.email ?? '', set: 'S2M3' as const, scores: Array(7).fill(null), lastMonthAvg: 0, lastMonthFormRank: 0, xp: 0, streak: 0, dailyMarks: 0, videoMarks: 0, completedVideos: [] };
+  return <Ctx.Provider value={{ session: user ? { email: user.email ?? '', name: me.name } : null, role: query.data?.role ?? 'student', students, me, ready: hydrated && (!user || !query.isPending), error: query.error?.message ?? null, content: query.data?.content ?? [], refresh: () => query.refetch(), logout: async () => { await supabase.auth.signOut(); qc.clear(); setUser(null); } }}>{children}</Ctx.Provider>;
 }
-
-export function useApp() {
-  const c = useContext(Ctx);
-  if (!c) throw new Error("useApp outside provider");
-  return c;
-}
+export function useApp() { const c = useContext(Ctx); if (!c) throw new Error('useApp outside provider'); return c; }

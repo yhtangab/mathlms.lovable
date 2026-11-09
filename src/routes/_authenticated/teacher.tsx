@@ -1,18 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { FileUp, Search } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { saveScores } from "@/lib/math.functions";
+import { parseScoreCsv, scoreSchema } from "@/lib/grade-rules";
+import { Button } from "@/components/ui/button";
+import { LessonMarks } from "@/components/LessonMarks";
 import { toast } from "sonner";
-import { AppShell, scoreTone } from "@/components/AppShell";
+import { AppShell, TeacherOnly, scoreTone } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, average, completion, formRank, improvement, type MathSet, type Student, weakTopics } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/teacher")({
+export const Route = createFileRoute("/_authenticated/teacher")({
   head: () => ({
     meta: [
-      { title: "Teacher Analytics — HLC MathQuest" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Teacher Analytics — HLC Math" },
       { name: "description", content: "Compare S2M3 and S2M5 scores, completion and weaker topics." },
-      { property: "og:title", content: "Teacher Analytics — HLC MathQuest" },
+      { property: "og:title", content: "Teacher Analytics — HLC Math" },
       { property: "og:description", content: "S2 Math class analytics and master score table." },
     ],
   }),
@@ -22,7 +29,8 @@ export const Route = createFileRoute("/teacher")({
 const SETS: MathSet[] = ["S2M3", "S2M5"];
 
 function Teacher() {
-  const { students, setStudents } = useApp();
+  const { students, refresh } = useApp();
+  const save = useServerFn(saveScores);
   const [q, setQ] = useState("");
   const [setF, setSetF] = useState<"All" | MathSet>("All");
   const [editing, setEditing] = useState<{ id: string; ch: number } | null>(null);
@@ -35,15 +43,15 @@ function Teacher() {
       return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
     });
     const weakest = chAvg
-      .map((v, i) => ({ v, c: CHAPTERS[i]! }))
-      .filter((x) => x.v !== null)
+      .map((v, i) => ({ v, c: CHAPTERS[i] }))
+      .filter((x): x is { v: number; c: (typeof CHAPTERS)[number] } => x.v !== null && Boolean(x.c))
       .sort((a, b) => (a.v as number) - (b.v as number))
       .slice(0, 2);
     return {
       set,
       n: list.length,
-      avg: Math.round(list.reduce((a, s) => a + average(s), 0) / list.length),
-      comp: Math.round(list.reduce((a, s) => a + completion(s), 0) / list.length),
+      avg: Math.round(list.reduce((a, s) => a + average(s), 0) / (list.length || 1)),
+      comp: Math.round(list.reduce((a, s) => a + completion(s), 0) / (list.length || 1)),
       chAvg,
       weakest,
     };
@@ -58,35 +66,25 @@ function Teacher() {
     [students, q, setF],
   );
 
-  const updateScore = (id: string, ch: number, val: string) => {
-    const n = val === "" ? null : Math.max(0, Math.min(100, Number(val)));
-    setStudents(students.map((s) => (s.id === id ? { ...s, scores: s.scores.map((x, i) => (i === ch ? n : x)) } : s)));
-    setEditing(null);
+  const updateScore = async (id: string, ch: number, val: string) => {
+    try { await save({ data: [{ student_id: id, chapter: ch + 1, score: scoreSchema.parse(val === '' ? null : Number(val)) }] }); await refresh(); setEditing(null); toast.success('Score saved'); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'Could not save score'); }
   };
-
   const importCsv = async (file: File) => {
-    const text = await file.text();
-    // Expected: email,ch1,ch2,...,ch7
-    let count = 0;
-    const map = new Map<string, (number | null)[]>();
-    text.split(/\r?\n/).forEach((line) => {
-      const [email, ...sc] = line.split(",").map((x) => x.trim());
-      if (!email?.includes("@")) return;
-      map.set(email.toLowerCase(), CHAPTERS.map((_, i) => (sc[i] ? Number(sc[i]) : null)));
-    });
-    const next: Student[] = students.map((s) => {
-      const r = map.get(s.email);
-      if (!r) return s;
-      count++;
-      return { ...s, scores: r };
-    });
-    setStudents(next);
-    toast.success(`Updated scores for ${count} student${count === 1 ? "" : "s"}`);
+    try {
+      const map = parseScoreCsv(await file.text());
+      const unknown = [...map.keys()].filter(email => !students.some(s => s.email === email));
+      if (unknown.length) throw new Error(`${unknown.length} email(s) are not in the roster. Add students first.`);
+      const data = students.flatMap(s => { const scores = map.get(s.email); return scores ? scores.map((score, i) => ({ student_id: s.id, chapter: i + 1, score })) : []; });
+      if (!data.length) throw new Error('No student scores found');
+      await save({ data }); await refresh(); toast.success(`Saved scores for ${map.size} students`);
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Import failed'); }
   };
 
   return (
-    <AppShell>
-      <h1 className="text-3xl font-bold">📊 Class Analytics</h1>
+    <AppShell><TeacherOnly>
+      <h1 className="text-3xl font-bold">Class Analytics</h1>
+      <LessonMarks />
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         {stats.map((st, k) => (
@@ -200,9 +198,9 @@ function Teacher() {
                             className="w-14 rounded-lg border-2 border-primary px-1 text-center font-bold"
                           />
                         ) : (
-                          <button onClick={() => setEditing({ id: s.id, ch: i })} className={cn("w-12 rounded-lg py-1 font-extrabold", scoreTone(sc))}>
+                          <Button variant="ghost" onClick={() => setEditing({ id: s.id, ch: i })} className={cn("w-12 rounded-lg py-1 font-extrabold", scoreTone(sc))}>
                             {sc ?? "—"}
-                          </button>
+                          </Button>
                         )}
                       </td>
                     ))}
@@ -227,6 +225,6 @@ function Teacher() {
           </table>
         </div>
       </div>
-    </AppShell>
+    </TeacherOnly></AppShell>
   );
 }
