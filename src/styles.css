@@ -68,8 +68,8 @@
   --color-silver: var(--silver);
   --color-bronze: var(--bronze);
   --color-flame: var(--flame);
-  --font-display: "Fredoka", ui-rounded, sans-serif;
-  --font-sans: "Nunito", ui-rounded, sans-serif;
+  --font-display: "Source Sans 3", ui-sans-serif, sans-serif;
+  --font-sans: "Source Sans 3", ui-sans-serif, sans-serif;
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -143,3 +143,5 @@
 @utility shadow-chunky-gold { box-shadow: 0 4px 0 var(--gold-deep); }
 @utility shadow-chunky { box-shadow: 0 4px 0 var(--border); }
 @utility bg-hero { background: radial-gradient(circle at 20% 20%, color-mix(in oklab, var(--primary) 25%, transparent), transparent 50%), radial-gradient(circle at 80% 70%, color-mix(in oklab, var(--success) 22%, transparent), transparent 50%), var(--background); }
+
+.google-auth { background: #FFFFFF; border: 1px solid #747775; color: #1F1F1F; font-weight: 500; }

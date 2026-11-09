@@ -7,12 +7,14 @@ import { useApp } from "@/lib/app-store";
 import { CHAPTERS, average, completion, formRank, improvement, type MathSet, type Student, weakTopics } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/teacher")({
+export const Route = createFileRoute("/_authenticated/teacher")({
   head: () => ({
     meta: [
-      { title: "Teacher Analytics — HLC MathQuest" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Teacher Analytics — HLC Math" },
       { name: "description", content: "Compare S2M3 and S2M5 scores, completion and weaker topics." },
-      { property: "og:title", content: "Teacher Analytics — HLC MathQuest" },
+      { property: "og:title", content: "Teacher Analytics — HLC Math" },
       { property: "og:description", content: "S2 Math class analytics and master score table." },
     ],
   }),

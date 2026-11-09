@@ -6,12 +6,14 @@ import { useApp } from "@/lib/app-store";
 import { average, improvement, ranked } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/leaderboard")({
+export const Route = createFileRoute("/_authenticated/leaderboard")({
   head: () => ({
     meta: [
-      { title: "Leaderboard — HLC MathQuest" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Leaderboard — HLC Math" },
       { name: "description", content: "S2 Math rankings across S2M3 and S2M5." },
-      { property: "og:title", content: "Leaderboard — HLC MathQuest" },
+      { property: "og:title", content: "Leaderboard — HLC Math" },
       { property: "og:description", content: "Who's topping S2 Math this month?" },
     ],
   }),

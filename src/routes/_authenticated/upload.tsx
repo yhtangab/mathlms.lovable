@@ -6,12 +6,14 @@ import { AppShell } from "@/components/AppShell";
 import { CHAPTERS } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/upload")({
+export const Route = createFileRoute("/_authenticated/upload")({
   head: () => ({
     meta: [
-      { title: "Content Upload Room — HLC MathQuest" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Content Upload Room — HLC Math" },
       { name: "description", content: "Add videos, notes and quiz sets for each S2 Math chapter." },
-      { property: "og:title", content: "Content Upload Room — HLC MathQuest" },
+      { property: "og:title", content: "Content Upload Room — HLC Math" },
       { property: "og:description", content: "Prepare S2 chapter content for students." },
     ],
   }),

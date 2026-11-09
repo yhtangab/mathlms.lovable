@@ -5,12 +5,14 @@ import { useApp } from "@/lib/app-store";
 import { CHAPTERS, average, completion, formRank, improvement, level, setRank, weakTopics } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "My Dashboard — HLC MathQuest" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "My Dashboard — HLC Math" },
       { name: "description", content: "Your S2 Math scores, ranks, streak and weaker topics." },
-      { property: "og:title", content: "My Dashboard — HLC MathQuest" },
+      { property: "og:title", content: "My Dashboard — HLC Math" },
       { property: "og:description", content: "Track S2 chapter scores and rank progress." },
     ],
   }),

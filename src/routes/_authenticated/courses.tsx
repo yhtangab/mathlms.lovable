@@ -5,12 +5,14 @@ import { useApp } from "@/lib/app-store";
 import { CHAPTERS, chapterStatus } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/courses")({
+export const Route = createFileRoute("/_authenticated/courses")({
   head: () => ({
     meta: [
-      { title: "Course Hub — HLC MathQuest" },
-      { name: "description", content: "S2 Math chapters 1–7 from the OUP textbook." },
-      { property: "og:title", content: "Course Hub — HLC MathQuest" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Chapter — HLC Math" },
+      { name: "description", content: "S2 Mathematics chapters 1–7." },
+      { property: "og:title", content: "Chapter — HLC Math" },
       { property: "og:description", content: "Seven S2 Math chapters to master." },
     ],
   }),
@@ -27,8 +29,8 @@ function Courses() {
   const { me } = useApp();
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold">📚 Course Hub</h1>
-      <p className="font-semibold text-muted-foreground">HKDSE S2 Mathematics · OUP chapters</p>
+      <h1 className="text-3xl font-bold">📚 Chapter</h1>
+      <p className="font-semibold text-muted-foreground">S2 Mathematics</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CHAPTERS.map((c, i) => {
           const s = me.scores[i] ?? null;
