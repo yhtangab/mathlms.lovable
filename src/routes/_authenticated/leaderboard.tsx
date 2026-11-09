@@ -58,7 +58,8 @@ function Leaderboard() {
         {order.map((i) => {
           const s = top[i];
           if (!s) return null;
-          const p = PODIUM[i]!;
+          const p = PODIUM[i];
+          if (!p) return null;
           return (
             <div key={s.id} className={cn("rounded-3xl border-4 p-6 text-center", p.ring, p.h)}>
               {i === 0 && <Crown className="mx-auto h-8 w-8 text-gold" />}
