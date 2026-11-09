@@ -59,7 +59,7 @@ function Upload() {
           })}
         </div>
         <div className="space-y-4 rounded-3xl border-2 border-border bg-card p-6 shadow-chunky">
-          <h2 className="text-xl font-bold">Ch {ch}: {CHAPTERS[ch - 1].title}</h2>
+          <h2 className="text-xl font-bold">Ch {ch}: {CHAPTERS[ch - 1]!.title}</h2>
           <Field icon={<Video className="h-5 w-5 text-primary" />} label="Video URL">
             <input value={cur.video} onChange={(e) => set("video", e.target.value)} placeholder="https://youtube.com/..." className="w-full rounded-2xl border-2 border-input bg-background px-4 py-2.5 font-semibold outline-none focus:border-primary" />
           </Field>

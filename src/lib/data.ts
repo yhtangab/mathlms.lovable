@@ -69,7 +69,7 @@ export function completion(s: Student) {
 
 export function weakTopics(s: Student) {
   return s.scores
-    .map((sc, i) => ({ sc, ch: CHAPTERS[i] }))
+    .map((sc, i) => ({ sc, ch: CHAPTERS[i]! }))
     .filter((x) => x.sc !== null && x.sc < 60)
     .sort((a, b) => (a.sc as number) - (b.sc as number))
     .slice(0, 2)

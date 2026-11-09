@@ -72,7 +72,7 @@ function Dashboard() {
             </Pill>
             {weak.length > 0 && (
               <Pill className="bg-destructive/10 text-destructive" icon={<AlertTriangle className="h-4 w-4" />}>
-                Needs Practice: Ch {weak[0].id} {weak[0].short}
+                Needs Practice: Ch {weak[0]!.id} {weak[0]!.short}
               </Pill>
             )}
           </div>

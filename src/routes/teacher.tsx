@@ -35,7 +35,7 @@ function Teacher() {
       return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
     });
     const weakest = chAvg
-      .map((v, i) => ({ v, c: CHAPTERS[i] }))
+      .map((v, i) => ({ v, c: CHAPTERS[i]! }))
       .filter((x) => x.v !== null)
       .sort((a, b) => (a.v as number) - (b.v as number))
       .slice(0, 2);
