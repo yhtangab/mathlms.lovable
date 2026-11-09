@@ -31,7 +31,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (r) setRole(r);
   }, []);
 
-  const me = students.find((s) => s.email === session?.email) ?? students[0];
+  const me = students.find((s) => s.email === session?.email) ?? students[0]!;
 
   return (
     <Ctx.Provider

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
 function Login() {
   const { login, setRole } = useApp();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(STUDENTS[0].email);
+  const [email, setEmail] = useState(STUDENTS[0]!.email);
 
   const submit = (asTeacher: boolean) => {
     const e = email.trim().toLowerCase();
@@ -29,7 +29,7 @@ function Login() {
       return;
     }
     const st = STUDENTS.find((s) => s.email === e);
-    login({ email: e, name: st?.name ?? e.split("@")[0] });
+    login({ email: e, name: st?.name ?? e.split("@")[0]! });
     setRole(asTeacher ? "teacher" : "student");
     navigate({ to: asTeacher ? "/teacher" : "/dashboard" });
   };

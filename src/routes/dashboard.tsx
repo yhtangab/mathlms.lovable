@@ -115,7 +115,7 @@ function Dashboard() {
             <h2 className="text-lg font-bold">Progress timeline · Chapters 1–7</h2>
             <ol className="mt-4 space-y-3">
               {CHAPTERS.map((c, i) => {
-                const s = me.scores[i];
+                const s = me.scores[i] ?? null;
                 return (
                   <li key={c.id} className="flex items-center gap-3">
                     <span

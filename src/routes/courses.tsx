@@ -31,7 +31,7 @@ function Courses() {
       <p className="font-semibold text-muted-foreground">HKDSE S2 Mathematics · OUP chapters</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CHAPTERS.map((c, i) => {
-          const s = me.scores[i];
+          const s = me.scores[i] ?? null;
           const st = chapterStatus(s, i, me.scores);
           const S = STATUS[st];
           return (

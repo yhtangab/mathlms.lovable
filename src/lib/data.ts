@@ -22,7 +22,7 @@ export interface Student {
   streak: number;
 }
 
-const raw: [string, MathSet, (number | null)[], number, number][] = [
+const raw: [string, MathSet, (number | null)[], number, number, number][] = [
   ["Chan Tai Man", "S2M3", [92, 88, 95, 54, 90, 87, null], 78, 7, 21],
   ["Wong Ka Yan", "S2M3", [85, 91, 89, 93, 88, 94, 90], 86, 2, 34],
   ["Lee Chun Hei", "S2M3", [72, 65, 58, 49, 70, 75, null], 60, 14, 5],
@@ -43,7 +43,7 @@ const raw: [string, MathSet, (number | null)[], number, number][] = [
 ];
 
 export const STUDENTS: Student[] = raw.map(([name, set, scores, lastMonthAvg, lastRank, streak], i) => {
-  const [last, first] = [name.split(" ")[0], name.split(" ").slice(1).join("")];
+  const [last, first] = [name.split(" ")[0]!, name.split(" ").slice(1).join("")];
   const done = scores.filter((s) => s !== null) as number[];
   return {
     id: `s${i + 1}`,
