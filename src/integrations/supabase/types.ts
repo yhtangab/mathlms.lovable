@@ -14,16 +14,230 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chapter_content: {
+        Row: {
+          chapter: number
+          notes: string
+          quiz: string
+          updated_at: string
+          video: string
+        }
+        Insert: {
+          chapter: number
+          notes?: string
+          quiz?: string
+          updated_at?: string
+          video?: string
+        }
+        Update: {
+          chapter?: number
+          notes?: string
+          quiz?: string
+          updated_at?: string
+          video?: string
+        }
+        Relationships: []
+      }
+      chapter_scores: {
+        Row: {
+          chapter: number
+          score: number | null
+          student_id: string
+        }
+        Insert: {
+          chapter: number
+          score?: number | null
+          student_id: string
+        }
+        Update: {
+          chapter?: number
+          score?: number | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_scores_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_marks: {
+        Row: {
+          awarded_by: string
+          created_at: string
+          id: string
+          lesson_date: string
+          marks: number
+          reason: string
+          student_id: string
+        }
+        Insert: {
+          awarded_by: string
+          created_at?: string
+          id?: string
+          lesson_date?: string
+          marks: number
+          reason: string
+          student_id: string
+        }
+        Update: {
+          awarded_by?: string
+          created_at?: string
+          id?: string
+          lesson_date?: string
+          marks?: number
+          reason?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_marks_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          display_name: string
+          id: string
+          preferences: Json
+        }
+        Insert: {
+          display_name?: string
+          id: string
+          preferences?: Json
+        }
+        Update: {
+          display_name?: string
+          id?: string
+          preferences?: Json
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          email: string
+          id: string
+          last_month_avg: number
+          last_month_form_rank: number
+          math_set: string
+          name: string
+          streak: number
+          user_id: string | null
+          xp: number
+        }
+        Insert: {
+          email: string
+          id?: string
+          last_month_avg?: number
+          last_month_form_rank?: number
+          math_set: string
+          name: string
+          streak?: number
+          user_id?: string | null
+          xp?: number
+        }
+        Update: {
+          email?: string
+          id?: string
+          last_month_avg?: number
+          last_month_form_rank?: number
+          math_set?: string
+          name?: string
+          streak?: number
+          user_id?: string | null
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      video_completions: {
+        Row: {
+          chapter: number
+          completed_at: string
+          marks: number
+          student_id: string
+          video_url: string
+        }
+        Insert: {
+          chapter: number
+          completed_at?: string
+          marks?: number
+          student_id: string
+          video_url: string
+        }
+        Update: {
+          chapter?: number
+          completed_at?: string
+          marks?: number
+          student_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_completions_chapter_fkey"
+            columns: ["chapter"]
+            isOneToOne: false
+            referencedRelation: "chapter_content"
+            referencedColumns: ["chapter"]
+          },
+          {
+            foreignKeyName: "video_completions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_student: { Args: never; Returns: undefined }
+      complete_video: { Args: { _chapter: number }; Returns: undefined }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "teacher" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +364,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["teacher", "student"],
+    },
   },
 } as const
