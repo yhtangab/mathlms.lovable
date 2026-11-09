@@ -17,7 +17,9 @@ interface Store {
   setStudents: (s: Student[]) => void;
 }
 
-const Ctx = createContext<Store | null>(null);
+// Keep one context instance across hot reloads so provider and consumers always match.
+const g = globalThis as unknown as { __hlcAppCtx?: React.Context<Store | null> };
+const Ctx = (g.__hlcAppCtx ??= createContext<Store | null>(null));
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
