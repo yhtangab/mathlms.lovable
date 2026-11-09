@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Crown, Flame } from "lucide-react";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, TeacherOnly } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
 import { average, improvement, ranked } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ function Leaderboard() {
   const order = [1, 0, 2];
 
   return (
-    <AppShell>
+    <AppShell><TeacherOnly>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">🏆 Leaderboard</h1>
         <div className="flex rounded-2xl bg-muted p-1">
@@ -103,6 +103,6 @@ function Leaderboard() {
           );
         })}
       </div>
-    </AppShell>
+    </TeacherOnly></AppShell>
   );
 }

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { FileText, ListChecks, Video } from "lucide-react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, TeacherOnly } from "@/components/AppShell";
 import { CHAPTERS } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ function Upload() {
   const set = (k: keyof Content, v: string) => setData({ ...data, [ch]: { ...cur, [k]: v } });
 
   return (
-    <AppShell>
+    <AppShell><TeacherOnly>
       <h1 className="text-3xl font-bold">📤 Content Upload Room</h1>
       <p className="font-semibold text-muted-foreground">Prepare videos, notes and quizzes for each chapter.</p>
       <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -82,7 +82,7 @@ function Upload() {
           </button>
         </div>
       </div>
-    </AppShell>
+    </TeacherOnly></AppShell>
   );
 }
 

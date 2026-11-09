@@ -22,8 +22,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { me, students } = useApp();
   const avg = average(me);
-  const fr = formRank(me, students);
-  const sr = setRank(me, students);
+  const fr = 0;
+  const sr = 0;
   const imp = improvement(me);
   const rankUp = me.lastMonthFormRank - fr;
   const weak = weakTopics(me);
@@ -63,18 +63,18 @@ function Dashboard() {
           </div>
           <div className="mt-5 space-y-2">
             <Pill className="bg-gold/20 text-gold-deep" icon={<Medal className="h-4 w-4" />}>
-              Rank #{sr} in {me.set} · Form Rank #{fr}
+              {me.set} · Private student record
             </Pill>
             <Pill
               className={imp >= 0 ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}
               icon={<TrendingUp className="h-4 w-4" />}
             >
               {imp >= 0 ? "+" : ""}
-              {imp}% score this month · {rankUp >= 0 ? `↑ ${rankUp}` : `↓ ${-rankUp}`} ranks
+              {imp}% score this month
             </Pill>
             {weak.length > 0 && (
               <Pill className="bg-destructive/10 text-destructive" icon={<AlertTriangle className="h-4 w-4" />}>
-                Needs Practice: Ch {weak[0]!.id} {weak[0]!.short}
+                Needs Practice: Ch {weak[0]?.id} {weak[0]?.short}
               </Pill>
             )}
           </div>
@@ -84,7 +84,7 @@ function Dashboard() {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             <Big label="Overall average" value={`${avg}%`} tone="bg-primary text-primary-foreground shadow-chunky-primary" />
             <Big label="Chapters done" value={`${completion(me)}%`} tone="bg-success text-primary-foreground shadow-chunky-success" />
-            <Big label="Form rank" value={`#${fr}`} tone="col-span-2 md:col-span-1 bg-gold text-accent-foreground shadow-chunky-gold" />
+            <Big label="Activity marks" value={`${(me.dailyMarks ?? 0) + (me.videoMarks ?? 0)}`} tone="col-span-2 md:col-span-1 bg-gold text-accent-foreground shadow-chunky-gold" />
           </div>
 
           {weak.length > 0 && (
