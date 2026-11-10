@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, Flame, Medal, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { AppShell, scoreTone } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
-import { CHAPTERS, average, completion, formRank, improvement, level, setRank, weakTopics } from "@/lib/data";
+import { CHAPTERS, average, completion, improvement, level, weakTopics } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -11,21 +11,18 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "My Dashboard — HLC Math" },
-      { name: "description", content: "Your S2 Math scores, ranks, streak and weaker topics." },
+      { name: "description", content: "Your private S2 Math scores, lesson marks and weaker topics." },
       { property: "og:title", content: "My Dashboard — HLC Math" },
-      { property: "og:description", content: "Track S2 chapter scores and rank progress." },
+      { property: "og:description", content: "Track private S2 chapter scores and activity marks." },
     ],
   }),
   component: Dashboard,
 });
 
 function Dashboard() {
-  const { me, students } = useApp();
+  const { me } = useApp();
   const avg = average(me);
-  const fr = 0;
-  const sr = 0;
   const imp = improvement(me);
-  const rankUp = me.lastMonthFormRank - fr;
   const weak = weakTopics(me);
   const lvl = level(me.xp);
   const lvlPct = (me.xp % 1000) / 10;

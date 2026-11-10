@@ -5,6 +5,7 @@ import { AppShell, TeacherOnly } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
 import { average, improvement, ranked } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/leaderboard")({
   head: () => ({
@@ -40,7 +41,7 @@ function Leaderboard() {
         <h1 className="text-3xl font-bold">🏆 Leaderboard</h1>
         <div className="flex rounded-2xl bg-muted p-1">
           {FILTERS.map((x) => (
-            <button
+            <Button variant="ghost"
               key={x}
               onClick={() => setF(x)}
               className={cn(
@@ -49,7 +50,7 @@ function Leaderboard() {
               )}
             >
               {x}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
