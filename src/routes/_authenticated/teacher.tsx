@@ -6,6 +6,7 @@ import { saveScores } from "@/lib/math.functions";
 import { parseScoreCsv, scoreSchema } from "@/lib/grade-rules";
 import { Button } from "@/components/ui/button";
 import { LessonMarks } from "@/components/LessonMarks";
+import { SheetGradebook } from "@/components/SheetGradebook";
 import { toast } from "sonner";
 import { AppShell, TeacherOnly, scoreTone } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
@@ -84,6 +85,7 @@ function Teacher() {
   return (
     <AppShell><TeacherOnly>
       <h1 className="text-3xl font-bold">Class Analytics</h1>
+      <SheetGradebook />
       <LessonMarks />
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
