@@ -20,7 +20,7 @@ export function SheetGradebook() {
   const [term, setTerm] = useState(1);
   const [view, setView] = useState<Category | 'summary'>('summary');
 
-  const list = students.filter(s => s.set === set).sort((a, b) => (a.className + a.classNo.padStart(3, '0')).localeCompare(b.className + b.classNo.padStart(3, '0')));
+  const list = students.filter(s => s.set === set).sort((a, b) => ((a.className ?? '') + (a.classNo ?? '').padStart(3, '0')).localeCompare((b.className ?? '') + (b.classNo ?? '').padStart(3, '0')));
   const columns = useMemo(() => {
     const seen = new Map<string, { label: string; full: number | null; position: number }>();
     for (const s of list) for (const a of s.assessments ?? []) if (a.kind === 'item' && a.term === term && a.category === view && !seen.has(a.label)) seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
