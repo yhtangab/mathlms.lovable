@@ -38,7 +38,7 @@ export function AssessmentReport({ assessments }: { assessments: Assessment[] })
         </ul>
       </div>
       {cats.length > 0 && (
-        <Tabs defaultValue={cats[0]?.id} key={term} className="mt-5">
+        <Tabs defaultValue={cats[0]?.id ?? "homework"} key={term} className="mt-5">
           <TabsList className="h-auto flex-wrap">{cats.map(c => <TabsTrigger key={c.id} value={c.id}>{c.label}</TabsTrigger>)}</TabsList>
           {cats.map(c => (
             <TabsContent key={c.id} value={c.id}>
