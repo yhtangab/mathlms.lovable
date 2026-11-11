@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, Flame, Medal, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { AppShell, scoreTone } from "@/components/AppShell";
+import { AssessmentReport } from "@/components/AssessmentReport";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, average, completion, improvement, level, weakTopics } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,7 @@ function Dashboard() {
         </section>
 
         <section className="space-y-6 lg:col-span-2">
+          <AssessmentReport assessments={me.assessments ?? []} />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             <Big label="Overall average" value={`${avg}%`} tone="bg-primary text-primary-foreground shadow-chunky-primary" />
             <Big label="Chapters done" value={`${completion(me)}%`} tone="bg-success text-primary-foreground shadow-chunky-success" />

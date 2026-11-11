@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_scores: {
+        Row: {
+          absent: boolean
+          category: string
+          full_marks: number | null
+          kind: string
+          label: string
+          position: number
+          score: number | null
+          student_id: string
+          synced_at: string
+          term: number
+        }
+        Insert: {
+          absent?: boolean
+          category: string
+          full_marks?: number | null
+          kind: string
+          label: string
+          position?: number
+          score?: number | null
+          student_id: string
+          synced_at?: string
+          term: number
+        }
+        Update: {
+          absent?: boolean
+          category?: string
+          full_marks?: number | null
+          kind?: string
+          label?: string
+          position?: number
+          score?: number | null
+          student_id?: string
+          synced_at?: string
+          term?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_scores_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapter_content: {
         Row: {
           chapter: number
@@ -120,9 +167,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sheet_syncs: {
+        Row: {
+          created_at: string
+          id: string
+          scores: number
+          students: number
+          synced_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          scores?: number
+          students?: number
+          synced_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          scores?: number
+          students?: number
+          synced_by?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
+          class_name: string
+          class_no: string
           email: string
+          hlc_no: string | null
           id: string
           last_month_avg: number
           last_month_form_rank: number
@@ -133,7 +207,10 @@ export type Database = {
           xp: number
         }
         Insert: {
+          class_name?: string
+          class_no?: string
           email: string
+          hlc_no?: string | null
           id?: string
           last_month_avg?: number
           last_month_form_rank?: number
@@ -144,7 +221,10 @@ export type Database = {
           xp?: number
         }
         Update: {
+          class_name?: string
+          class_no?: string
           email?: string
+          hlc_no?: string | null
           id?: string
           last_month_avg?: number
           last_month_form_rank?: number

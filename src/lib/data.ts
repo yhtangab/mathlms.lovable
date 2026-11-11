@@ -8,6 +8,8 @@ export const CHAPTERS = [
   { id: 7, title: "Organization and Presentation of Data (II)", short: "Data (II)", emoji: "📊" },
 ] as const;
 
+import type { Assessment } from "./assessments";
+
 export type MathSet = "S2M3" | "S2M5";
 
 export interface Student {
@@ -16,6 +18,10 @@ export interface Student {
   dailyMarks?: number;
   videoMarks?: number;
   completedVideos?: number[];
+  assessments?: Assessment[];
+  hlcNo?: string | null;
+  className?: string;
+  classNo?: string;
   name: string;
   email: string;
   set: MathSet;
