@@ -94,7 +94,8 @@ function Dashboard() {
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {weak.map((c) => (
                   <Link
-                    to="/courses"
+                    to="/courses/$chapter"
+                    params={{ chapter: String(c.id) }}
                     key={c.id}
                     className="flex items-center justify-between rounded-2xl bg-card p-4 shadow-chunky"
                   >

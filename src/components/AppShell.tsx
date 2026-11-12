@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import { BookOpen, GraduationCap, LayoutDashboard, LogOut, Trophy, Upload, Users } from 'lucide-react';
+import { BookOpen, CheckCircle2, Circle, GraduationCap, PlayCircle, LayoutDashboard, LogOut, Trophy, Upload, Users } from 'lucide-react';
 import { useApp } from '@/lib/app-store';
 import { Button } from '@/components/ui/button';
 export function AppShell({ children }: { children: ReactNode }) {
@@ -11,3 +11,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 export function TeacherOnly({ children }: { children: ReactNode }) { const { role } = useApp(); return role === 'teacher' ? children : <p>Teacher access required.</p>; }
 export function scoreTone(s: number | null) { return s === null ? 'bg-muted text-muted-foreground' : s >= 85 ? 'bg-success/15 text-success' : s >= 60 ? 'bg-primary/10 text-primary' : 'bg-destructive/15 text-destructive'; }
+export const CHAPTER_STATUS = {
+  Completed: { cls: 'bg-success/15 text-success', icon: CheckCircle2 },
+  'In Progress': { cls: 'bg-gold/25 text-gold-deep', icon: PlayCircle },
+  'Not Started': { cls: 'bg-muted text-muted-foreground', icon: Circle },
+};
