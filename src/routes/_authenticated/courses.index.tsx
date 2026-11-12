@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2, ChevronRight, Circle, PlayCircle } from "lucide-react";
-import { AppShell, scoreTone } from "@/components/AppShell";
+import { ChevronRight } from "lucide-react";
+import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, chapterStatus } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -18,12 +18,6 @@ export const Route = createFileRoute("/_authenticated/courses/")({
   }),
   component: Courses,
 });
-
-export const STATUS = {
-  Completed: { cls: "bg-success/15 text-success", icon: CheckCircle2 },
-  "In Progress": { cls: "bg-gold/25 text-gold-deep", icon: PlayCircle },
-  "Not Started": { cls: "bg-muted text-muted-foreground", icon: Circle },
-};
 
 function Courses() {
   const { me, videos } = useApp();

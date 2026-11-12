@@ -17,6 +17,7 @@ import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenti
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
 import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
+import { Route as AuthenticatedCoursesChapterRouteImport } from './routes/_authenticated/courses.$chapter'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -59,6 +60,12 @@ const AuthenticatedCoursesIndexRoute =
     path: '/courses/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCoursesChapterRoute =
+  AuthenticatedCoursesChapterRouteImport.update({
+    id: '/courses/$chapter',
+    path: '/courses/$chapter',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
   '/courses/': typeof AuthenticatedCoursesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +84,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
   '/courses': typeof AuthenticatedCoursesIndexRoute
 }
 export interface FileRoutesById {
@@ -87,6 +96,7 @@ export interface FileRoutesById {
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
+  '/_authenticated/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
 }
 export interface FileRouteTypes {
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/teacher'
     | '/upload'
+    | '/courses/$chapter'
     | '/courses/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/teacher'
     | '/upload'
+    | '/courses/$chapter'
     | '/courses'
   id:
     | '__root__'
@@ -117,6 +129,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leaderboard'
     | '/_authenticated/teacher'
     | '/_authenticated/upload'
+    | '/_authenticated/courses/$chapter'
     | '/_authenticated/courses/'
   fileRoutesById: FileRoutesById
 }
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCoursesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/courses/$chapter': {
+      id: '/_authenticated/courses/$chapter'
+      path: '/courses/$chapter'
+      fullPath: '/courses/$chapter'
+      preLoaderRoute: typeof AuthenticatedCoursesChapterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -192,6 +212,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
+  AuthenticatedCoursesChapterRoute: typeof AuthenticatedCoursesChapterRoute
   AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
 }
 
@@ -200,6 +221,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
+  AuthenticatedCoursesChapterRoute: AuthenticatedCoursesChapterRoute,
   AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
 }
 

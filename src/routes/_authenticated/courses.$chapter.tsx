@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, CheckCircle2, FileText, ListChecks, PlayCircle, Video } from "lucide-react";
 import { toast } from "sonner";
-import { AppShell, scoreTone } from "@/components/AppShell";
+import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
 import { ChapterVideoPlayer } from "@/components/ChapterVideoPlayer";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, chapterStatus } from "@/lib/data";
@@ -10,7 +10,6 @@ import { percent } from "@/lib/assessments";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { STATUS } from "./courses.index";
 
 export const Route = createFileRoute("/_authenticated/courses/$chapter")({
   head: ({ params }) => {
