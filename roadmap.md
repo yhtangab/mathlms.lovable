@@ -12,3 +12,9 @@
 - [ ] Student dashboard: term summary + category breakdown.
 - [ ] Teacher gradebook filtered by set and category.
 - [ ] Tests for sheet parsing rules; verify sync end-to-end.
+
+# Chapter pages + tracked videos
+- [x] Confirm students sign in with Google as HLC number @hlc.edu.hk (all 40 roster emails match).
+- [ ] Multiple named videos per chapter (teacher editor).
+- [ ] Videos play inside the app; mark awarded only after watching to the end (no skipping).
+- [ ] Chapter detail page: videos, notes, exercise, progress.
