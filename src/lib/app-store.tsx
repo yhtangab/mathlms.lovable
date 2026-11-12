@@ -17,6 +17,7 @@ async function fetchAllAssessments() {
   }
 }
 type Content = Database['public']['Tables']['chapter_content']['Row'];
+export type ChapterVideo = Database['public']['Tables']['chapter_videos']['Row'];
 interface Store {
   session: { email: string; name: string } | null;
   role: 'student' | 'teacher';
@@ -25,6 +26,7 @@ interface Store {
   ready: boolean;
   error: string | null;
   content: Content[];
+  videos: ChapterVideo[];
   lastSync: string | null;
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
@@ -54,28 +56,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       const claim = await supabase.rpc('claim_student');
       if (claim.error) throw claim.error;
-      const [roles, roster, scores, marks, videos, content, assessments, syncs] = await Promise.all([
+      const [roles, roster, scores, marks, videos, content, assessments, syncs, chapterVideos] = await Promise.all([
         supabase.from('user_roles').select('role'), supabase.from('students').select('*'),
         supabase.from('chapter_scores').select('*'), supabase.from('daily_marks').select('*'),
-        supabase.from('video_completions').select('*'), supabase.from('chapter_content').select('*'),
+        supabase.from('chapter_video_completions').select('*'), supabase.from('chapter_content').select('*'),
         fetchAllAssessments(), supabase.from('sheet_syncs').select('created_at').order('created_at', { ascending: false }).limit(1),
+        supabase.from('chapter_videos').select('*').order('chapter').order('position'),
       ]);
-      for (const r of [roles, roster, scores, marks, videos, content, syncs]) if (r.error) throw r.error;
+      for (const r of [roles, roster, scores, marks, videos, content, syncs, chapterVideos]) if (r.error) throw r.error;
       const students: Student[] = (roster.data ?? []).map(s => ({
         id: s.id, userId: s.user_id, name: s.name, email: s.email, set: s.math_set as Student['set'],
         scores: Array.from({ length: 7 }, (_, i) => scores.data?.find(v => v.student_id === s.id && v.chapter === i + 1)?.score ?? null),
         lastMonthAvg: s.last_month_avg, lastMonthFormRank: s.last_month_form_rank, xp: s.xp, streak: s.streak,
         dailyMarks: marks.data?.filter(m => m.student_id === s.id).reduce((a, m) => a + m.marks, 0) ?? 0,
         videoMarks: videos.data?.filter(v => v.student_id === s.id).length ?? 0,
-        completedVideos: videos.data?.filter(v => v.student_id === s.id).map(v => v.chapter) ?? [],
+        completedVideos: videos.data?.filter(v => v.student_id === s.id && v.video_id).map(v => v.video_id as string) ?? [],
         assessments: assessments.filter(a => a.student_id === s.id) as Assessment[],
         hlcNo: s.hlc_no, className: s.class_name, classNo: s.class_no,
       }));
-      return { lastSync: syncs.data?.[0]?.created_at ?? null, students, role: roles.data?.some(r => r.role === 'teacher') ? 'teacher' as const : 'student' as const, content: content.data ?? [] };
+      return { lastSync: syncs.data?.[0]?.created_at ?? null, students, role: roles.data?.some(r => r.role === 'teacher') ? 'teacher' as const : 'student' as const, content: content.data ?? [], videos: chapterVideos.data ?? [] };
     }, retry: false,
   });
   const students = user ? query.data?.students ?? [] : [];
   const me = students.find(s => s.userId === user?.id) ?? { id: '', name: user?.user_metadata?.['full_name'] ?? 'Student', email: user?.email ?? '', set: 'S2M3' as const, scores: Array(7).fill(null), lastMonthAvg: 0, lastMonthFormRank: 0, xp: 0, streak: 0, dailyMarks: 0, videoMarks: 0, completedVideos: [] };
-  return <Ctx.Provider value={{ session: user ? { email: user.email ?? '', name: me.name } : null, role: query.data?.role ?? 'student', students, me, ready: hydrated && (!user || !query.isPending), error: query.error?.message ?? null, content: query.data?.content ?? [], lastSync: query.data?.lastSync ?? null, refresh: () => query.refetch(), logout: async () => { await supabase.auth.signOut(); qc.clear(); setUser(null); } }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ session: user ? { email: user.email ?? '', name: me.name } : null, role: query.data?.role ?? 'student', students, me, ready: hydrated && (!user || !query.isPending), error: query.error?.message ?? null, content: query.data?.content ?? [], videos: query.data?.videos ?? [], lastSync: query.data?.lastSync ?? null, refresh: () => query.refetch(), logout: async () => { await supabase.auth.signOut(); qc.clear(); setUser(null); } }}>{children}</Ctx.Provider>;
 }
 export function useApp() { const c = useContext(Ctx); if (!c) throw new Error('useApp outside provider'); return c; }

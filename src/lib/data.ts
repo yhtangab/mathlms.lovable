@@ -17,7 +17,8 @@ export interface Student {
   userId?: string | null;
   dailyMarks?: number;
   videoMarks?: number;
-  completedVideos?: number[];
+  /** Ids of chapter videos this student has watched to the end. */
+  completedVideos?: string[];
   assessments?: Assessment[];
   hlcNo?: string | null;
   className?: string;
