@@ -29,6 +29,13 @@
       "when": 1794364838779,
       "tag": "0003_assessment_gradebook",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794450463152,
+      "tag": "0004_chapter_videos",
+      "breakpoints": true
     }
   ]
 }

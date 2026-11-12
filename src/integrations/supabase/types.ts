@@ -111,6 +111,78 @@ export type Database = {
           },
         ]
       }
+      chapter_video_completions: {
+        Row: {
+          chapter: number
+          completed_at: string
+          id: string
+          marks: number
+          student_id: string
+          video_id: string | null
+          video_title: string
+        }
+        Insert: {
+          chapter: number
+          completed_at?: string
+          id?: string
+          marks?: number
+          student_id: string
+          video_id?: string | null
+          video_title: string
+        }
+        Update: {
+          chapter?: number
+          completed_at?: string
+          id?: string
+          marks?: number
+          student_id?: string
+          video_id?: string | null
+          video_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_video_completions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_video_completions_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "chapter_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chapter_videos: {
+        Row: {
+          chapter: number
+          created_at: string
+          id: string
+          position: number
+          title: string
+          url: string
+        }
+        Insert: {
+          chapter: number
+          created_at?: string
+          id?: string
+          position?: number
+          title: string
+          url: string
+        }
+        Update: {
+          chapter?: number
+          created_at?: string
+          id?: string
+          position?: number
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
       daily_marks: {
         Row: {
           awarded_by: string
@@ -307,6 +379,7 @@ export type Database = {
     }
     Functions: {
       claim_student: { Args: never; Returns: undefined }
+      complete_chapter_video: { Args: { _video_id: string }; Returns: boolean }
       complete_video: { Args: { _chapter: number }; Returns: undefined }
       has_role: {
         Args: {
