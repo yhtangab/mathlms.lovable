@@ -186,28 +186,34 @@ export type Database = {
       daily_marks: {
         Row: {
           awarded_by: string
+          batch_id: string | null
           created_at: string
           id: string
           lesson_date: string
           marks: number
+          note: string
           reason: string
           student_id: string
         }
         Insert: {
           awarded_by: string
+          batch_id?: string | null
           created_at?: string
           id?: string
           lesson_date?: string
           marks: number
+          note?: string
           reason: string
           student_id: string
         }
         Update: {
           awarded_by?: string
+          batch_id?: string | null
           created_at?: string
           id?: string
           lesson_date?: string
           marks?: number
+          note?: string
           reason?: string
           student_id?: string
         }
@@ -236,6 +242,93 @@ export type Database = {
           display_name?: string
           id?: string
           preferences?: Json
+        }
+        Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          cost: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          reward_id: string | null
+          reward_name: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          reward_id?: string | null
+          reward_name: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          reward_id?: string | null
+          reward_name?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          active: boolean
+          cooldown_days: number | null
+          cost: number
+          created_at: string
+          description: string
+          emoji: string
+          id: string
+          name: string
+          position: number
+        }
+        Insert: {
+          active?: boolean
+          cooldown_days?: number | null
+          cost: number
+          created_at?: string
+          description?: string
+          emoji?: string
+          id?: string
+          name: string
+          position?: number
+        }
+        Update: {
+          active?: boolean
+          cooldown_days?: number | null
+          cost?: number
+          created_at?: string
+          description?: string
+          emoji?: string
+          id?: string
+          name?: string
+          position?: number
         }
         Relationships: []
       }
@@ -375,7 +468,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      student_coin_totals: {
+        Row: {
+          daily_earned: number | null
+          spent: number | null
+          student_id: string | null
+          video_earned: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       claim_student: { Args: never; Returns: undefined }
@@ -388,6 +489,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      redeem_reward: { Args: { _reward_id: string }; Returns: string }
     }
     Enums: {
       app_role: "teacher" | "student"

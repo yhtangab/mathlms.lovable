@@ -3,15 +3,23 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import type { Student } from "./data";
+import type { ScoreSource, Student } from "./data";
 import { chapterScoresFromAssessments, type Assessment } from "./assessments";
 
-type AssessmentRow = Database["public"]["Tables"]["assessment_scores"]["Row"];
-type Content = Database["public"]["Tables"]["chapter_content"]["Row"];
-export type ChapterVideo = Database["public"]["Tables"]["chapter_videos"]["Row"];
+type PublicTables = Database["public"]["Tables"];
+type AssessmentRow = PublicTables["assessment_scores"]["Row"];
+type VideoCompletionRow = PublicTables["chapter_video_completions"]["Row"];
+type CoinTotalRow = Database["public"]["Views"]["student_coin_totals"]["Row"];
+type Content = PublicTables["chapter_content"]["Row"];
+export type ChapterVideo = PublicTables["chapter_videos"]["Row"];
+export type MarkRow = PublicTables["daily_marks"]["Row"];
+export type Reward = PublicTables["rewards"]["Row"];
+export type Redemption = PublicTables["reward_redemptions"]["Row"];
 
 const CHAPTER_COUNT = 7;
 const PAGE_SIZE = 1000;
+const MARK_LOG_LIMIT = 300;
+const REDEMPTION_LIMIT = 500;
 
 /** Supabase caps how many rows one request returns, so keep paging until a page comes back empty. */
 async function fetchAllAssessments(): Promise<AssessmentRow[]> {
@@ -31,6 +39,57 @@ async function fetchAllAssessments(): Promise<AssessmentRow[]> {
     rows.push(...data);
     from += data.length;
   }
+}
+
+async function fetchAllVideoCompletions(): Promise<VideoCompletionRow[]> {
+  const rows: VideoCompletionRow[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("chapter_video_completions")
+      .select("*")
+      .order("id")
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+
+interface CoinData {
+  error: string | null;
+  totals: CoinTotalRow[];
+  rewards: Reward[];
+  redemptions: Redemption[];
+}
+
+/** Coins and awards are optional: if their tables are not set up yet, the rest of the app still works. */
+async function loadCoinData(): Promise<CoinData> {
+  const [totals, rewards, redemptions] = await Promise.all([
+    supabase.from("student_coin_totals").select("*"),
+    supabase.from("rewards").select("*").order("position").order("cost"),
+    supabase
+      .from("reward_redemptions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(REDEMPTION_LIMIT),
+  ]);
+  const error = totals.error ?? rewards.error ?? redemptions.error;
+  if (error) {
+    return {
+      error: `Math Coins / Awards 未設定好：${error.message}（請先喺 Supabase SQL Editor 執行 0005 SQL）`,
+      totals: [],
+      rewards: [],
+      redemptions: [],
+    };
+  }
+  return {
+    error: null,
+    totals: totals.data ?? [],
+    rewards: rewards.data ?? [],
+    redemptions: redemptions.data ?? [],
+  };
 }
 
 function toAssessment(row: AssessmentRow): Assessment {
@@ -56,6 +115,11 @@ interface Store {
   content: Content[];
   videos: ChapterVideo[];
   lastSync: string | null;
+  /** Latest lesson-mark entries (teachers see everyone's, students only their own). */
+  markLog: MarkRow[];
+  rewards: Reward[];
+  redemptions: Redemption[];
+  coinsError: string | null;
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
 }
@@ -105,23 +169,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       const claim = await supabase.rpc("claim_student");
       if (claim.error) throw claim.error;
-      const [roles, roster, scores, marks, videos, content, assessmentRows, syncs, chapterVideos] =
-        await Promise.all([
-          supabase.from("user_roles").select("role"),
-          supabase.from("students").select("*"),
-          supabase.from("chapter_scores").select("*"),
-          supabase.from("daily_marks").select("*"),
-          supabase.from("chapter_video_completions").select("*"),
-          supabase.from("chapter_content").select("*"),
-          fetchAllAssessments(),
-          supabase
-            .from("sheet_syncs")
-            .select("created_at")
-            .order("created_at", { ascending: false })
-            .limit(1),
-          supabase.from("chapter_videos").select("*").order("chapter").order("position"),
-        ]);
-      for (const r of [roles, roster, scores, marks, videos, content, syncs, chapterVideos]) {
+      const [
+        roles,
+        roster,
+        scores,
+        markLog,
+        videoRows,
+        content,
+        assessmentRows,
+        syncs,
+        chapterVideos,
+        coins,
+      ] = await Promise.all([
+        supabase.from("user_roles").select("role"),
+        supabase.from("students").select("*"),
+        supabase.from("chapter_scores").select("*"),
+        supabase
+          .from("daily_marks")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(MARK_LOG_LIMIT),
+        fetchAllVideoCompletions(),
+        supabase.from("chapter_content").select("*"),
+        fetchAllAssessments(),
+        supabase
+          .from("sheet_syncs")
+          .select("created_at")
+          .order("created_at", { ascending: false })
+          .limit(1),
+        supabase.from("chapter_videos").select("*").order("chapter").order("position"),
+        loadCoinData(),
+      ]);
+      for (const r of [roles, roster, scores, markLog, content, syncs, chapterVideos]) {
         if (r.error) throw r.error;
       }
 
@@ -133,31 +212,62 @@ export function AppProvider({ children }: { children: ReactNode }) {
         else assessmentsByStudent.set(row.student_id, [item]);
       }
 
+      const videosByStudent = new Map<string, VideoCompletionRow[]>();
+      for (const row of videoRows) {
+        const existing = videosByStudent.get(row.student_id);
+        if (existing) existing.push(row);
+        else videosByStudent.set(row.student_id, [row]);
+      }
+
+      const savedScores = new Map<string, number | null>();
+      for (const row of scores.data ?? [])
+        savedScores.set(`${row.student_id}|${row.chapter}`, row.score);
+
+      const totals = new Map<string, CoinTotalRow>();
+      for (const t of coins.totals) if (t.student_id) totals.set(t.student_id, t);
+
+      // Only used if the coin totals view is not set up yet.
+      const dailyFromLog = new Map<string, number>();
+      for (const m of markLog.data ?? []) {
+        dailyFromLog.set(m.student_id, (dailyFromLog.get(m.student_id) ?? 0) + m.marks);
+      }
+
       const students: Student[] = (roster.data ?? []).map((s) => {
         const own = assessmentsByStudent.get(s.id) ?? [];
         const fromSheet = chapterScoresFromAssessments(own, CHAPTER_COUNT);
-        const ownVideos = (videos.data ?? []).filter((v) => v.student_id === s.id);
+        const ownVideos = videosByStudent.get(s.id) ?? [];
+        const total = totals.get(s.id);
+
+        // A score the teacher typed in the app wins; otherwise use the Google Sheet's score.
+        const chapterScores: (number | null)[] = [];
+        const scoreSources: ScoreSource[] = [];
+        for (let ch = 1; ch <= CHAPTER_COUNT; ch++) {
+          const saved = savedScores.get(`${s.id}|${ch}`);
+          if (saved !== undefined && saved !== null) {
+            chapterScores.push(saved);
+            scoreSources.push("manual");
+          } else {
+            const sheet = fromSheet[ch - 1] ?? null;
+            chapterScores.push(sheet);
+            scoreSources.push(sheet === null ? null : "sheet");
+          }
+        }
+
         return {
           id: s.id,
           userId: s.user_id,
           name: s.name,
           email: s.email,
           set: s.math_set as Student["set"],
-          // A score the teacher typed in the app wins; otherwise use the sheet's SQ/CQ average.
-          scores: Array.from({ length: CHAPTER_COUNT }, (_, i) => {
-            const saved = scores.data?.find(
-              (v) => v.student_id === s.id && v.chapter === i + 1,
-            )?.score;
-            return saved ?? fromSheet[i] ?? null;
-          }),
+          scores: chapterScores,
+          scoreSources,
           lastMonthAvg: s.last_month_avg,
           lastMonthFormRank: s.last_month_form_rank,
           xp: s.xp,
           streak: s.streak,
-          dailyMarks: (marks.data ?? [])
-            .filter((m) => m.student_id === s.id)
-            .reduce((a, m) => a + m.marks, 0),
+          dailyMarks: total?.daily_earned ?? dailyFromLog.get(s.id) ?? 0,
           videoMarks: ownVideos.length,
+          coinsSpent: total?.spent ?? 0,
           completedVideos: ownVideos.flatMap((v) => (v.video_id ? [v.video_id] : [])),
           assessments: own,
           hlcNo: s.hlc_no,
@@ -174,6 +284,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           : ("student" as const),
         content: content.data ?? [],
         videos: chapterVideos.data ?? [],
+        markLog: markLog.data ?? [],
+        rewards: coins.rewards,
+        redemptions: coins.redemptions,
+        coinsError: coins.error,
       };
     },
   });
@@ -186,12 +300,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     email: user?.email ?? "",
     set: "S2M3",
     scores: Array.from({ length: CHAPTER_COUNT }, () => null),
+    scoreSources: [],
     lastMonthAvg: 0,
     lastMonthFormRank: 0,
     xp: 0,
     streak: 0,
     dailyMarks: 0,
     videoMarks: 0,
+    coinsSpent: 0,
     completedVideos: [],
   };
   const me = students.find((s) => s.userId === user?.id) ?? fallbackMe;
@@ -208,6 +324,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         content: query.data?.content ?? [],
         videos: query.data?.videos ?? [],
         lastSync: query.data?.lastSync ?? null,
+        markLog: query.data?.markLog ?? [],
+        rewards: query.data?.rewards ?? [],
+        redemptions: query.data?.redemptions ?? [],
+        coinsError: query.data?.coinsError ?? null,
         refresh: () => query.refetch(),
         logout: async () => {
           await supabase.auth.signOut();

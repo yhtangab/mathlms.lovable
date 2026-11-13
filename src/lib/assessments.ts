@@ -31,8 +31,15 @@ export const WEIGHTS = [
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-/** "SQ1.1", "SQ 1.2", "CQ1" -> chapter 1. Matches the labels the chapter page looks for. */
-const CHAPTER_LABEL = /^(?:SQ|CQ)\s*(\d+)(?:\s*\.\s*\d+)?$/i;
+const QUIZ_CATEGORIES: Category[] = ["short_quiz", "chapter_quiz"];
+
+/** Ways a column heading can name its chapter. The first pattern that matches wins. */
+const CHAPTER_PATTERNS: RegExp[] = [
+  /\bch(?:apter)?\s*\.?\s*(\d{1,2})(?!\d)/i, // "Ch1", "Ch.1", "Chapter 1", "SQ Ch2"
+  /^(?:SQ|CQ|HW|Q|QUIZ|WS|EX)\s*[-_.]?\s*(\d{1,2})\s*[.\-_]\s*\d+/i, // "SQ1.1", "CQ 2-1", "HW3.2"
+  /^(?:SQ|CQ|QUIZ|Q)\s*[-_.]?\s*(\d{1,2})$/i, // "SQ1", "CQ 2", "Quiz 3"
+  /^(\d{1,2})\s*\.\s*\d+$/, // "1.1" under an SQ / CQ group heading
+];
 
 export function percent(a: Pick<Assessment, "score" | "full_marks">) {
   if (a.score === null) return null;
@@ -46,31 +53,65 @@ export function termsOf(list: Assessment[]) {
   return [...new Set(list.map((a) => a.term))].sort();
 }
 
-export function chapterOfLabel(label: string): number | null {
-  const m = CHAPTER_LABEL.exec(label.trim());
-  const n = m?.[1] ? Number(m[1]) : Number.NaN;
-  return Number.isInteger(n) && n >= 1 ? n : null;
+export function chapterOfLabel(label: string, maxChapter = 7): number | null {
+  const t = label.trim();
+  for (const re of CHAPTER_PATTERNS) {
+    const n = Number(re.exec(t)?.[1]);
+    if (Number.isInteger(n) && n >= 1 && n <= maxChapter) return n;
+  }
+  return null;
+}
+
+function markedPercent(a: Assessment): number | null {
+  if (a.absent || a.score === null || a.full_marks === null || a.full_marks <= 0) return null;
+  return (a.score / a.full_marks) * 100;
+}
+
+function chapterAverage(
+  list: Assessment[],
+  categories: Category[],
+  chapter: number,
+  maxChapter: number,
+): number | null {
+  const values = list
+    .filter(
+      (a) =>
+        a.kind === "item" &&
+        categories.includes(a.category) &&
+        chapterOfLabel(a.label, maxChapter) === chapter,
+    )
+    .map(markedPercent)
+    .filter((p): p is number => p !== null);
+  return values.length ? Math.round(values.reduce((x, y) => x + y, 0) / values.length) : null;
 }
 
 /**
  * Chapter score from the Google Sheet: the average percentage of that chapter's short quizzes
- * and chapter quizzes (absent, blank and items without full marks are left out).
+ * and chapter quizzes; if a chapter has no quiz yet, its homework average is used instead.
  */
 export function chapterScoresFromAssessments(list: Assessment[], chapters = 7): (number | null)[] {
-  return Array.from({ length: chapters }, (_, i) => {
-    const pcts = list
-      .filter(
-        (a) =>
-          a.kind === "item" &&
-          !a.absent &&
-          a.score !== null &&
-          a.full_marks !== null &&
-          a.full_marks > 0 &&
-          chapterOfLabel(a.label) === i + 1,
-      )
-      .map((a) => ((a.score ?? 0) / (a.full_marks ?? 1)) * 100);
-    return pcts.length ? Math.round(pcts.reduce((x, y) => x + y, 0) / pcts.length) : null;
-  });
+  return Array.from(
+    { length: chapters },
+    (_, i) =>
+      chapterAverage(list, QUIZ_CATEGORIES, i + 1, chapters) ??
+      chapterAverage(list, ["homework"], i + 1, chapters),
+  );
+}
+
+/** Quiz columns whose heading does not name a chapter, so they cannot count towards Ch1–Ch7. */
+export function unmatchedChapterLabels(list: Assessment[], chapters = 7): string[] {
+  return [
+    ...new Set(
+      list
+        .filter(
+          (a) =>
+            a.kind === "item" &&
+            QUIZ_CATEGORIES.includes(a.category) &&
+            chapterOfLabel(a.label, chapters) === null,
+        )
+        .map((a) => a.label),
+    ),
+  ].sort();
 }
 
 /** Average of marked items (absent and blank ignored, like the sheet's AVERAGE) times the category weight. */

@@ -1,0 +1,35 @@
+> vite dev
+
+vite.config.ts (10:29) [UNRESOLVED_IMPORT] Could not resolve '@lovabl
+vite.config.ts (10:29) [UNRESOLVED_IMPORT] Could not resolve '@lovable.dev/vite-tanstack-config' in vite.config.ts
+    ╭─[ vite.config.ts:10:30 ]
+    │
+ 10 │ import { defineConfig } from "@lovable.dev/vite-tanstack-config
+ 10 │ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+    │                              ─────────────────┬────────────────
+    │                              ─────────────────┬─────────────────
+    │                                               ╰────────────────
+    │                                               ╰─────────────────── Module not found, treating it as an external dependency
+────╯
+
+failedable.dev/vite-
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms.lovable/node_modules/.vite-temp/vite.config.ts.timestamp-17945751434
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms.lovable/node_modules/.vite-temp/vite.config.ts.timestamp-1794575143454-59034acd2aa588.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_r
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:343:9)
+    at packageResolve (node:internal/modules/esm/resolve:751:25)
+    at moduleResolve (node:internal/modules/esm/resolve:840:18)
+    at defaultResolve (node:internal/modules/esm/resolve:973:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:708:20
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:708:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:728:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:766
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:766:56)
+    at #resolve (node:internal/modules/esm/loader:690:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/l
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:610:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:277:3
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:277:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
