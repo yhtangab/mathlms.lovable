@@ -37,6 +37,11 @@ type Cell = string | number | boolean | null | undefined;
 const text = (c: Cell) => (c === null || c === undefined ? "" : String(c)).trim();
 const isFormula = (c: Cell) => typeof c === "string" && c.trim().startsWith("=");
 const HLC_NO = /^HLC\d+$/i;
+const HLC_HEADING = /^hlc\s*no\.?$/i;
+const FULL_MARKS_HEADING = /^(full\s*marks?|max\.?\s*marks?|滿分)$/i;
+const WEIGHT_HEADER = /\(\s*\d+(?:\.\d+)?\s*%\s*\)\s*$/;
+// Column G. A = HLC no., B = Class, C = No., D = Name in English, E = 姓名, F = Sex.
+const FIRST_SCORE_COLUMN = 6;
 
 export function toNumber(c: Cell): number | null {
   if (typeof c === "number") return Number.isFinite(c) ? c : null;
@@ -47,7 +52,7 @@ export function toNumber(c: Cell): number | null {
 }
 
 export function isAbsent(c: Cell) {
-  const t = text(c).toUpperCase();
+  const t = text(c).toUpperCase().replace(/\.$/, "");
   return t === "ABS" || t === "ABSENT";
 }
 
@@ -109,21 +114,29 @@ function isSummaryHeaderName(h: string): boolean {
   ) {
     return bracketMarks(clean) !== null;
   }
-  if (/\(\s*\d+(?:\.\d+)?\s*%\s*\)\s*$/.test(clean)) return true;
-  return false;
+  return WEIGHT_HEADER.test(clean);
+}
+
+/** A weighted coursework column such as "Homework (30%)" or "Daily (10%)". */
+function isWeightHeader(h: string): boolean {
+  const clean = h.trim();
+  if (!clean) return false;
+  return /^daily/i.test(clean) || WEIGHT_HEADER.test(clean);
 }
 
 /**
- * formulas: the tab read with FORMULA rendering (tells typed marks apart from calculated columns).
- * values: the same tab read with UNFORMATTED_VALUE rendering (calculated results).
+ * formulas: the tab read with formulas kept (tells typed marks apart from calculated columns).
+ * values: the same tab read as calculated values.
  */
 export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]): ParsedStudent[] {
   const gridF = formulas.length ? formulas : values;
   const gridV = values.length ? values : formulas;
+  // Only trust "is this cell a formula?" when the source really kept formulas.
+  const hasFormulaInfo = gridF.some((r) => r?.some((c) => isFormula(c)));
 
-  let itemRow = gridF.findIndex((r) => /^hlc\s*no\.?$/i.test(text(r?.[0])));
+  let itemRow = gridF.findIndex((r) => HLC_HEADING.test(text(r?.[0])));
   if (itemRow < 0) {
-    itemRow = gridF.findIndex((r) => r?.some((c) => /^hlc\s*no\.?$/i.test(text(c))));
+    itemRow = gridF.findIndex((r) => r?.some((c) => HLC_HEADING.test(text(c))));
   }
   if (itemRow < 0) {
     const firstStudentIdx = gridF.findIndex((r) => HLC_NO.test(text(r?.[0])));
@@ -136,8 +149,7 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
   const groupRow = itemRow > 0 ? itemRow - 1 : itemRow;
 
   const fullRow = gridF.findIndex(
-    (r, idx) =>
-      idx !== itemRow && r?.some((c) => /^(full\s*marks?|max\.?\s*marks?|滿分)$/i.test(text(c))),
+    (r, idx) => idx !== itemRow && r?.some((c) => FULL_MARKS_HEADING.test(text(c))),
   );
 
   const studentRows = gridF
@@ -158,49 +170,56 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
 
   type Col = Omit<ParsedScore, "score" | "absent"> & { col: number };
   const cols: Col[] = [];
+  const usedLabels = new Map<string, number>();
   let term: 1 | 2 = 1;
   let activeGroup = "";
 
-  for (let c = 6; c < width; c++) {
+  for (let c = FIRST_SCORE_COLUMN; c < width; c++) {
     if (c === emailCol) continue;
 
     const rawGroup = header(groupRow, c);
     const name = header(itemRow, c);
 
-    if (rawGroup) {
-      if (isSummaryHeaderName(rawGroup)) {
-        activeGroup = "";
-      } else {
-        activeGroup = rawGroup;
-      }
-    }
+    // Merged group headings only fill their first cell, so carry them to the right.
+    if (rawGroup) activeGroup = isSummaryHeaderName(rawGroup) ? "" : rawGroup;
     const group = rawGroup || activeGroup;
 
-    const computedByFormula = studentRows.some((s) => isFormula(s.r?.[c]));
-    const summaryByHeader = isSummaryHeaderName(name) || (!name && isSummaryHeaderName(rawGroup));
-    const computed = computedByFormula || summaryByHeader;
+    let formulaCells = 0;
+    let typedCells = 0;
+    for (const s of studentRows) {
+      const cell = s.r?.[c];
+      if (isFormula(cell)) formulaCells++;
+      else if (text(cell) !== "") typedCells++;
+    }
+    const computedByFormula = formulaCells > 0 && formulaCells >= typedCells;
+    const computed = hasFormulaInfo
+      ? computedByFormula || isWeightHeader(name) || (!name && isWeightHeader(rawGroup))
+      : isSummaryHeaderName(name) || (!name && isSummaryHeaderName(rawGroup));
 
     if (/^t2|2nd/i.test(name) || /^t2|2nd/i.test(rawGroup)) term = 2;
 
     if (name && !computed && !name.includes("_%") && !name.startsWith("#")) {
       const fullFromRow = fullRow >= 0 ? toNumber(gridV[fullRow]?.[c]) : null;
-      const fullFromHeader = bracketMarks(name);
-      const full = fullFromRow ?? fullFromHeader ?? null;
-      const cat = itemCategory(name, group);
-
+      const full = fullFromRow ?? bracketMarks(name);
+      // Two columns with the same heading are both kept instead of one silently disappearing.
+      const key = `${term}|item|${name}`;
+      const seen = (usedLabels.get(key) ?? 0) + 1;
+      usedLabels.set(key, seen);
       cols.push({
         col: c,
         term,
         kind: "item",
-        category: cat,
-        label: name,
+        category: itemCategory(name, group),
+        label: seen === 1 ? name : `${name} (${seen})`,
         full_marks: full,
         position: c,
       });
     } else {
       const label = name && bracketMarks(name) !== null ? name : rawGroup || name;
       const full = bracketMarks(label) ?? (fullRow >= 0 ? toNumber(gridV[fullRow]?.[c]) : null);
-      if (label && full !== null && !label.startsWith("#")) {
+      const key = `${term}|summary|${label}`;
+      if (label && full !== null && !label.startsWith("#") && !usedLabels.has(key)) {
+        usedLabels.set(key, 1);
         cols.push({
           col: c,
           term,
@@ -216,14 +235,6 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
     if (/^t1a3/i.test(rawGroup) || /^t1a3/i.test(name)) term = 2;
   }
 
-  const seen = new Set<string>();
-  const unique = cols.filter((c) => {
-    const k = `${c.term}|${c.kind}|${c.label}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-
   return studentRows.map(({ r, i }) => {
     const hlcNo = text(r[0]).toUpperCase();
     const typedEmail = emailCol >= 0 ? text(r[emailCol]).toLowerCase() : "";
@@ -234,11 +245,12 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
       name: text(r[3]) || hlcNo,
       className: text(r[1]),
       classNo: text(r[2]),
-      scores: unique.flatMap(({ col, ...meta }) => {
+      scores: cols.flatMap(({ col, ...meta }) => {
         const raw = gridV[i]?.[col];
         const absent = isAbsent(raw);
         const score = round1(toNumber(raw));
         if (meta.kind === "summary" && score === null) return [];
+        if (meta.category === "other" && score === null && !absent) return [];
         return [{ ...meta, score, absent }];
       }),
     };

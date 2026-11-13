@@ -1,120 +1,60 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { RefreshCw, Sheet } from "lucide-react";
+import { AlertTriangle, CheckCircle2, RefreshCw, Sheet } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { scoreTone } from "@/components/AppShell";
 import { useApp } from "@/lib/app-store";
-import { supabase } from "@/integrations/supabase/client";
-import { syncGoogleSheet } from "@/lib/sheets.functions";
-import { ITEM_CATEGORIES, percent, termSummary, WEIGHTS } from "@/lib/assessments";
-import { parseSetTab, type Category, type MathSet, type ParsedStudent } from "@/lib/sheet-parse";
+import { syncGoogleSheet, type SheetSource, type SyncReport } from "@/lib/sheets.functions";
+import { ITEM_CATEGORIES, percent, termSummary, termsOf, WEIGHTS } from "@/lib/assessments";
+import type { Category, MathSet } from "@/lib/sheet-parse";
 import { cn } from "@/lib/utils";
 
 const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
-const TABS: MathSet[] = ["S2M3", "S2M5"];
-type Cell = string | number | boolean | null;
-type Grid = Cell[][];
-
-function parseCellValue(raw: string): Cell {
-  const trimmed = raw.trim();
-  if (trimmed === "") return "";
-  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
-    const n = Number(trimmed);
-    if (Number.isFinite(n)) return n;
-  }
-  return trimmed;
-}
-
-function parseCsvGrid(csvText: string): Grid {
-  const rows: Grid = [];
-  let row: Cell[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < csvText.length; i++) {
-    const ch = csvText.charAt(i);
-    const next = csvText.charAt(i + 1);
-
-    if (inQuotes) {
-      if (ch === '"' && next === '"') {
-        current += '"';
-        i++;
-      } else if (ch === '"') {
-        inQuotes = false;
-      } else {
-        current += ch;
-      }
-    } else {
-      if (ch === '"') {
-        inQuotes = true;
-      } else if (ch === ",") {
-        row.push(parseCellValue(current));
-        current = "";
-      } else if (ch === "\r" && next === "\n") {
-        row.push(parseCellValue(current));
-        rows.push(row);
-        row = [];
-        current = "";
-        i++;
-      } else if (ch === "\n") {
-        row.push(parseCellValue(current));
-        rows.push(row);
-        row = [];
-        current = "";
-      } else {
-        current += ch;
-      }
-    }
-  }
-  if (current.length > 0 || row.length > 0) {
-    row.push(parseCellValue(current));
-    rows.push(row);
-  }
-  return rows;
-}
-
-async function fetchSheetTabsDirect(): Promise<{ formulas: Grid[]; values: Grid[] }> {
-  const values: Grid[] = [];
-  const formulas: Grid[] = [];
-
-  for (const tab of TABS) {
-    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(tab)}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`無法讀取 Google Sheet 分頁 ${tab} (HTTP ${res.status})`);
-    }
-    const text = await res.text();
-    if (text.trim().startsWith("<!DOCTYPE html") || text.includes("<html")) {
-      throw new Error(
-        "請先打開 Google Sheet「2627 Name list (For LMS)」，按右上角「共用 (Share)」，將一般存取權改為「知道連結的任何人 -> 檢視者 (Viewer)」！",
-      );
-    }
-
-    const grid = parseCsvGrid(text);
-    values.push(grid);
-    formulas.push(grid);
-  }
-
-  return { formulas, values };
-}
+const TERM_OPTIONS = [1, 2] as const;
+const SOURCE_LABEL: Record<SheetSource, string> = {
+  service_account: "Google Service Account",
+  api_key: "Google Sheets API key",
+  public_xlsx: "公開連結（完整試算表）",
+};
 
 export function SheetGradebook() {
   const { students, refresh, lastSync } = useApp();
   const serverSync = useServerFn(syncGoogleSheet);
   const [busy, setBusy] = useState(false);
-  const [set, setSet] = useState<"S2M3" | "S2M5">("S2M3");
-  const [term, setTerm] = useState(1);
+  const [report, setReport] = useState<SyncReport | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [set, setSet] = useState<MathSet>("S2M3");
+  const [term, setTerm] = useState<number>(1);
   const [view, setView] = useState<Category | "summary">("summary");
 
-  const list = students
-    .filter((s) => s.set === set)
-    .sort((a, b) =>
-      ((a.className ?? "") + (a.classNo ?? "").padStart(3, "0")).localeCompare(
-        (b.className ?? "") + (b.classNo ?? "").padStart(3, "0"),
+  const list = useMemo(
+    () =>
+      students
+        .filter((s) => s.set === set)
+        .sort((a, b) =>
+          `${a.className ?? ""}${(a.classNo ?? "").padStart(3, "0")}`.localeCompare(
+            `${b.className ?? ""}${(b.classNo ?? "").padStart(3, "0")}`,
+          ),
+        ),
+    [students, set],
+  );
+
+  const termsWithScores = useMemo(
+    () =>
+      termsOf(
+        list.flatMap((s) =>
+          (s.assessments ?? []).filter((a) => a.kind === "item" && (a.score !== null || a.absent)),
+        ),
       ),
-    );
+    [list],
+  );
+  // If the chosen term has no marks yet, show the first term that does.
+  const activeTerm =
+    termsWithScores.length === 0 || termsWithScores.includes(term)
+      ? term
+      : (termsWithScores[0] ?? term);
 
   const categoryCounts = useMemo(() => {
     const counts = new Map<Category, number>();
@@ -122,7 +62,7 @@ export function SheetGradebook() {
       const labels = new Set<string>();
       for (const s of list) {
         for (const a of s.assessments ?? []) {
-          if (a.kind === "item" && a.term === term && a.category === c.id) {
+          if (a.kind === "item" && a.term === activeTerm && a.category === c.id) {
             labels.add(a.label);
           }
         }
@@ -130,19 +70,24 @@ export function SheetGradebook() {
       counts.set(c.id, labels.size);
     }
     return counts;
-  }, [list, term]);
+  }, [list, activeTerm]);
 
   const columns = useMemo(() => {
     const seen = new Map<string, { label: string; full: number | null; position: number }>();
     for (const s of list) {
       for (const a of s.assessments ?? []) {
-        if (a.kind === "item" && a.term === term && a.category === view && !seen.has(a.label)) {
+        if (
+          a.kind === "item" &&
+          a.term === activeTerm &&
+          a.category === view &&
+          !seen.has(a.label)
+        ) {
           seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
         }
       }
     }
     return [...seen.values()].sort((a, b) => a.position - b.position);
-  }, [list, term, view]);
+  }, [list, activeTerm, view]);
 
   const missingFull = useMemo(
     () => [
@@ -159,84 +104,16 @@ export function SheetGradebook() {
 
   const runSync = async () => {
     setBusy(true);
+    setSyncError(null);
     try {
-      try {
-        const r = await serverSync();
-        await refresh();
-        toast.success(`成功同步 ${r.students} 位學生及 ${r.scores} 項分數紀錄！`);
-        return;
-      } catch (serverErr) {
-        console.warn("[SheetGradebook] Server sync failed, trying direct browser sync:", serverErr);
-      }
-
-      const { data: authData } = await supabase.auth.getUser();
-      const userId = authData.user?.id;
-      if (!userId) throw new Error("請先登入老師帳號");
-
-      const { data: allowed } = await supabase.rpc("has_role", {
-        _user_id: userId,
-        _role: "teacher",
-      });
-      if (!allowed) throw new Error("只有老師帳號 (Teacher) 可以執行同步");
-
-      const { formulas, values } = await fetchSheetTabsDirect();
-      const parsed: ParsedStudent[] = TABS.flatMap((tabSet, i) =>
-        parseSetTab(tabSet, formulas[i] ?? [], values[i] ?? []),
-      );
-      if (!parsed.length) {
-        throw new Error("在 S2M3 或 S2M5 分頁中找不到帶有 HLC no. 的學生資料");
-      }
-
-      const { data: roster, error: rosterError } = await supabase
-        .from("students")
-        .upsert(
-          parsed.map((p) => ({
-            email: p.email,
-            name: p.name,
-            math_set: p.set,
-            hlc_no: p.hlcNo,
-            class_name: p.className,
-            class_no: p.classNo,
-          })),
-          { onConflict: "email" },
-        )
-        .select("id, email");
-      if (rosterError) throw new Error(`儲存學生名單失敗: ${rosterError.message}`);
-      const idByEmail = new Map((roster ?? []).map((r) => [r.email, r.id]));
-
-      const syncedAt = new Date().toISOString();
-      const rows = parsed.flatMap((p) => {
-        const studentId = idByEmail.get(p.email);
-        if (!studentId) return [];
-        return p.scores.map((s) => ({
-          ...s,
-          student_id: studentId,
-          synced_at: syncedAt,
-        }));
-      });
-
-      for (let i = 0; i < rows.length; i += 500) {
-        const { error } = await supabase.from("assessment_scores").upsert(rows.slice(i, i + 500));
-        if (error) throw new Error(`儲存分數失敗: ${error.message}`);
-      }
-
-      const { error: cleanError } = await supabase
-        .from("assessment_scores")
-        .delete()
-        .in("student_id", [...idByEmail.values()])
-        .lt("synced_at", syncedAt);
-      if (cleanError) throw new Error(`清理舊分數失敗: ${cleanError.message}`);
-
-      await supabase.from("sheet_syncs").insert({
-        synced_by: userId,
-        students: parsed.length,
-        scores: rows.length,
-      });
-
+      const result = await serverSync();
+      setReport(result);
       await refresh();
-      toast.success(`成功同步 ${parsed.length} 位學生及 ${rows.length} 項分數紀錄！`);
+      toast.success(`成功同步 ${result.students} 位學生、${result.scores} 項分數紀錄！`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Sync failed");
+      const message = e instanceof Error ? e.message : "同步失敗";
+      setSyncError(message);
+      toast.error(message);
     } finally {
       setBusy(false);
     }
@@ -269,17 +146,52 @@ export function SheetGradebook() {
           {busy ? "Syncing…" : "Sync from Google Sheet"}
         </Button>
       </div>
+
+      {syncError && (
+        <div
+          role="alert"
+          className="mt-3 flex gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p className="whitespace-pre-wrap">{syncError}</p>
+        </div>
+      )}
+
+      {report && !syncError && (
+        <div className="mt-3 rounded-xl bg-success/10 p-3 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-success">
+            <CheckCircle2 className="h-4 w-4" />
+            同步完成：{SOURCE_LABEL[report.source]} · {report.students} 位學生 · {report.scores}{" "}
+            項分數
+          </p>
+          <ul className="mt-1 space-y-0.5 text-muted-foreground">
+            {report.tabs.map((t) => (
+              <li key={t.set}>
+                {t.set}：{t.students} 位學生 · Term 1 {t.term1Items} 個評估項目 · Term 2{" "}
+                {t.term2Items} 個評估項目 · 已填 {t.scores} 個分數
+              </li>
+            ))}
+          </ul>
+          {report.duplicates.length > 0 && (
+            <p className="mt-1 text-gold-deep">
+              重複出現嘅學生（只保留第一次出現）：{report.duplicates.join(", ")}
+            </p>
+          )}
+        </div>
+      )}
+
       {missingFull.length > 0 && (
         <p className="mt-3 rounded-md bg-gold/20 p-2 text-sm text-gold-deep">
           Full marks missing in the sheet for: {missingFull.join(", ")}. Percentages for these
           can&apos;t be worked out until the &quot;Full marks&quot; row is filled in.
         </p>
       )}
+
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <select
           aria-label="Set"
           value={set}
-          onChange={(e) => setSet(e.target.value as "S2M3" | "S2M5")}
+          onChange={(e) => setSet(e.target.value as MathSet)}
           className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
         >
           <option>S2M3</option>
@@ -287,12 +199,16 @@ export function SheetGradebook() {
         </select>
         <select
           aria-label="Term"
-          value={term}
+          value={activeTerm}
           onChange={(e) => setTerm(Number(e.target.value))}
           className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
         >
-          <option value={1}>Term 1</option>
-          <option value={2}>Term 2</option>
+          {TERM_OPTIONS.map((t) => (
+            <option key={t} value={t}>
+              Term {t}
+              {termsWithScores.includes(t) ? "" : "（未有分數）"}
+            </option>
+          ))}
         </select>
         <div className="flex flex-wrap gap-1 rounded-xl bg-muted p-1">
           <button
@@ -327,14 +243,16 @@ export function SheetGradebook() {
           })}
         </div>
       </div>
+
       <div className="mt-4 overflow-x-auto">
         {list.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No students in {set} yet — press Sync to bring in the class list.
+            {set} 暫時未有學生 — 請按「Sync from Google Sheet」匯入名單同分數。
           </p>
         ) : view !== "summary" && columns.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">
-            Term {term} 暫時沒有 {ITEM_CATEGORIES.find((c) => c.id === view)?.label} 的分數紀錄。
+            Term {activeTerm} 暫時沒有 {ITEM_CATEGORIES.find((c) => c.id === view)?.label}{" "}
+            的分數紀錄。
           </p>
         ) : (
           <table className="w-full text-sm">
@@ -363,10 +281,10 @@ export function SheetGradebook() {
             </thead>
             <tbody>
               {list.map((s) => {
-                const sum = termSummary(s.assessments ?? [], term);
+                const sum = termSummary(s.assessments ?? [], activeTerm);
                 return (
                   <tr key={s.id} className="border-t border-border">
-                    <td className="p-2 whitespace-nowrap text-muted-foreground">
+                    <td className="whitespace-nowrap p-2 text-muted-foreground">
                       {s.className} {s.classNo}
                     </td>
                     <td className="p-2">
@@ -387,12 +305,13 @@ export function SheetGradebook() {
                     ) : (
                       columns.map((c) => {
                         const a = s.assessments?.find(
-                          (x) => x.kind === "item" && x.term === term && x.label === c.label,
+                          (x) => x.kind === "item" && x.term === activeTerm && x.label === c.label,
                         );
                         const pct = a ? percent(a) : null;
                         return (
                           <td key={c.label} className="p-1 text-center">
                             <span
+                              title={pct === null ? "" : `${pct}%`}
                               className={cn(
                                 "inline-block min-w-12 rounded-md px-1 py-0.5 text-xs font-bold tabular-nums",
                                 a?.absent ? "bg-muted text-muted-foreground" : scoreTone(pct),

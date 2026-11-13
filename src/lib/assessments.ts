@@ -31,6 +31,9 @@ export const WEIGHTS = [
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
+/** "SQ1.1", "SQ 1.2", "CQ1" -> chapter 1. Matches the labels the chapter page looks for. */
+const CHAPTER_LABEL = /^(?:SQ|CQ)\s*(\d+)(?:\s*\.\s*\d+)?$/i;
+
 export function percent(a: Pick<Assessment, "score" | "full_marks">) {
   if (a.score === null) return null;
   if (a.full_marks && a.full_marks > 0) {
@@ -41,6 +44,33 @@ export function percent(a: Pick<Assessment, "score" | "full_marks">) {
 
 export function termsOf(list: Assessment[]) {
   return [...new Set(list.map((a) => a.term))].sort();
+}
+
+export function chapterOfLabel(label: string): number | null {
+  const m = CHAPTER_LABEL.exec(label.trim());
+  const n = m?.[1] ? Number(m[1]) : Number.NaN;
+  return Number.isInteger(n) && n >= 1 ? n : null;
+}
+
+/**
+ * Chapter score from the Google Sheet: the average percentage of that chapter's short quizzes
+ * and chapter quizzes (absent, blank and items without full marks are left out).
+ */
+export function chapterScoresFromAssessments(list: Assessment[], chapters = 7): (number | null)[] {
+  return Array.from({ length: chapters }, (_, i) => {
+    const pcts = list
+      .filter(
+        (a) =>
+          a.kind === "item" &&
+          !a.absent &&
+          a.score !== null &&
+          a.full_marks !== null &&
+          a.full_marks > 0 &&
+          chapterOfLabel(a.label) === i + 1,
+      )
+      .map((a) => ((a.score ?? 0) / (a.full_marks ?? 1)) * 100);
+    return pcts.length ? Math.round(pcts.reduce((x, y) => x + y, 0) / pcts.length) : null;
+  });
 }
 
 /** Average of marked items (absent and blank ignored, like the sheet's AVERAGE) times the category weight. */
