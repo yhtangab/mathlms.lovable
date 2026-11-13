@@ -34,10 +34,6 @@ The content is organized as follows:
 
 # Directory Structure
 ````
-.lovable/
-  north-star/
-    north-star.md
-  project.json
 drizzle/
   migrations/
     meta/
@@ -113,8 +109,6 @@ src/
   hooks/
     use-mobile.tsx
   integrations/
-    lovable/
-      index.ts
     supabase/
       auth-attacher.ts
       auth-middleware.ts
@@ -130,7 +124,6 @@ src/
     error-capture.ts
     error-page.ts
     grade-rules.ts
-    lovable-error-reporting.ts
     math.functions.ts
     sheet-parse.ts
     sheets.functions.ts
@@ -180,28 +173,6 @@ vitest.config.ts
 ````
 
 # Files
-
-## File: .lovable/north-star/north-star.md
-````markdown
-<!-- Lovable wrote this file; it is not part of your task. Keep it, and ask the user before deleting or reverting it. -->
-
-# North star
-
-S2 students master each maths chapter and keep improving.
-
-## Metric
-
-Students who complete a chapter lesson each week
-````
-
-## File: .lovable/project.json
-````json
-{
-  "schemaVersion": 1,
-  "template": "tanstack_start_ts_current",
-  "revision": "tanstack_start_ts_current-4cb3a1f3bfa5"
-}
-````
 
 ## File: drizzle/migrations/meta/0000_snapshot.json
 ````json
@@ -5160,55 +5131,6 @@ export function ChapterVideoPlayer({ video, completed, canEarn, onComplete }: { 
 }
 ````
 
-## File: src/components/LessonMarks.tsx
-````typescript
-import { useState } from 'react';
-import { useServerFn } from '@tanstack/react-start';
-import { Plus, Shuffle, Check, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { useApp } from '@/lib/app-store';
-import { supabase } from '@/integrations/supabase/client';
-import { awardMarks } from '@/lib/math.functions';
-import { answerMarks } from '@/lib/grade-rules';
-
-export function LessonMarks() {
- const { students, refresh } = useApp();
- const award = useServerFn(awardMarks);
- const [set, setSet] = useState<'S2M3' | 'S2M5'>('S2M3');
- const [selected, select] = useState('');
- const [picked, pick] = useState('');
- const [spinning, spin] = useState(false);
- const [busy, setBusy] = useState(false);
- const [marks, setMarks] = useState(1);
- const [reason, setReason] = useState<'classwork' | 'participation'>('classwork');
- const [name, setName] = useState('');
- const [email, setEmail] = useState('');
- const list = students.filter(s => s.set === set);
- const send = async (id: string, reason: 'classwork' | 'participation' | 'correct_answer' | 'incorrect_answer', n: number) => {
-   setBusy(true);
-   try { await award({ data: { studentId: id, reason, marks: n } }); await refresh(); toast.success(n ? `${n} mark(s) saved` : 'Answer recorded'); if (reason.includes('answer')) pick(''); }
-   catch (e) { toast.error(e instanceof Error ? e.message : 'Could not save marks'); }
-   finally { setBusy(false); }
- };
- return <section className="mt-6 space-y-6 border-y border-border py-6">
-  <form className="flex flex-wrap items-end gap-3" onSubmit={async e => { e.preventDefault(); setBusy(true); try { const { error } = await supabase.from('students').insert({ name: name.trim(), email: email.trim().toLowerCase(), math_set: set }); if (error) throw error; await refresh(); setName(''); setEmail(''); toast.success('Student added'); } catch (e) { toast.error(e instanceof Error ? e.message : 'Could not add student'); } finally { setBusy(false); } }}>
-   <label className="text-sm font-medium">Class set<select aria-label="Class set" value={set} onChange={e => { setSet(e.target.value as 'S2M3' | 'S2M5'); select(''); pick(''); }} className="mt-1 block rounded-md border border-input bg-card p-2"><option>S2M3</option><option>S2M5</option></select></label>
-   <label className="text-sm font-medium">Student name<input required value={name} onChange={e => setName(e.target.value)} className="mt-1 block rounded-md border border-input bg-card p-2" /></label>
-   <label className="text-sm font-medium">School email<input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1 block rounded-md border border-input bg-card p-2" /></label>
-   <Button disabled={busy} type="submit"><Plus />Add student</Button>
-  </form>
-  <div className="grid gap-6 md:grid-cols-2">
-   <div className="space-y-3"><h2 className="text-xl font-semibold">Daily lesson marks</h2>
-    <select aria-label="Student for daily marks" value={selected} onChange={e => select(e.target.value)} className="w-full rounded-md border border-input bg-card p-2"><option value="">Choose student</option>{list.map(s => <option key={s.id} value={s.id}>{s.name} · {s.dailyMarks ?? 0} marks</option>)}</select>
-    <div className="flex flex-wrap items-end gap-3"><label className="text-sm">Reason<select aria-label="Mark reason" value={reason} onChange={e => setReason(e.target.value as typeof reason)} className="mt-1 block rounded-md border border-input bg-card p-2"><option value="classwork">Classwork completed</option><option value="participation">Good lesson performance</option></select></label><label className="text-sm">Marks<input aria-label="Marks" type="number" min={0} max={100} value={marks} onChange={e => setMarks(Number(e.target.value))} className="mt-1 block w-20 rounded-md border border-input bg-card p-2" /></label><Button disabled={!selected || busy} onClick={() => send(selected, reason, marks)}><Plus />Award marks</Button></div>
-   </div>
-   <div className="space-y-3"><h2 className="text-xl font-semibold">Random student</h2><div aria-live="polite" className="flex min-h-20 items-center justify-center border-y border-border font-display text-2xl">{students.find(s => s.id === picked)?.name ?? '—'}</div><div className="flex flex-wrap gap-2"><Button disabled={!list.length || spinning || busy || Boolean(picked)} onClick={() => { spin(true); let turns = 0; const timer = setInterval(() => { pick(list[Math.floor(Math.random() * list.length)]?.id ?? ''); if (++turns === 12) { clearInterval(timer); spin(false); } }, 100); }}><Shuffle />{spinning ? 'Choosing…' : 'Choose student'}</Button>{picked && !spinning && <><Button disabled={busy} onClick={() => send(picked, 'correct_answer', answerMarks(true))}><Check />Correct +1</Button><Button disabled={busy} variant="outline" onClick={() => send(picked, 'incorrect_answer', answerMarks(false))}><X />Incorrect</Button></>}</div></div>
-  </div>
- </section>;
-}
-````
-
 ## File: src/hooks/use-mobile.tsx
 ````typescript
 import * as React from "react";
@@ -5232,49 +5154,6 @@ export function useIsMobile() {
 }
 ````
 
-## File: src/integrations/lovable/index.ts
-````typescript
-// This file is auto-generated by Lovable. Do not modify it.
-
-import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
-import type { OAuthProvider } from "@lovable.dev/cloud-auth-js";
-import { supabase } from "../supabase/client";
-const lovableAuth = createLovableAuth();
-
-type SignInOptions = {
-  redirect_uri?: string;
-  extraParams?: Record<string, string>;
-};
-
-export const lovable = {
-  auth: {
-    signInWithOAuth: async (provider: OAuthProvider, opts?: SignInOptions) => {
-      const result = await lovableAuth.signInWithOAuth(provider, {
-        ...opts,
-        extraParams: {
-          ...opts?.extraParams,
-        },
-      });
-
-      if (result.redirected) {
-        return result;
-      }
-
-      if (result.error) {
-        return result;
-      }
-
-      try {
-        await supabase.auth.setSession(result.tokens);
-      } catch (e) {
-        return { error: e instanceof Error ? e : new Error(String(e)) };
-      }
-      return result;
-    },
-  },
-};
-````
-
 ## File: src/integrations/supabase/auth-attacher.ts
 ````typescript
 // This file is automatically generated. Do not edit it directly.
@@ -5292,284 +5171,6 @@ export const attachSupabaseAuth = createMiddleware({ type: 'function' }).client(
     })
   },
 )
-````
-
-## File: src/integrations/supabase/auth-middleware.ts
-````typescript
-// This file is automatically generated. Do not edit it directly.
-import { createMiddleware } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from './types'
-
-
-
-
-function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
-}
-
-function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
-
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    }
-
-    // New Supabase API keys are opaque strings, not bearer JWTs.
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
-    }
-
-    headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
-  };
-}
-
-export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
-  async ({ next }) => {
-    
-    const SUPABASE_URL = process.env['SUPABASE_URL'];
-    const SUPABASE_PUBLISHABLE_KEY = process.env['SUPABASE_PUBLISHABLE_KEY'];
-
-    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      const missing = [
-        ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-        ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
-      ];
-      const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-      console.error(`[Supabase] ${message}`);
-      throw new Error(message);
-    }
-    
-    const request = getRequest();
-
-    if (!request?.headers) {
-      throw new Error('Unauthorized: No request headers available');
-    }
-
-
-    const authHeader = request.headers.get('authorization');
-
-    if (!authHeader) {
-      throw new Error('Unauthorized: No authorization header provided');
-    }
-
-    if (!authHeader.startsWith('Bearer ')) {
-      throw new Error('Unauthorized: Only Bearer tokens are supported');
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    if (!token) {
-      throw new Error('Unauthorized: No token provided');
-    }
-
-    if (token.split('.').length !== 3) {
-      throw new Error('Unauthorized: Invalid token');
-    }
-
-    const supabase = createClient<Database>(
-      SUPABASE_URL!,
-      SUPABASE_PUBLISHABLE_KEY!,
-      {
-        global: {
-          fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY!),
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-        auth: {
-          storage: undefined,
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      }
-    );
-
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims) {
-      throw new Error('Unauthorized: Invalid token');
-    }
-
-    if (!data.claims.sub) {
-      throw new Error('Unauthorized: No user ID found in token');
-    }
-
-    return next({
-      context: {
-        supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
-      },
-    });
-  },
-);
-````
-
-## File: src/integrations/supabase/client.server.ts
-````typescript
-// This file is automatically generated. Do not edit it directly.
-// Server-side Supabase client with service role key - bypasses RLS.
-// Use this for admin operations in server functions and server routes only.
-// For user-authenticated queries (with RLS), use the auth middleware instead.
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-
-function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
-}
-
-function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
-
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    }
-
-    // New Supabase API keys are opaque strings, not bearer JWTs.
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
-    }
-
-    headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
-  };
-}
-
-function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env['SUPABASE_URL'];
-  const SUPABASE_SERVICE_ROLE_KEY = process.env['SUPABASE_SERVICE_ROLE_KEY'];
-
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
-    ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
-  }
-
-  return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    global: {
-      fetch: createSupabaseFetch(SUPABASE_SERVICE_ROLE_KEY),
-    },
-    auth: {
-      storage: undefined,
-      persistSession: false,
-      autoRefreshToken: false,
-    }
-  });
-}
-
-let _supabaseAdmin: ReturnType<typeof createSupabaseAdminClient> | undefined;
-
-// Server-side Supabase client with service role - bypasses RLS
-// SECURITY: Only use this for trusted server-side operations, never expose to client code
-// Load inside server handlers: const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-// Top-level import is safe only in other .server.ts modules - route files and *.functions.ts ship to the client bundle.
-export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdminClient>, {
-  get(_, prop, receiver) {
-    if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
-    return Reflect.get(_supabaseAdmin, prop, receiver);
-  },
-});
-````
-
-## File: src/integrations/supabase/client.ts
-````typescript
-// This file is automatically generated. Do not edit it directly.
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-import { brokeredPreviewStorage } from './previewAuthStorage';
-
-function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
-}
-
-// The public URL can be reachable only from the browser, so server requests go to the runtime URL of the same backend.
-function serverSupabaseUrl(publicUrl: string, supabaseKey: string): string | undefined {
-  if (typeof window !== 'undefined' || typeof process === 'undefined') return undefined;
-  const serverUrl = process.env['SUPABASE_URL']?.replace(/\/+$/, '');
-  if (!serverUrl || serverUrl === publicUrl || process.env['SUPABASE_PUBLISHABLE_KEY'] !== supabaseKey) return undefined;
-  return serverUrl;
-}
-
-function createSupabaseFetch(supabaseUrl: string, supabaseKey: string): typeof fetch {
-  const publicUrl = supabaseUrl.replace(/\/+$/, '');
-  const serverUrl = serverSupabaseUrl(publicUrl, supabaseKey);
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
-
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    }
-
-    // New Supabase API keys are opaque strings, not bearer JWTs.
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
-    }
-
-    headers.set('apikey', supabaseKey);
-    if (serverUrl) {
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-      if (url.startsWith(`${publicUrl}/`)) {
-        const target = serverUrl + url.slice(publicUrl.length);
-        const request = typeof input === 'string' || input instanceof URL ? target : new Request(target, input);
-        return fetch(request, { ...init, headers });
-      }
-    }
-    return fetch(input, { ...init, headers });
-  };
-}
-
-
-function createSupabaseClient() {
-  // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
-
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
-    ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
-  }
-
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    global: {
-      fetch: createSupabaseFetch(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY),
-    },
-    auth: {
-      storage: brokeredPreviewStorage(),
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  });
-}
-
-let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
-
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
-export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
-  get(_, prop, receiver) {
-    if (!_supabase) _supabase = createSupabaseClient();
-    return Reflect.get(_supabase, prop, receiver);
-  },
-});
 ````
 
 ## File: src/integrations/supabase/cron-auth.ts
@@ -5751,80 +5352,6 @@ export function parseScoreCsv(text: string) {
 }
 ````
 
-## File: src/lib/lovable-error-reporting.ts
-````typescript
-type LovableErrorOptions = {
-  mechanism?: "manual" | "onerror" | "unhandledrejection" | "react_error_boundary";
-  handled?: boolean;
-  severity?: "error" | "warning" | "info";
-};
-
-type LovableEvents = {
-  track?: (event: string, properties?: Record<string, unknown>) => string | null;
-  captureException?: (
-    error: unknown,
-    context?: Record<string, unknown>,
-    options?: LovableErrorOptions,
-  ) => void;
-};
-
-declare global {
-  interface Window {
-    __lovableEvents?: LovableEvents;
-    __lovableReportRuntimeError?: (payload: {
-      message: string;
-      stack?: string;
-      filename?: string;
-    }) => void;
-  }
-}
-
-export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
-  if (typeof window === "undefined") return;
-  window.__lovableEvents?.captureException?.(
-    error,
-    {
-      source: "react_error_boundary",
-      route: window.location.pathname,
-      ...context,
-    },
-    {
-      mechanism: "react_error_boundary",
-      handled: false,
-      severity: "error",
-    },
-  );
-  // Prod React does not rethrow boundary-caught errors to window.onerror, so the
-  // editor's telemetry never sees them. Forward to lovable.js's reporting hook,
-  // which is present only inside the editor preview.
-  const stack = error instanceof Error ? error.stack : undefined;
-  window.__lovableReportRuntimeError?.({
-    message: describeThrown(error),
-    ...(stack !== undefined && { stack }),
-    filename: window.location.pathname,
-  });
-}
-
-const MAX_SERIALIZED_LENGTH = 2000;
-
-// Loaders and server fns throw raw Responses and plain objects (a Supabase
-// `{ message, code, details }`), which String() reduces to "[object ...]".
-function describeThrown(error: unknown): string {
-  if (error instanceof Response) {
-    return `Response ${error.status}${error.url ? ` at ${error.url}` : ""}`;
-  }
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
-  const { message } = (error ?? {}) as { message?: unknown };
-  if (typeof message === "string" && message.length > 0) return message;
-  try {
-    return JSON.stringify(error)?.slice(0, MAX_SERIALIZED_LENGTH) ?? String(error);
-  } catch {
-    return String(error);
-  }
-}
-````
-
 ## File: src/lib/math.functions.ts
 ````typescript
 import { createServerFn } from '@tanstack/react-start';
@@ -5961,67 +5488,6 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
     };
   });
 }
-````
-
-## File: src/lib/sheets.functions.ts
-````typescript
-import { createServerFn } from '@tanstack/react-start';
-import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
-import { parseSetTab, type MathSet, type ParsedStudent } from './sheet-parse';
-
-const SPREADSHEET_ID = '1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8';
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_sheets/v4';
-const TABS: MathSet[] = ['S2M3', 'S2M5'];
-type Grid = (string | number | boolean | null)[][];
-
-async function readTabs(render: 'FORMULA' | 'UNFORMATTED_VALUE'): Promise<Grid[]> {
-  const lovableKey = process.env['LOVABLE_API_KEY'];
-  const sheetsKey = process.env['GOOGLE_SHEETS_API_KEY'];
-  if (!lovableKey || !sheetsKey) throw new Error('Google Sheets is not connected to this app');
-  const ranges = TABS.map(t => `ranges=${t}!A1:GZ300`).join('&');
-  const res = await fetch(`${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=${render}`, {
-    headers: { Authorization: `Bearer ${lovableKey}`, 'X-Connection-Api-Key': sheetsKey },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    console.error(`Google Sheets read failed [${res.status}]: ${body}`);
-    throw new Error(`Google Sheets read failed [${res.status}]: ${body.slice(0, 300)}`);
-  }
-  const json = (await res.json()) as { valueRanges?: { values?: Grid }[] };
-  return TABS.map((_, i) => json.valueRanges?.[i]?.values ?? []);
-}
-
-export const syncGoogleSheet = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: allowed } = await supabase.rpc('has_role', { _user_id: userId, _role: 'teacher' });
-    if (!allowed) throw new Error('Teacher access required');
-
-    const [formulas, values] = await Promise.all([readTabs('FORMULA'), readTabs('UNFORMATTED_VALUE')]);
-    const parsed: ParsedStudent[] = TABS.flatMap((set, i) => parseSetTab(set, formulas[i] ?? [], values[i] ?? []));
-    if (!parsed.length) throw new Error('No students with an HLC no. were found in the S2M3 or S2M5 tabs');
-
-    const { data: roster, error: rosterError } = await supabase.from('students')
-      .upsert(parsed.map(p => ({ email: p.email, name: p.name, math_set: p.set, hlc_no: p.hlcNo, class_name: p.className, class_no: p.classNo })), { onConflict: 'email' })
-      .select('id, email');
-    if (rosterError) throw new Error(`Could not save the class list: ${rosterError.message}`);
-    const idByEmail = new Map((roster ?? []).map(r => [r.email, r.id]));
-
-    const syncedAt = new Date().toISOString();
-    const rows = parsed.flatMap(p => p.scores.map(s => ({ ...s, student_id: idByEmail.get(p.email)!, synced_at: syncedAt })));
-    for (let i = 0; i < rows.length; i += 500) {
-      const { error } = await supabase.from('assessment_scores').upsert(rows.slice(i, i + 500));
-      if (error) throw new Error(`Could not save scores: ${error.message}`);
-    }
-    // Remove marks for columns that no longer exist in the sheet.
-    const { error: cleanError } = await supabase.from('assessment_scores').delete()
-      .in('student_id', [...idByEmail.values()]).lt('synced_at', syncedAt);
-    if (cleanError) throw new Error(`Could not tidy old scores: ${cleanError.message}`);
-
-    await supabase.from('sheet_syncs').insert({ synced_by: userId, students: parsed.length, scores: rows.length });
-    return { students: parsed.length, scores: rows.length, syncedAt };
-  });
 ````
 
 ## File: src/lib/utils.ts
@@ -6404,11 +5870,6 @@ export default {
 };
 ````
 
-## File: supabase/config.toml
-````toml
-project_id = "mdcycrskvvlrfktyrpxl"
-````
-
 ## File: .gitignore
 ````
 # Logs
@@ -6712,246 +6173,435 @@ export function AssessmentReport({ assessments }: { assessments: Assessment[] })
 }
 ````
 
-## File: src/components/SheetGradebook.tsx
+## File: src/components/LessonMarks.tsx
 ````typescript
-import { useMemo, useState } from 'react';
-import { useServerFn } from '@tanstack/react-start';
-import { RefreshCw, Sheet } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Shuffle, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { scoreTone } from '@/components/AppShell';
 import { useApp } from '@/lib/app-store';
-import { syncGoogleSheet } from '@/lib/sheets.functions';
-import { ITEM_CATEGORIES, percent, termSummary, WEIGHTS } from '@/lib/assessments';
-import type { Category } from '@/lib/sheet-parse';
-import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { answerMarks, awardSchema } from '@/lib/grade-rules';
 
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8/edit';
-
-export function SheetGradebook() {
-  const { students, refresh, lastSync } = useApp();
-  const sync = useServerFn(syncGoogleSheet);
-  const [busy, setBusy] = useState(false);
+export function LessonMarks() {
+  const { students, refresh } = useApp();
   const [set, setSet] = useState<'S2M3' | 'S2M5'>('S2M3');
-  const [term, setTerm] = useState(1);
-  const [view, setView] = useState<Category | 'summary'>('summary');
+  const [selected, select] = useState('');
+  const [picked, pick] = useState('');
+  const [spinning, spin] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [marks, setMarks] = useState(1);
+  const [reason, setReason] = useState<'classwork' | 'participation'>('classwork');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const list = students.filter(s => s.set === set);
 
-  const list = students.filter(s => s.set === set).sort((a, b) => ((a.className ?? '') + (a.classNo ?? '').padStart(3, '0')).localeCompare((b.className ?? '') + (b.classNo ?? '').padStart(3, '0')));
-  const columns = useMemo(() => {
-    const seen = new Map<string, { label: string; full: number | null; position: number }>();
-    for (const s of list) for (const a of s.assessments ?? []) if (a.kind === 'item' && a.term === term && a.category === view && !seen.has(a.label)) seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
-    return [...seen.values()].sort((a, b) => a.position - b.position);
-  }, [list, term, view]);
-  const missingFull = useMemo(() => [...new Set(students.flatMap(s => (s.assessments ?? []).filter(a => a.kind === 'item' && a.score !== null && !a.full_marks).map(a => `${s.set} ${a.label}`)))], [students]);
-
-  const runSync = async () => {
+  const send = async (
+    id: string,
+    markReason: 'classwork' | 'participation' | 'correct_answer' | 'incorrect_answer',
+    n: number,
+  ) => {
     setBusy(true);
-    try { const r = await sync(); await refresh(); toast.success(`Synced ${r.students} students and ${r.scores} marks`); }
-    catch (e) { toast.error(e instanceof Error ? e.message : 'Sync failed'); }
-    finally { setBusy(false); }
+    try {
+      const parsed = awardSchema.parse({ studentId: id, reason: markReason, marks: n });
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id;
+      if (!userId) throw new Error('請先登入老師帳號');
+
+      const { error } = await supabase.from('daily_marks').insert({
+        student_id: parsed.studentId,
+        marks: parsed.marks,
+        reason: parsed.reason,
+        awarded_by: userId,
+      });
+      if (error) throw error;
+
+      await refresh();
+      toast.success(n ? `${n} mark(s) saved` : 'Answer recorded');
+      if (markReason.includes('answer')) pick('');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not save marks');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
-    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="mr-auto">
-          <h2 className="flex items-center gap-2 text-xl font-bold"><Sheet className="h-5 w-5 text-success" />Assessment gradebook</h2>
-          <p className="text-sm text-muted-foreground">
-            From <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">2627 Name list (For LMS)</a> · {lastSync ? `last synced ${new Date(lastSync).toLocaleString('en-HK', { dateStyle: 'medium', timeStyle: 'short' })}` : 'not synced yet'}
-          </p>
+    <section className="mt-6 space-y-6 border-y border-border py-6">
+      <form
+        className="flex flex-wrap items-end gap-3"
+        onSubmit={async e => {
+          e.preventDefault();
+          setBusy(true);
+          try {
+            const { error } = await supabase
+              .from('students')
+              .insert({ name: name.trim(), email: email.trim().toLowerCase(), math_set: set });
+            if (error) throw error;
+            await refresh();
+            setName('');
+            setEmail('');
+            toast.success('Student added');
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Could not add student');
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        <label className="text-sm font-medium">
+          Class set
+          <select
+            aria-label="Class set"
+            value={set}
+            onChange={e => {
+              setSet(e.target.value as 'S2M3' | 'S2M5');
+              select('');
+              pick('');
+            }}
+            className="mt-1 block rounded-md border border-input bg-card p-2"
+          >
+            <option>S2M3</option>
+            <option>S2M5</option>
+          </select>
+        </label>
+        <label className="text-sm font-medium">
+          Student name
+          <input
+            required
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="mt-1 block rounded-md border border-input bg-card p-2"
+          />
+        </label>
+        <label className="text-sm font-medium">
+          School email
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="mt-1 block rounded-md border border-input bg-card p-2"
+          />
+        </label>
+        <Button disabled={busy} type="submit">
+          <Plus />
+          Add student
+        </Button>
+      </form>
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold">Daily lesson marks</h2>
+          <select
+            aria-label="Student for daily marks"
+            value={selected}
+            onChange={e => select(e.target.value)}
+            className="w-full rounded-md border border-input bg-card p-2"
+          >
+            <option value="">Choose student</option>
+            {list.map(s => (
+              <option key={s.id} value={s.id}>
+                {s.name} · {s.dailyMarks ?? 0} marks
+              </option>
+            ))}
+          </select>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="text-sm">
+              Reason
+              <select
+                aria-label="Mark reason"
+                value={reason}
+                onChange={e => setReason(e.target.value as typeof reason)}
+                className="mt-1 block rounded-md border border-input bg-card p-2"
+              >
+                <option value="classwork">Classwork completed</option>
+                <option value="participation">Good lesson performance</option>
+              </select>
+            </label>
+            <label className="text-sm">
+              Marks
+              <input
+                aria-label="Marks"
+                type="number"
+                min={0}
+                max={100}
+                value={marks}
+                onChange={e => setMarks(Number(e.target.value))}
+                className="mt-1 block w-20 rounded-md border border-input bg-card p-2"
+              />
+            </label>
+            <Button disabled={!selected || busy} onClick={() => send(selected, reason, marks)}>
+              <Plus />
+              Award marks
+            </Button>
+          </div>
         </div>
-        <Button onClick={runSync} disabled={busy}><RefreshCw className={cn(busy && 'animate-spin')} />{busy ? 'Syncing…' : 'Sync from Google Sheet'}</Button>
-      </div>
-      {missingFull.length > 0 && <p className="mt-3 rounded-md bg-gold/20 p-2 text-sm text-gold-deep">Full marks missing in the sheet for: {missingFull.join(', ')}. Percentages for these can't be worked out until the "Full marks" row is filled in.</p>}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <select aria-label="Set" value={set} onChange={e => setSet(e.target.value as 'S2M3' | 'S2M5')} className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"><option>S2M3</option><option>S2M5</option></select>
-        <select aria-label="Term" value={term} onChange={e => setTerm(Number(e.target.value))} className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"><option value={1}>Term 1</option><option value={2}>Term 2</option></select>
-        <select aria-label="Category" value={view} onChange={e => setView(e.target.value as Category | 'summary')} className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold">
-          <option value="summary">Weighted summary</option>
-          {ITEM_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-        </select>
-      </div>
-      <div className="mt-4 overflow-x-auto">
-        {list.length === 0 ? <p className="text-sm text-muted-foreground">No students in {set} yet — press Sync to bring in the class list.</p> : (
-          <table className="w-full text-sm">
-            <thead><tr className="text-left text-xs font-bold uppercase text-muted-foreground">
-              <th className="p-2">Class</th><th className="p-2">Student</th>
-              {view === 'summary'
-                ? <>{WEIGHTS.map(w => <th key={w.id} className="p-2 text-center">{w.label} ({w.weight})</th>)}<th className="p-2 text-center">Total /200</th></>
-                : columns.map(c => <th key={c.label} className="p-2 text-center">{c.label}{c.full ? ` (${c.full})` : ''}</th>)}
-            </tr></thead>
-            <tbody>
-              {list.map(s => {
-                const sum = termSummary(s.assessments ?? [], term);
-                return (
-                  <tr key={s.id} className="border-t border-border">
-                    <td className="p-2 whitespace-nowrap text-muted-foreground">{s.className} {s.classNo}</td>
-                    <td className="p-2"><p className="font-semibold">{s.name}</p><p className="text-xs text-muted-foreground">{s.hlcNo ?? s.email}</p></td>
-                    {view === 'summary'
-                      ? <>{sum.parts.map(p => <td key={p.id} className="p-2 text-center tabular-nums">{p.value ?? '—'}</td>)}<td className="p-2 text-center font-display font-bold tabular-nums">{sum.coursework200}</td></>
-                      : columns.map(c => {
-                        const a = s.assessments?.find(x => x.kind === 'item' && x.term === term && x.label === c.label);
-                        const pct = a ? percent(a) : null;
-                        return <td key={c.label} className="p-1 text-center"><span className={cn('inline-block min-w-12 rounded-md px-1 py-0.5 text-xs font-bold tabular-nums', a?.absent ? 'bg-muted text-muted-foreground' : scoreTone(pct))}>{!a || (a.score === null && !a.absent) ? '—' : a.absent ? 'ABS' : a.score}</span></td>;
-                      })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold">Random student</h2>
+          <div
+            aria-live="polite"
+            className="flex min-h-20 items-center justify-center border-y border-border font-display text-2xl"
+          >
+            {students.find(s => s.id === picked)?.name ?? '—'}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              disabled={!list.length || spinning || busy || Boolean(picked)}
+              onClick={() => {
+                spin(true);
+                let turns = 0;
+                const timer = setInterval(() => {
+                  pick(list[Math.floor(Math.random() * list.length)]?.id ?? '');
+                  if (++turns === 12) {
+                    clearInterval(timer);
+                    spin(false);
+                  }
+                }, 100);
+              }}
+            >
+              <Shuffle />
+              {spinning ? 'Choosing…' : 'Choose student'}
+            </Button>
+            {picked && !spinning && (
+              <>
+                <Button
+                  disabled={busy}
+                  onClick={() => send(picked, 'correct_answer', answerMarks(true))}
+                >
+                  <Check />
+                  Correct +1
+                </Button>
+                <Button
+                  disabled={busy}
+                  variant="outline"
+                  onClick={() => send(picked, 'incorrect_answer', answerMarks(false))}
+                >
+                  <X />
+                  Incorrect
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 ````
 
-## File: src/integrations/supabase/previewAuthStorage.ts
+## File: src/integrations/supabase/auth-middleware.ts
 ````typescript
-// This file is automatically generated. Do not edit it directly.
+import { createMiddleware } from '@tanstack/react-start';
+import { getRequest } from '@tanstack/react-start/server';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
 
-/** Storage accepted by Supabase's `auth.storage` option; `localStorage` and the editor broker both satisfy it. */
-export interface PreviewAuthStorage {
-  getItem: (key: string) => string | null | Promise<string | null>;
-  setItem: (key: string, value: string) => void | Promise<void>;
-  removeItem: (key: string) => void | Promise<void>;
+const DEFAULT_SUPABASE_URL = 'https://mbyselvthprrfjioyvhu.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_6d4BjM4FHDurcIw2BhpeaQ_hsYnu4Ju';
+
+function isNewSupabaseApiKey(value: string): boolean {
+  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
 
-type BrokerRequestType = 'lovable-preview-auth:get' | 'lovable-preview-auth:set' | 'lovable-preview-auth:remove';
-
-interface BrokerRequest {
-  type: BrokerRequestType;
-  requestId: string;
-  projectId: string;
-  key: string;
-  value?: string;
+function normalizeSupabaseUrl(rawUrl: string | undefined): string {
+  const cleaned = (rawUrl ?? '').trim().replace(/^['"]|['"]$/g, '');
+  if (!cleaned) return DEFAULT_SUPABASE_URL;
+  try {
+    const parsed = new URL(cleaned.startsWith('http') ? cleaned : `https://${cleaned}`);
+    return parsed.origin;
+  } catch {
+    return DEFAULT_SUPABASE_URL;
+  }
 }
 
-interface BrokerReply {
-  ok: boolean;
-  value: string | null;
-}
+function createSupabaseFetch(supabaseKey: string): typeof fetch {
+  return (input, init) => {
+    const headers = new Headers(
+      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+    );
 
-const RESULT = 'lovable-preview-auth:result';
+    if (init?.headers) {
+      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+    }
 
-function readBrokerReply(data: unknown, requestId: string): BrokerReply | null {
-  if (typeof data !== 'object' || data === null) return null;
-  if (!('type' in data) || data.type !== RESULT) return null;
-  if (!('requestId' in data) || data.requestId !== requestId) return null;
-  return {
-    ok: 'ok' in data && Boolean(data.ok),
-    value: 'value' in data && typeof data.value === 'string' ? data.value : null,
+    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
+      headers.delete('Authorization');
+    }
+
+    headers.set('apikey', supabaseKey);
+    return fetch(input, { ...init, headers });
   };
 }
 
-/**
- * On a Lovable preview surface, broker the auth session to the editor over
- * postMessage so the project's preview surfaces share one login; else localStorage.
- */
-export function brokeredPreviewStorage(): PreviewAuthStorage | undefined {
-  if (typeof window === 'undefined') return undefined;
-  const host = location.hostname;
-  const PREVIEW_ZONES = ['lovableproject.com', 'lovableproject-dev.com', 'lovable.app', 'gpt-eng.com', 'gptengineer.run'];
-  const onPreviewZone = PREVIEW_ZONES.some((z) => host === z || host.endsWith('.' + z));
-  // Read the id only from non-user-controlled host positions, so a user-named
-  // preview--<name> host can't smuggle another project's id.
-  const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-  const projectId = onPreviewZone
-    ? (new RegExp('^(?:id-preview(?:-[a-z0-9]+)?|project)--(' + UUID + ')(?:-dev)?(?=\\.|$)', 'i').exec(host)?.[1]
-        ?? new RegExp('^live--(' + UUID + ')(?:-thr_[a-z0-9]+)?(?=\\.|$)', 'i').exec(host)?.[1]
-        ?? new RegExp('^(' + UUID + ')(?=[.-])', 'i').exec(host)?.[1])
-    : undefined;
-  // lib.dom types window.parent and location.ancestorOrigins as always set, but a
-  // detached frame has no parent and not every browser implements ancestorOrigins.
-  const parentWindow = window.parent as Window | null;
-  const framed = parentWindow !== null && parentWindow !== window;
-  if (!projectId || !framed) return localStorage;
+function readEnv(key: string): string | undefined {
+  const metaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  if (metaEnv && metaEnv[key]) return metaEnv[key];
+  if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
+  return undefined;
+}
 
-  // Post only to the real editor ancestor, validated as a Lovable origin, so the
-  // session token can never reach an untrusted embedder.
-  const dev = host.endsWith('.lovableproject-dev.com') || host.endsWith('.gpt-eng.com');
-  const EDITOR = dev
-    ? /^https:\/\/([a-z0-9-]+\.)*(lovable\.dev|gptengineer\.app)$|^http:\/\/localhost:3000$/
-    : /^https:\/\/([a-z0-9-]+\.)*(lovable\.dev|gptengineer\.app)$/;
-  const ancestorOrigins = location.ancestorOrigins as DOMStringList | undefined;
-  const ancestor = ancestorOrigins?.[0] ?? (document.referrer ? new URL(document.referrer).origin : '');
-  const editorOrigins = ancestor && EDITOR.test(ancestor)
-    ? [ancestor]
-    : (dev ? ['https://lovable.dev', 'http://localhost:3000'] : ['https://lovable.dev']);
-  const TIMEOUT = 2000;
-  const newId = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
+  async ({ next }) => {
+    const rawUrl = readEnv('VITE_SUPABASE_URL') || readEnv('SUPABASE_URL');
+    const SUPABASE_URL = normalizeSupabaseUrl(rawUrl);
 
-  const request = (type: BrokerRequestType, key: string, value?: string): Promise<BrokerReply | null> =>
-    new Promise((resolve) => {
-      const requestId = newId();
-      let done = false;
-      const finish = (reply: BrokerReply | null) => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        window.removeEventListener('message', onMessage);
-        resolve(reply);
-      };
-      const onMessage = (e: MessageEvent<unknown>) => {
-        if (!editorOrigins.includes(e.origin)) return;
-        const reply = readBrokerReply(e.data, requestId);
-        if (reply) finish(reply);
-      };
-      window.addEventListener('message', onMessage);
-      const timer = setTimeout(() => { finish(null); }, TIMEOUT);
-      const msg: BrokerRequest = { type, requestId, projectId, key };
-      if (value !== undefined) msg.value = value;
-      // targetOrigin per trusted editor origin, so a session token never reaches an arbitrary embedder.
-      for (const origin of editorOrigins) window.parent.postMessage(msg, origin);
+    const rawKey =
+      readEnv('VITE_SUPABASE_PUBLISHABLE_KEY') ||
+      readEnv('SUPABASE_PUBLISHABLE_KEY') ||
+      readEnv('VITE_SUPABASE_ANON_KEY') ||
+      readEnv('SUPABASE_ANON_KEY') ||
+      DEFAULT_SUPABASE_KEY;
+    const SUPABASE_PUBLISHABLE_KEY = rawKey.trim().replace(/^['"]|['"]$/g, '') || DEFAULT_SUPABASE_KEY;
+
+    const request = getRequest();
+
+    if (!request?.headers) {
+      throw new Error('Unauthorized: No request headers available');
+    }
+
+    const authHeader = request.headers.get('authorization');
+
+    if (!authHeader) {
+      throw new Error('Unauthorized: No authorization header provided');
+    }
+
+    if (!authHeader.startsWith('Bearer ')) {
+      throw new Error('Unauthorized: Only Bearer tokens are supported');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      throw new Error('Unauthorized: No token provided');
+    }
+
+    if (token.split('.').length !== 3) {
+      throw new Error('Unauthorized: Invalid token');
+    }
+
+    const supabase = createClient<Database>(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
+      {
+        global: {
+          fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+        auth: {
+          storage: undefined,
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      },
+    );
+
+    const { data, error } = await supabase.auth.getClaims(token);
+    if (error || !data?.claims) {
+      throw new Error('Unauthorized: Invalid token');
+    }
+
+    if (!data.claims.sub) {
+      throw new Error('Unauthorized: No user ID found in token');
+    }
+
+    return next({
+      context: {
+        supabase,
+        userId: data.claims.sub,
+        claims: data.claims,
+      },
     });
+  },
+);
+````
 
-  // The editor may not be listening yet at the first getItem, so retry once.
-  let firstGet = true;
-  const RETRY_DELAY = 250;
-  // Blocked third-party storage throws here; seeding must not break broker reads.
-  const readLocal = (key: string): string | null | undefined => { try { return localStorage.getItem(key); } catch { return undefined; } };
+## File: src/integrations/supabase/client.ts
+````typescript
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
 
-  return {
-    getItem: async (key) => {
-      // Sent with GET and REMOVE so an editor that never cached this session can check or revoke it.
-      const local = readLocal(key);
-      let res = await request('lovable-preview-auth:get', key, local ?? undefined);
-      if (!res && firstGet) {
-        await new Promise<void>((resolve) => setTimeout(resolve, RETRY_DELAY));
-        res = await request('lovable-preview-auth:get', key, local ?? undefined);
-      }
-      firstGet = false;
-      // '' is the logout tombstone: clear the local copy too so it can't resurrect if
-      // the broker later goes silent. A null value means never-synced -> keep local.
-      if (res?.ok && res.value !== null) {
-        if (res.value === '') {
-          if (local !== undefined && readLocal(key) === local) localStorage.removeItem(key);
-          return null;
-        }
-        // Seed this origin so a new tab, whose editor holds no session, stays signed in.
-        if (local === null && readLocal(key) === null) {
-          try { localStorage.setItem(key, res.value); } catch { /* storage full: still return the editor's session */ }
-        }
-        return res.value;
-      }
-      return localStorage.getItem(key);
-    },
-    setItem: (key, value) => {
-      localStorage.setItem(key, value);
-      return request('lovable-preview-auth:set', key, value).then((res) => {
-        if (res?.ok && res.value !== null && localStorage.getItem(key) === value) {
-          if (res.value === '') localStorage.removeItem(key);
-          else localStorage.setItem(key, res.value);
-        }
-      });
-    },
-    removeItem: (key) => {
-      const local = readLocal(key);
-      localStorage.removeItem(key);
-      return request('lovable-preview-auth:remove', key, local ?? undefined).then(() => {});
-    },
+const DEFAULT_SUPABASE_URL = 'https://mbyselvthprrfjioyvhu.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_6d4BjM4FHDurcIw2BhpeaQ_hsYnu4Ju';
+
+function isNewSupabaseApiKey(value: string): boolean {
+  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+}
+
+function normalizeSupabaseUrl(rawUrl: string | undefined): string {
+  const cleaned = (rawUrl ?? '').trim().replace(/^['"]|['"]$/g, '');
+  if (!cleaned) return DEFAULT_SUPABASE_URL;
+  try {
+    const parsed = new URL(cleaned.startsWith('http') ? cleaned : `https://${cleaned}`);
+    return parsed.origin;
+  } catch {
+    return DEFAULT_SUPABASE_URL;
+  }
+}
+
+function createSupabaseFetch(supabaseKey: string): typeof fetch {
+  return (input, init) => {
+    const headers = new Headers(
+      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+    );
+
+    if (init?.headers) {
+      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+    }
+
+    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
+      headers.delete('Authorization');
+    }
+
+    headers.set('apikey', supabaseKey);
+    return fetch(input, { ...init, headers });
   };
 }
+
+function getEnvVar(key: string): string | undefined {
+  const metaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  if (metaEnv && metaEnv[key]) return metaEnv[key];
+  if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
+  return undefined;
+}
+
+function createSupabaseClient() {
+  const rawUrl = getEnvVar('VITE_SUPABASE_URL') || getEnvVar('SUPABASE_URL');
+  const SUPABASE_URL = normalizeSupabaseUrl(rawUrl);
+
+  const rawKey =
+    getEnvVar('VITE_SUPABASE_PUBLISHABLE_KEY') ||
+    getEnvVar('SUPABASE_PUBLISHABLE_KEY') ||
+    getEnvVar('VITE_SUPABASE_ANON_KEY') ||
+    getEnvVar('SUPABASE_ANON_KEY') ||
+    DEFAULT_SUPABASE_KEY;
+  const SUPABASE_PUBLISHABLE_KEY = rawKey.trim().replace(/^['"]|['"]$/g, '') || DEFAULT_SUPABASE_KEY;
+
+  return createClient<Database>(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      global: {
+        fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
+      },
+      auth: {
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    },
+  );
+}
+
+let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
+
+export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
+  get(_, prop, receiver) {
+    if (!_supabase) _supabase = createSupabaseClient();
+    return Reflect.get(_supabase, prop, receiver);
+  },
+});
 ````
 
 ## File: src/lib/assessments.ts
@@ -6998,6 +6648,923 @@ export function termSummary(list: Assessment[], term: number) {
   const sum = parts.reduce((t, p) => t + (p.value ?? 0), 0);
   return { parts, coursework200: round1(sum * 2) };
 }
+````
+
+## File: src/start.ts
+````typescript
+import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
+
+import { renderErrorPage } from "./lib/error-page";
+import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+
+const errorMiddleware = createMiddleware().server(async ({ next }) => {
+  try {
+    return await next();
+  } catch (error) {
+    if (error != null && typeof error === "object" && "statusCode" in error) {
+      throw error;
+    }
+    console.error(error);
+    return new Response(renderErrorPage(), {
+      status: 500,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  }
+});
+
+// Start installs this automatically when src/start.ts is absent; defining the
+// file opts out, so re-add it explicitly to keep server functions protected
+// from cross-site requests.
+const csrfMiddleware = createCsrfMiddleware({
+  filter: (ctx) => ctx.handlerType === "serverFn",
+});
+
+// requestMiddleware runs on every request; functionMiddleware only on server functions, where
+// client sendContext is unvalidated input. Append to these arrays, never replace them.
+// Enabling Lovable Cloud adds functionMiddleware: [attachSupabaseAuth], the bearer token that
+// requireSupabaseAuth server functions need. Add it by hand only if Lovable Cloud or a
+// user-managed Supabase project is connected, no middleware here sets Authorization, and the
+// project did not intentionally replace it.
+export const startInstance = createStart(() => ({
+  functionMiddleware: [attachSupabaseAuth],
+  requestMiddleware: [errorMiddleware, csrfMiddleware],
+}));
+````
+
+## File: supabase/config.toml
+````toml
+project_id = "mbyselvthprrfjioyvhu"
+````
+
+## File: AGENTS.md
+````markdown
+<!-- LOVABLE:BEGIN -->
+> [!IMPORTANT]
+> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
+> published git history — force pushing, or rebasing/amending/squashing commits
+> that are already pushed — as it rewrites history on Lovable's side and the
+> user will likely lose their project history.
+>
+> Commits you push to the connected branch sync back to Lovable and show up in
+> the editor, so keep the branch in a working state.
+
+## What Lovable manages
+
+Rules outside this block are the project's own. Change the pieces below in
+Lovable, not by hand. With the [Lovable MCP](https://mcp.lovable.dev)
+connected, `send_message` asks Lovable to do it; otherwise ask the user to
+use the editor.
+
+- **Database.** Do not add or edit `supabase/migrations/` or `drizzle/`.
+  Ask Lovable to change the schema.
+- **Generated files.** Do not edit a file whose header says it is automatically
+  generated.
+- **AI gateway.** Keep model calls on Lovable's gateway, and keep
+  `LOVABLE_API_KEY` out of browser code.
+- **Connectors.** Lovable provides native connectors. `list_connectors` shows
+  which are enabled; `add_connector` only returns the dashboard link. When a
+  connector is enabled, calls go through the connector gateway and need
+  `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
+  own key and store it in Secrets.
+- **Secrets.** Lovable manages them. Do not put secret values in the repo.
+<!-- LOVABLE:END -->
+
+## Application rules
+- Cloud Auth supplies verified identity; roles live in protected user_roles, never browser storage or profile metadata, to prevent privilege escalation.
+- Private records are read through RLS-scoped Cloud clients; students receive only their own records and peer leaderboard is teacher-only to protect grades.
+- Authenticated pages live under the client-only _authenticated layout; the public sign-in and recovery pages remain SSR-enabled to avoid session redirect loops.
+- Use authenticated server functions for score and lesson-mark writes, and database uniqueness for video rewards, so refreshes and repeated completions cannot duplicate a reward.
+````
+
+## File: README.md
+````markdown
+# Math LMS
+
+Implement exactly the screenshot and nothing else
+
+This project was built with [Lovable](https://lovable.dev).
+
+**Live app**: https://math-lms.lovable.app
+
+## Build with Lovable
+
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/cb544cd6-b485-4ea3-bb65-9a9cf0db1070).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+
+## Development
+
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+
+```sh
+git clone <this-repository-url>
+cd <repository-name>
+npm i
+npm run dev
+```
+````
+
+## File: src/components/AppShell.tsx
+````typescript
+import { Link, useNavigate } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
+import { BookOpen, CheckCircle2, Circle, GraduationCap, PlayCircle, LayoutDashboard, LogOut, Trophy, Upload, Users } from 'lucide-react';
+import { useApp } from '@/lib/app-store';
+import { Button } from '@/components/ui/button';
+export function AppShell({ children }: { children: ReactNode }) {
+  const { session, role, logout, ready, error, me } = useApp();
+  const navigate = useNavigate();
+  const links = role === 'student' ? [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }, { to: '/courses', label: 'Chapter', icon: BookOpen }] : [{ to: '/teacher', label: 'Analytics', icon: Users }, { to: '/upload', label: 'Chapter content', icon: Upload }, { to: '/leaderboard', label: 'Leaderboard', icon: Trophy }];
+  return <div className="min-h-screen bg-background"><header className="sticky top-0 z-30 border-b border-border bg-card"><div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3"><Link to={role === 'teacher' ? '/teacher' : '/dashboard'} className="flex items-center gap-2 font-display text-xl font-semibold"><GraduationCap className="h-6 w-6 text-primary" />HLC Math</Link><nav className="order-3 flex w-full gap-1 overflow-x-auto md:order-none md:ml-6 md:w-auto">{links.map(l => <Link key={l.to} to={l.to} className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground" activeProps={{ className: 'bg-muted text-primary' }}><l.icon className="h-4 w-4" />{l.label}</Link>)}</nav><div className="ml-auto flex items-center gap-2"><span className="text-sm capitalize text-muted-foreground">{role}</span><Button variant="ghost" size="icon" aria-label="Sign out" title={session?.email} onClick={async () => { await logout(); await navigate({ to: '/', replace: true }); }}><LogOut /></Button></div></div></header><main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{!ready ? <p>Loading your records…</p> : error ? <p role="alert" className="text-destructive">{error}</p> : !session ? <Link to="/">Sign in</Link> : role === 'student' && !me.id ? <p>Your school account is not linked to a student record yet. Please contact your teacher.</p> : children}</main></div>;
+}
+export function TeacherOnly({ children }: { children: ReactNode }) { const { role } = useApp(); return role === 'teacher' ? children : <p>Teacher access required.</p>; }
+export function scoreTone(s: number | null) { return s === null ? 'bg-muted text-muted-foreground' : s >= 85 ? 'bg-success/15 text-success' : s >= 60 ? 'bg-primary/10 text-primary' : 'bg-destructive/15 text-destructive'; }
+export const CHAPTER_STATUS = {
+  Completed: { cls: 'bg-success/15 text-success', icon: CheckCircle2 },
+  'In Progress': { cls: 'bg-gold/25 text-gold-deep', icon: PlayCircle },
+  'Not Started': { cls: 'bg-muted text-muted-foreground', icon: Circle },
+};
+````
+
+## File: src/components/SheetGradebook.tsx
+````typescript
+import { useMemo, useState } from 'react';
+import { RefreshCw, Sheet } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { scoreTone } from '@/components/AppShell';
+import { useApp } from '@/lib/app-store';
+import { supabase } from '@/integrations/supabase/client';
+import { ITEM_CATEGORIES, percent, termSummary, WEIGHTS } from '@/lib/assessments';
+import { parseSetTab, type Category, type MathSet, type ParsedStudent } from '@/lib/sheet-parse';
+import { cn } from '@/lib/utils';
+
+const SPREADSHEET_ID = '1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
+const TABS: MathSet[] = ['S2M3', 'S2M5'];
+type Cell = string | number | boolean | null;
+type Grid = Cell[][];
+
+function parseCellValue(raw: string): Cell {
+  const trimmed = raw.trim();
+  if (trimmed === '') return '';
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+    const n = Number(trimmed);
+    if (Number.isFinite(n)) return n;
+  }
+  return trimmed;
+}
+
+function parseCsvGrid(csvText: string): Grid {
+  const rows: Grid = [];
+  let row: Cell[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const ch = csvText[i];
+    const next = csvText[i + 1];
+
+    if (inQuotes) {
+      if (ch === '"' && next === '"') {
+        current += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        row.push(parseCellValue(current));
+        current = '';
+      } else if (ch === '\r' && next === '\n') {
+        row.push(parseCellValue(current));
+        rows.push(row);
+        row = [];
+        current = '';
+        i++;
+      } else if (ch === '\n') {
+        row.push(parseCellValue(current));
+        rows.push(row);
+        row = [];
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+  }
+  if (current.length > 0 || row.length > 0) {
+    row.push(parseCellValue(current));
+    rows.push(row);
+  }
+  return rows;
+}
+
+async function fetchSheetTabsDirect(): Promise<{ formulas: Grid[]; values: Grid[] }> {
+  const values: Grid[] = [];
+  const formulas: Grid[] = [];
+
+  for (const tab of TABS) {
+    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`無法讀取 Google Sheet 分頁 ${tab} (HTTP ${res.status})`);
+    }
+    const text = await res.text();
+    if (text.trim().startsWith('<!DOCTYPE html') || text.includes('<html')) {
+      throw new Error(
+        '請先打開 Google Sheet「2627 Name list (For LMS)」，按右上角「共用 (Share)」，將一般存取權改為「知道連結的任何人 -> 檢視者 (Viewer)」！',
+      );
+    }
+
+    const grid = parseCsvGrid(text);
+    values.push(grid);
+
+    const itemRow = grid.findIndex(r => String(r?.[0] ?? '').trim().toLowerCase() === 'hlc no.');
+    const groupRow = itemRow > 0 ? itemRow - 1 : 0;
+    const formulaGrid: Grid = grid.map((r, rIdx) =>
+      r.map((cell, cIdx) => {
+        if (rIdx > itemRow && cIdx >= 6) {
+          const gHeader = String(grid[groupRow]?.[cIdx] ?? '').trim();
+          const iHeader = String(grid[itemRow]?.[cIdx] ?? '').trim();
+          const hasWeightBracket = /\(\s*\d+(?:\.\d+)?\s*%?\s*\)\s*$/.test(iHeader || gHeader);
+          const isSummaryHeader =
+            hasWeightBracket && (!iHeader || /\(\s*\d+(?:\.\d+)?\s*%?\s*\)\s*$/.test(iHeader));
+          if (isSummaryHeader && !/^daily/i.test(iHeader || gHeader)) {
+            return '=SUMMARY()';
+          }
+        }
+        return cell;
+      }),
+    );
+    formulas.push(formulaGrid);
+  }
+
+  return { formulas, values };
+}
+
+export function SheetGradebook() {
+  const { students, refresh, lastSync } = useApp();
+  const [busy, setBusy] = useState(false);
+  const [set, setSet] = useState<'S2M3' | 'S2M5'>('S2M3');
+  const [term, setTerm] = useState(1);
+  const [view, setView] = useState<Category | 'summary'>('summary');
+
+  const list = students
+    .filter(s => s.set === set)
+    .sort((a, b) =>
+      ((a.className ?? '') + (a.classNo ?? '').padStart(3, '0')).localeCompare(
+        (b.className ?? '') + (b.classNo ?? '').padStart(3, '0'),
+      ),
+    );
+
+  const columns = useMemo(() => {
+    const seen = new Map<string, { label: string; full: number | null; position: number }>();
+    for (const s of list)
+      for (const a of s.assessments ?? [])
+        if (a.kind === 'item' && a.term === term && a.category === view && !seen.has(a.label))
+          seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
+    return [...seen.values()].sort((a, b) => a.position - b.position);
+  }, [list, term, view]);
+
+  const missingFull = useMemo(
+    () => [
+      ...new Set(
+        students.flatMap(s =>
+          (s.assessments ?? [])
+            .filter(a => a.kind === 'item' && a.score !== null && !a.full_marks)
+            .map(a => `${s.set} ${a.label}`),
+        ),
+      ),
+    ],
+    [students],
+  );
+
+  const runSync = async () => {
+    setBusy(true);
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id;
+      if (!userId) throw new Error('請先登入老師帳號');
+
+      const { data: allowed } = await supabase.rpc('has_role', {
+        _user_id: userId,
+        _role: 'teacher',
+      });
+      if (!allowed) throw new Error('只有老師帳號 (Teacher) 可以執行同步');
+
+      const { formulas, values } = await fetchSheetTabsDirect();
+      const parsed: ParsedStudent[] = TABS.flatMap((tabSet, i) =>
+        parseSetTab(tabSet, formulas[i] ?? [], values[i] ?? []),
+      );
+      if (!parsed.length) {
+        throw new Error('在 S2M3 或 S2M5 分頁中找不到帶有 HLC no. 的學生資料');
+      }
+
+      const { data: roster, error: rosterError } = await supabase
+        .from('students')
+        .upsert(
+          parsed.map(p => ({
+            email: p.email,
+            name: p.name,
+            math_set: p.set,
+            hlc_no: p.hlcNo,
+            class_name: p.className,
+            class_no: p.classNo,
+          })),
+          { onConflict: 'email' },
+        )
+        .select('id, email');
+      if (rosterError) throw new Error(`儲存學生名單失敗: ${rosterError.message}`);
+      const idByEmail = new Map((roster ?? []).map(r => [r.email, r.id]));
+
+      const syncedAt = new Date().toISOString();
+      const rows = parsed.flatMap(p =>
+        p.scores.map(s => ({
+          ...s,
+          student_id: idByEmail.get(p.email)!,
+          synced_at: syncedAt,
+        })),
+      );
+
+      for (let i = 0; i < rows.length; i += 500) {
+        const { error } = await supabase.from('assessment_scores').upsert(rows.slice(i, i + 500));
+        if (error) throw new Error(`儲存分數失敗: ${error.message}`);
+      }
+
+      const { error: cleanError } = await supabase
+        .from('assessment_scores')
+        .delete()
+        .in('student_id', [...idByEmail.values()])
+        .lt('synced_at', syncedAt);
+      if (cleanError) throw new Error(`清理舊分數失敗: ${cleanError.message}`);
+
+      await supabase.from('sheet_syncs').insert({
+        synced_by: userId,
+        students: parsed.length,
+        scores: rows.length,
+      });
+
+      await refresh();
+      toast.success(`成功同步 ${parsed.length} 位學生及 ${rows.length} 項分數紀錄！`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Sync failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="mr-auto">
+          <h2 className="flex items-center gap-2 text-xl font-bold">
+            <Sheet className="h-5 w-5 text-success" />
+            Assessment gradebook
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            From{' '}
+            <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">
+              2627 Name list (For LMS)
+            </a>{' '}
+            ·{' '}
+            {lastSync
+              ? `last synced ${new Date(lastSync).toLocaleString('en-HK', {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}`
+              : 'not synced yet'}
+          </p>
+        </div>
+        <Button onClick={runSync} disabled={busy}>
+          <RefreshCw className={cn(busy && 'animate-spin')} />
+          {busy ? 'Syncing…' : 'Sync from Google Sheet'}
+        </Button>
+      </div>
+      {missingFull.length > 0 && (
+        <p className="mt-3 rounded-md bg-gold/20 p-2 text-sm text-gold-deep">
+          Full marks missing in the sheet for: {missingFull.join(', ')}. Percentages for these
+          can&apos;t be worked out until the &quot;Full marks&quot; row is filled in.
+        </p>
+      )}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <select
+          aria-label="Set"
+          value={set}
+          onChange={e => setSet(e.target.value as 'S2M3' | 'S2M5')}
+          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
+        >
+          <option>S2M3</option>
+          <option>S2M5</option>
+        </select>
+        <select
+          aria-label="Term"
+          value={term}
+          onChange={e => setTerm(Number(e.target.value))}
+          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
+        >
+          <option value={1}>Term 1</option>
+          <option value={2}>Term 2</option>
+        </select>
+        <select
+          aria-label="Category"
+          value={view}
+          onChange={e => setView(e.target.value as Category | 'summary')}
+          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
+        >
+          <option value="summary">Weighted summary</option>
+          {ITEM_CATEGORIES.map(c => (
+            <option key={c.id} value={c.id}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mt-4 overflow-x-auto">
+        {list.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No students in {set} yet — press Sync to bring in the class list.
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs font-bold uppercase text-muted-foreground">
+                <th className="p-2">Class</th>
+                <th className="p-2">Student</th>
+                {view === 'summary' ? (
+                  <>
+                    {WEIGHTS.map(w => (
+                      <th key={w.id} className="p-2 text-center">
+                        {w.label} ({w.weight})
+                      </th>
+                    ))}
+                    <th className="p-2 text-center">Total /200</th>
+                  </>
+                ) : (
+                  columns.map(c => (
+                    <th key={c.label} className="p-2 text-center">
+                      {c.label}
+                      {c.full ? ` (${c.full})` : ''}
+                    </th>
+                  ))
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {list.map(s => {
+                const sum = termSummary(s.assessments ?? [], term);
+                return (
+                  <tr key={s.id} className="border-t border-border">
+                    <td className="p-2 whitespace-nowrap text-muted-foreground">
+                      {s.className} {s.classNo}
+                    </td>
+                    <td className="p-2">
+                      <p className="font-semibold">{s.name}</p>
+                      <p className="text-xs text-muted-foreground">{s.hlcNo ?? s.email}</p>
+                    </td>
+                    {view === 'summary' ? (
+                      <>
+                        {sum.parts.map(p => (
+                          <td key={p.id} className="p-2 text-center tabular-nums">
+                            {p.value ?? '—'}
+                          </td>
+                        ))}
+                        <td className="p-2 text-center font-display font-bold tabular-nums">
+                          {sum.coursework200}
+                        </td>
+                      </>
+                    ) : (
+                      columns.map(c => {
+                        const a = s.assessments?.find(
+                          x => x.kind === 'item' && x.term === term && x.label === c.label,
+                        );
+                        const pct = a ? percent(a) : null;
+                        return (
+                          <td key={c.label} className="p-1 text-center">
+                            <span
+                              className={cn(
+                                'inline-block min-w-12 rounded-md px-1 py-0.5 text-xs font-bold tabular-nums',
+                                a?.absent ? 'bg-muted text-muted-foreground' : scoreTone(pct),
+                              )}
+                            >
+                              {!a || (a.score === null && !a.absent)
+                                ? '—'
+                                : a.absent
+                                  ? 'ABS'
+                                  : a.score}
+                            </span>
+                          </td>
+                        );
+                      })
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </section>
+  );
+}
+````
+
+## File: src/integrations/supabase/client.server.ts
+````typescript
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
+
+const DEFAULT_SUPABASE_URL = 'https://mbyselvthprrfjioyvhu.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_6d4BjM4FHDurcIw2BhpeaQ_hsYnu4Ju';
+
+function isNewSupabaseApiKey(value: string): boolean {
+  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+}
+
+function normalizeSupabaseUrl(rawUrl: string | undefined): string {
+  const cleaned = (rawUrl ?? '').trim().replace(/^['"]|['"]$/g, '');
+  if (!cleaned) return DEFAULT_SUPABASE_URL;
+  try {
+    const parsed = new URL(cleaned.startsWith('http') ? cleaned : `https://${cleaned}`);
+    return parsed.origin;
+  } catch {
+    return DEFAULT_SUPABASE_URL;
+  }
+}
+
+function createSupabaseFetch(supabaseKey: string): typeof fetch {
+  return (input, init) => {
+    const headers = new Headers(
+      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+    );
+
+    if (init?.headers) {
+      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+    }
+
+    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
+      headers.delete('Authorization');
+    }
+
+    headers.set('apikey', supabaseKey);
+    return fetch(input, { ...init, headers });
+  };
+}
+
+function createSupabaseAdminClient() {
+  const rawUrl = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL'];
+  const SUPABASE_URL = normalizeSupabaseUrl(rawUrl);
+  const rawServiceKey =
+    process.env['SUPABASE_SERVICE_ROLE_KEY'] ||
+    process.env['SUPABASE_PUBLISHABLE_KEY'] ||
+    process.env['VITE_SUPABASE_PUBLISHABLE_KEY'] ||
+    DEFAULT_SUPABASE_KEY;
+  const SUPABASE_KEY = rawServiceKey.trim().replace(/^['"]|['"]$/g, '') || DEFAULT_SUPABASE_KEY;
+
+  return createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
+    global: {
+      fetch: createSupabaseFetch(SUPABASE_KEY),
+    },
+    auth: {
+      storage: undefined,
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+
+let _supabaseAdmin: ReturnType<typeof createSupabaseAdminClient> | undefined;
+
+export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdminClient>, {
+  get(_, prop, receiver) {
+    if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
+    return Reflect.get(_supabaseAdmin, prop, receiver);
+  },
+});
+````
+
+## File: src/lib/sheets.functions.ts
+````typescript
+import { createServerFn } from '@tanstack/react-start';
+import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { parseSetTab, type MathSet, type ParsedStudent } from './sheet-parse';
+
+const SPREADSHEET_ID = '1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8';
+const GOOGLE_SHEETS_API_URL = 'https://sheets.googleapis.com/v4';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+const TABS: MathSet[] = ['S2M3', 'S2M5'];
+type Cell = string | number | boolean | null;
+type Grid = Cell[][];
+
+let cachedAccessToken: { token: string; expiresAt: number } | null = null;
+
+function normalizePrivateKey(raw: string): string {
+  let cleaned = raw.trim();
+  if (cleaned.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(cleaned) as { private_key?: string };
+      if (parsed.private_key) cleaned = parsed.private_key;
+    } catch {
+      // ignore
+    }
+  }
+  return cleaned
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/\\n/g, '\n');
+}
+
+function extractClientEmail(emailRaw: string | undefined, keyRaw: string | undefined): string {
+  if (keyRaw && keyRaw.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(keyRaw.trim()) as { client_email?: string };
+      if (parsed.client_email) return parsed.client_email.trim();
+    } catch {
+      // ignore
+    }
+  }
+  return (emailRaw ?? '').trim().replace(/^['"]|['"]$/g, '');
+}
+
+async function getServiceAccountAccessToken(clientEmail: string, privateKeyRaw: string): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  if (cachedAccessToken && cachedAccessToken.expiresAt - 60 > now) {
+    return cachedAccessToken.token;
+  }
+
+  const { createSign } = await import('node:crypto');
+  const privateKey = normalizePrivateKey(privateKeyRaw);
+  const cleanEmail = extractClientEmail(clientEmail, privateKeyRaw);
+
+  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
+  const claimSet = Buffer.from(
+    JSON.stringify({
+      iss: cleanEmail,
+      scope: GOOGLE_SHEETS_SCOPE,
+      aud: GOOGLE_TOKEN_URL,
+      exp: now + 3600,
+      iat: now,
+    }),
+  ).toString('base64url');
+
+  const unsignedJwt = `${header}.${claimSet}`;
+  const signer = createSign('RSA-SHA256');
+  signer.update(unsignedJwt);
+  signer.end();
+  const signature = signer.sign(privateKey, 'base64url');
+  const assertion = `${unsignedJwt}.${signature}`;
+
+  const res = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion,
+    }).toString(),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(
+      `Service Account (${cleanEmail}) 驗證失敗 [${res.status}]: ${errText.slice(0, 200)}`,
+    );
+  }
+
+  const tokenData = (await res.json()) as { access_token: string; expires_in?: number };
+  cachedAccessToken = {
+    token: tokenData.access_token,
+    expiresAt: now + (tokenData.expires_in ?? 3600),
+  };
+
+  return tokenData.access_token;
+}
+
+function parseCsvGrid(csvText: string): Grid {
+  const rows: Grid = [];
+  let row: Cell[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const ch = csvText[i];
+    const next = csvText[i + 1];
+
+    if (inQuotes) {
+      if (ch === '"' && next === '"') {
+        current += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        row.push(parseCellValue(current));
+        current = '';
+      } else if (ch === '\r' && next === '\n') {
+        row.push(parseCellValue(current));
+        rows.push(row);
+        row = [];
+        current = '';
+        i++;
+      } else if (ch === '\n') {
+        row.push(parseCellValue(current));
+        rows.push(row);
+        row = [];
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+  }
+  if (current.length > 0 || row.length > 0) {
+    row.push(parseCellValue(current));
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseCellValue(raw: string): Cell {
+  const trimmed = raw.trim();
+  if (trimmed === '') return '';
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+    const n = Number(trimmed);
+    if (Number.isFinite(n)) return n;
+  }
+  return trimmed;
+}
+
+async function readPublicTabsFallback(): Promise<{ formulas: Grid[]; values: Grid[] }> {
+  const values: Grid[] = [];
+  const formulas: Grid[] = [];
+
+  for (const tab of TABS) {
+    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`無法直接讀取分頁 ${tab} (HTTP ${res.status})`);
+    }
+    const contentType = res.headers.get('content-type') ?? '';
+    const text = await res.text();
+    if (contentType.includes('text/html') || text.trim().startsWith('<!DOCTYPE html')) {
+      throw new Error('Google Sheet 尚未開啟「知道連結的任何人可檢視」權限');
+    }
+
+    const grid = parseCsvGrid(text);
+    values.push(grid);
+
+    const itemRow = grid.findIndex(r => String(r?.[0] ?? '').trim().toLowerCase() === 'hlc no.');
+    const groupRow = itemRow > 0 ? itemRow - 1 : 0;
+    const formulaGrid: Grid = grid.map((r, rIdx) =>
+      r.map((cell, cIdx) => {
+        if (rIdx > itemRow && cIdx >= 6) {
+          const gHeader = String(grid[groupRow]?.[cIdx] ?? '').trim();
+          const iHeader = String(grid[itemRow]?.[cIdx] ?? '').trim();
+          const hasWeightBracket = /\(\s*\d+(?:\.\d+)?\s*%?\s*\)\s*$/.test(iHeader || gHeader);
+          const isSummaryHeader =
+            hasWeightBracket && (!iHeader || /\(\s*\d+(?:\.\d+)?\s*%?\s*\)\s*$/.test(iHeader));
+          if (isSummaryHeader && !/^daily/i.test(iHeader || gHeader)) {
+            return '=SUMMARY()';
+          }
+        }
+        return cell;
+      }),
+    );
+    formulas.push(formulaGrid);
+  }
+
+  return { formulas, values };
+}
+
+async function readTabsViaApi(
+  render: 'FORMULA' | 'UNFORMATTED_VALUE',
+  headers: Record<string, string>,
+  extraQuery = '',
+): Promise<Grid[]> {
+  const ranges = TABS.map(t => `ranges=${encodeURIComponent(`${t}!A1:GZ300`)}`).join('&');
+  const url = `${GOOGLE_SHEETS_API_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=${render}${extraQuery}`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Google Sheets API 讀取失敗 [${res.status}]: ${body.slice(0, 300)}`);
+  }
+  const json = (await res.json()) as { valueRanges?: { values?: Grid }[] };
+  return TABS.map((_, i) => json.valueRanges?.[i]?.values ?? []);
+}
+
+async function loadAllSheetGrids(): Promise<{ formulas: Grid[]; values: Grid[] }> {
+  const serviceEmail =
+    process.env['GOOGLE_SERVICE_ACCOUNT_EMAIL'] || process.env['VITE_GOOGLE_SERVICE_ACCOUNT_EMAIL'];
+  const privateKey = process.env['GOOGLE_PRIVATE_KEY'] || process.env['VITE_GOOGLE_PRIVATE_KEY'];
+  const sheetsApiKey =
+    process.env['GOOGLE_SHEETS_API_KEY'] || process.env['VITE_GOOGLE_SHEETS_API_KEY'];
+
+  let serviceAccountError: string | null = null;
+
+  if (serviceEmail && privateKey) {
+    try {
+      const accessToken = await getServiceAccountAccessToken(serviceEmail, privateKey);
+      const headers = { Authorization: `Bearer ${accessToken}` };
+      const [formulas, values] = await Promise.all([
+        readTabsViaApi('FORMULA', headers),
+        readTabsViaApi('UNFORMATTED_VALUE', headers),
+      ]);
+      return { formulas, values };
+    } catch (err) {
+      serviceAccountError = err instanceof Error ? err.message : String(err);
+      console.warn('[Google Sheets] Service Account failed, trying fallback:', serviceAccountError);
+    }
+  }
+
+  if (sheetsApiKey) {
+    try {
+      const query = `&key=${encodeURIComponent(sheetsApiKey.trim())}`;
+      const [formulas, values] = await Promise.all([
+        readTabsViaApi('FORMULA', {}, query),
+        readTabsViaApi('UNFORMATTED_VALUE', {}, query),
+      ]);
+      return { formulas, values };
+    } catch (err) {
+      console.warn('[Google Sheets] API Key failed, trying public link fallback:', err);
+    }
+  }
+
+  try {
+    return await readPublicTabsFallback();
+  } catch {
+    if (serviceAccountError) {
+      throw new Error(
+        `${serviceAccountError} —— 請將 Google Sheet 右上角「共用」設為「知道連結的任何人可檢視 (Viewer)」，或檢查 Service Account Email 是否正確。`,
+      );
+    }
+    throw new Error(
+      '無法讀取 Google Sheet：請將 Google Sheet 右上角「共用」設為「知道連結的任何人可檢視 (Viewer)」。',
+    );
+  }
+}
+
+export const syncGoogleSheet = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: allowed } = await supabase.rpc('has_role', { _user_id: userId, _role: 'teacher' });
+    if (!allowed) throw new Error('Teacher access required');
+
+    const { formulas, values } = await loadAllSheetGrids();
+    const parsed: ParsedStudent[] = TABS.flatMap((set, i) =>
+      parseSetTab(set, formulas[i] ?? [], values[i] ?? []),
+    );
+    if (!parsed.length) {
+      throw new Error('No students with an HLC no. were found in the S2M3 or S2M5 tabs');
+    }
+
+    const { data: roster, error: rosterError } = await supabase
+      .from('students')
+      .upsert(
+        parsed.map(p => ({
+          email: p.email,
+          name: p.name,
+          math_set: p.set,
+          hlc_no: p.hlcNo,
+          class_name: p.className,
+          class_no: p.classNo,
+        })),
+        { onConflict: 'email' },
+      )
+      .select('id, email');
+    if (rosterError) throw new Error(`Could not save the class list: ${rosterError.message}`);
+    const idByEmail = new Map((roster ?? []).map(r => [r.email, r.id]));
+
+    const syncedAt = new Date().toISOString();
+    const rows = parsed.flatMap(p =>
+      p.scores.map(s => ({ ...s, student_id: idByEmail.get(p.email)!, synced_at: syncedAt })),
+    );
+    for (let i = 0; i < rows.length; i += 500) {
+      const { error } = await supabase.from('assessment_scores').upsert(rows.slice(i, i + 500));
+      if (error) throw new Error(`Could not save scores: ${error.message}`);
+    }
+    const { error: cleanError } = await supabase
+      .from('assessment_scores')
+      .delete()
+      .in('student_id', [...idByEmail.values()])
+      .lt('synced_at', syncedAt);
+    if (cleanError) throw new Error(`Could not tidy old scores: ${cleanError.message}`);
+
+    await supabase.from('sheet_syncs').insert({
+      synced_by: userId,
+      students: parsed.length,
+      scores: rows.length,
+    });
+    return { students: parsed.length, scores: rows.length, syncedAt };
+  });
 ````
 
 ## File: src/routes/_authenticated/courses.$chapter.tsx
@@ -7134,583 +7701,6 @@ function ChapterPage() {
         </section>
       )}
     </AppShell>
-  );
-}
-````
-
-## File: src/start.ts
-````typescript
-import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
-
-import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
-  try {
-    return await next();
-  } catch (error) {
-    if (error != null && typeof error === "object" && "statusCode" in error) {
-      throw error;
-    }
-    console.error(error);
-    return new Response(renderErrorPage(), {
-      status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
-  }
-});
-
-// Start installs this automatically when src/start.ts is absent; defining the
-// file opts out, so re-add it explicitly to keep server functions protected
-// from cross-site requests.
-const csrfMiddleware = createCsrfMiddleware({
-  filter: (ctx) => ctx.handlerType === "serverFn",
-});
-
-// requestMiddleware runs on every request; functionMiddleware only on server functions, where
-// client sendContext is unvalidated input. Append to these arrays, never replace them.
-// Enabling Lovable Cloud adds functionMiddleware: [attachSupabaseAuth], the bearer token that
-// requireSupabaseAuth server functions need. Add it by hand only if Lovable Cloud or a
-// user-managed Supabase project is connected, no middleware here sets Authorization, and the
-// project did not intentionally replace it.
-export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
-}));
-````
-
-## File: AGENTS.md
-````markdown
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-
-## What Lovable manages
-
-Rules outside this block are the project's own. Change the pieces below in
-Lovable, not by hand. With the [Lovable MCP](https://mcp.lovable.dev)
-connected, `send_message` asks Lovable to do it; otherwise ask the user to
-use the editor.
-
-- **Database.** Do not add or edit `supabase/migrations/` or `drizzle/`.
-  Ask Lovable to change the schema.
-- **Generated files.** Do not edit a file whose header says it is automatically
-  generated.
-- **AI gateway.** Keep model calls on Lovable's gateway, and keep
-  `LOVABLE_API_KEY` out of browser code.
-- **Connectors.** Lovable provides native connectors. `list_connectors` shows
-  which are enabled; `add_connector` only returns the dashboard link. When a
-  connector is enabled, calls go through the connector gateway and need
-  `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
-  own key and store it in Secrets.
-- **Secrets.** Lovable manages them. Do not put secret values in the repo.
-<!-- LOVABLE:END -->
-
-## Application rules
-- Cloud Auth supplies verified identity; roles live in protected user_roles, never browser storage or profile metadata, to prevent privilege escalation.
-- Private records are read through RLS-scoped Cloud clients; students receive only their own records and peer leaderboard is teacher-only to protect grades.
-- Authenticated pages live under the client-only _authenticated layout; the public sign-in and recovery pages remain SSR-enabled to avoid session redirect loops.
-- Use authenticated server functions for score and lesson-mark writes, and database uniqueness for video rewards, so refreshes and repeated completions cannot duplicate a reward.
-````
-
-## File: README.md
-````markdown
-# Math LMS
-
-Implement exactly the screenshot and nothing else
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://math-lms.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/cb544cd6-b485-4ea3-bb65-9a9cf0db1070).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
-````
-
-## File: src/components/AppShell.tsx
-````typescript
-import { Link, useNavigate } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
-import { BookOpen, CheckCircle2, Circle, GraduationCap, PlayCircle, LayoutDashboard, LogOut, Trophy, Upload, Users } from 'lucide-react';
-import { useApp } from '@/lib/app-store';
-import { Button } from '@/components/ui/button';
-export function AppShell({ children }: { children: ReactNode }) {
-  const { session, role, logout, ready, error, me } = useApp();
-  const navigate = useNavigate();
-  const links = role === 'student' ? [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }, { to: '/courses', label: 'Chapter', icon: BookOpen }] : [{ to: '/teacher', label: 'Analytics', icon: Users }, { to: '/upload', label: 'Chapter content', icon: Upload }, { to: '/leaderboard', label: 'Leaderboard', icon: Trophy }];
-  return <div className="min-h-screen bg-background"><header className="sticky top-0 z-30 border-b border-border bg-card"><div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3"><Link to={role === 'teacher' ? '/teacher' : '/dashboard'} className="flex items-center gap-2 font-display text-xl font-semibold"><GraduationCap className="h-6 w-6 text-primary" />HLC Math</Link><nav className="order-3 flex w-full gap-1 overflow-x-auto md:order-none md:ml-6 md:w-auto">{links.map(l => <Link key={l.to} to={l.to} className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground" activeProps={{ className: 'bg-muted text-primary' }}><l.icon className="h-4 w-4" />{l.label}</Link>)}</nav><div className="ml-auto flex items-center gap-2"><span className="text-sm capitalize text-muted-foreground">{role}</span><Button variant="ghost" size="icon" aria-label="Sign out" title={session?.email} onClick={async () => { await logout(); await navigate({ to: '/', replace: true }); }}><LogOut /></Button></div></div></header><main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{!ready ? <p>Loading your records…</p> : error ? <p role="alert" className="text-destructive">{error}</p> : !session ? <Link to="/">Sign in</Link> : role === 'student' && !me.id ? <p>Your school account is not linked to a student record yet. Please contact your teacher.</p> : children}</main></div>;
-}
-export function TeacherOnly({ children }: { children: ReactNode }) { const { role } = useApp(); return role === 'teacher' ? children : <p>Teacher access required.</p>; }
-export function scoreTone(s: number | null) { return s === null ? 'bg-muted text-muted-foreground' : s >= 85 ? 'bg-success/15 text-success' : s >= 60 ? 'bg-primary/10 text-primary' : 'bg-destructive/15 text-destructive'; }
-export const CHAPTER_STATUS = {
-  Completed: { cls: 'bg-success/15 text-success', icon: CheckCircle2 },
-  'In Progress': { cls: 'bg-gold/25 text-gold-deep', icon: PlayCircle },
-  'Not Started': { cls: 'bg-muted text-muted-foreground', icon: Circle },
-};
-````
-
-## File: src/routes/_authenticated/courses.index.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
-import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
-import { useApp } from "@/lib/app-store";
-import { CHAPTERS, chapterStatus } from "@/lib/data";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/courses/")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Chapters — HLC Math" },
-      { name: "description", content: "Mathematics chapters 1–7 with videos, notes and exercises." },
-      { property: "og:title", content: "Chapters — HLC Math" },
-      { property: "og:description", content: "Seven Math chapters to master." },
-    ],
-  }),
-  component: Courses,
-});
-
-function Courses() {
-  const { me, videos } = useApp();
-  return (
-    <AppShell>
-      <h1 className="text-3xl font-bold">Chapter</h1>
-      <p className="font-semibold text-muted-foreground">Mathematics · choose a chapter to open its videos, notes and exercise</p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {CHAPTERS.map((c, i) => {
-          const list = videos.filter(v => v.chapter === c.id);
-          const watched = list.filter(v => me.completedVideos?.includes(v.id)).length;
-          const s = me.scores[i] ?? null;
-          const st = chapterStatus(s, i, me.scores);
-          const S = STATUS[st];
-          return (
-            <Link key={c.id} to="/courses/$chapter" params={{ chapter: String(c.id) }} className="flex flex-col rounded-3xl border-2 border-border bg-card p-5 shadow-chunky transition hover:-translate-y-1 hover:border-primary">
-              <div className="flex items-start justify-between">
-                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-3xl">{c.emoji}</span>
-                <span className={cn("flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold", S.cls)}>
-                  <S.icon className="h-3.5 w-3.5" /> {st}
-                </span>
-              </div>
-              <p className="mt-4 text-xs font-extrabold uppercase tracking-wide text-primary">Chapter {c.id}</p>
-              <h2 className="text-lg font-bold leading-tight">{c.title}</h2>
-              <div className="mt-4">
-                <div className="flex justify-between text-xs font-semibold text-muted-foreground">
-                  <span>{list.length ? `${watched}/${list.length} videos watched` : "No videos yet"}</span>
-                </div>
-                {list.length > 0 && <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-success" style={{ width: `${(watched / list.length) * 100}%` }} /></div>}
-              </div>
-              <div className="mt-auto flex items-center justify-between pt-4">
-                <span className={cn("rounded-full px-3 py-1 text-sm font-extrabold", scoreTone(s))}>
-                  {s === null ? "No score yet" : `Score ${s}%`}
-                </span>
-                <span className="flex items-center text-sm font-semibold text-primary">Open <ChevronRight className="h-4 w-4" /></span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </AppShell>
-  );
-}
-````
-
-## File: src/routes/_authenticated/teacher.tsx
-````typescript
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
-import { FileUp, Search } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
-import { saveScores } from "@/lib/math.functions";
-import { parseScoreCsv, scoreSchema } from "@/lib/grade-rules";
-import { Button } from "@/components/ui/button";
-import { LessonMarks } from "@/components/LessonMarks";
-import { SheetGradebook } from "@/components/SheetGradebook";
-import { toast } from "sonner";
-import { AppShell, TeacherOnly, scoreTone } from "@/components/AppShell";
-import { useApp } from "@/lib/app-store";
-import { CHAPTERS, average, completion, formRank, improvement, type MathSet, type Student, weakTopics } from "@/lib/data";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/teacher")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Teacher Analytics — HLC Math" },
-      { name: "description", content: "Compare S2M3 and S2M5 scores, completion and weaker topics." },
-      { property: "og:title", content: "Teacher Analytics — HLC Math" },
-      { property: "og:description", content: "Math class analytics and master score table." },
-    ],
-  }),
-  component: Teacher,
-});
-
-const SETS: MathSet[] = ["S2M3", "S2M5"];
-
-function Teacher() {
-  const { students, refresh } = useApp();
-  const save = useServerFn(saveScores);
-  const [q, setQ] = useState("");
-  const [setF, setSetF] = useState<"All" | MathSet>("All");
-  const [editing, setEditing] = useState<{ id: string; ch: number } | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const stats = SETS.map((set) => {
-    const list = students.filter((s) => s.set === set);
-    const chAvg = CHAPTERS.map((_, i) => {
-      const v = list.map((s) => s.scores[i]).filter((x) => x !== null) as number[];
-      return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
-    });
-    const weakest = chAvg
-      .map((v, i) => ({ v, c: CHAPTERS[i] }))
-      .filter((x): x is { v: number; c: (typeof CHAPTERS)[number] } => x.v !== null && Boolean(x.c))
-      .sort((a, b) => (a.v as number) - (b.v as number))
-      .slice(0, 2);
-    return {
-      set,
-      n: list.length,
-      avg: Math.round(list.reduce((a, s) => a + average(s), 0) / (list.length || 1)),
-      comp: Math.round(list.reduce((a, s) => a + completion(s), 0) / (list.length || 1)),
-      chAvg,
-      weakest,
-    };
-  });
-
-  const rows = useMemo(
-    () =>
-      students
-        .filter((s) => setF === "All" || s.set === setF)
-        .filter((s) => (s.name + s.email).toLowerCase().includes(q.toLowerCase()))
-        .sort((a, b) => formRank(a, students) - formRank(b, students)),
-    [students, q, setF],
-  );
-
-  const updateScore = async (id: string, ch: number, val: string) => {
-    try { await save({ data: [{ student_id: id, chapter: ch + 1, score: scoreSchema.parse(val === '' ? null : Number(val)) }] }); await refresh(); setEditing(null); toast.success('Score saved'); }
-    catch (e) { toast.error(e instanceof Error ? e.message : 'Could not save score'); }
-  };
-  const importCsv = async (file: File) => {
-    try {
-      const map = parseScoreCsv(await file.text());
-      const unknown = [...map.keys()].filter(email => !students.some(s => s.email === email));
-      if (unknown.length) throw new Error(`${unknown.length} email(s) are not in the roster. Add students first.`);
-      const data = students.flatMap(s => { const scores = map.get(s.email); return scores ? scores.map((score, i) => ({ student_id: s.id, chapter: i + 1, score })) : []; });
-      if (!data.length) throw new Error('No student scores found');
-      await save({ data }); await refresh(); toast.success(`Saved scores for ${map.size} students`);
-    } catch (e) { toast.error(e instanceof Error ? e.message : 'Import failed'); }
-  };
-
-  return (
-    <AppShell><TeacherOnly>
-      <h1 className="text-3xl font-bold">Class Analytics</h1>
-      <SheetGradebook />
-      <LessonMarks />
-
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {stats.map((st, k) => (
-          <div key={st.set} className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">{st.set}</h2>
-              <span className="text-sm font-bold text-muted-foreground">{st.n} students</span>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className={cn("rounded-2xl p-3", k === 0 ? "bg-primary text-primary-foreground" : "bg-success text-primary-foreground")}>
-                <p className="text-xs font-bold opacity-90">Average score</p>
-                <p className="font-display text-3xl font-bold">{st.avg}%</p>
-              </div>
-              <div className="rounded-2xl bg-gold p-3 text-accent-foreground">
-                <p className="text-xs font-bold">Completion</p>
-                <p className="font-display text-3xl font-bold">{st.comp}%</p>
-              </div>
-            </div>
-            <div className="mt-4 flex h-28 items-end gap-2">
-              {st.chAvg.map((v, i) => (
-                <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                  <span className="text-[10px] font-bold text-muted-foreground">{v ?? "—"}</span>
-                  <div
-                    className={cn("w-full rounded-t-lg", v !== null && v < 70 ? "bg-destructive/70" : k === 0 ? "bg-primary" : "bg-success")}
-                    style={{ height: `${(v ?? 0) * 0.8}px` }}
-                  />
-                  <span className="text-[10px] font-bold">Ch{i + 1}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <span className="text-xs font-bold text-muted-foreground">Weaker topics:</span>
-              {st.weakest.map((w) => (
-                <span key={w.c.id} className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-extrabold text-destructive">
-                  Ch{w.c.id} {w.c.short} ({w.v}%)
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          const f = e.dataTransfer.files[0];
-          if (f) importCsv(f);
-        }}
-        onClick={() => fileRef.current?.click()}
-        className="mt-6 flex cursor-pointer flex-col items-center rounded-3xl border-2 border-dashed border-primary/40 bg-primary/5 p-6 text-center hover:bg-primary/10"
-      >
-        <FileUp className="h-8 w-8 text-primary" />
-        <p className="mt-2 font-display text-lg font-bold">Drop a score CSV here or click to browse</p>
-        <p className="text-sm font-semibold text-muted-foreground">Format: email,ch1,ch2,ch3,ch4,ch5,ch6,ch7 · or click any score below to edit</p>
-        <input ref={fileRef} type="file" accept=".csv" hidden onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])} />
-      </div>
-
-      <div className="mt-6 rounded-3xl border-2 border-border bg-card p-4 shadow-chunky">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="mr-auto text-xl font-bold">Student Master Score Table</h2>
-          <div className="flex items-center gap-2 rounded-2xl border-2 border-input px-3 py-1.5">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="w-32 bg-transparent text-sm font-semibold outline-none" />
-          </div>
-          <select
-            value={setF}
-            onChange={(e) => setSetF(e.target.value as "All" | MathSet)}
-            className="rounded-2xl border-2 border-input bg-card px-3 py-1.5 text-sm font-bold"
-          >
-            <option>All</option>
-            <option>S2M3</option>
-            <option>S2M5</option>
-          </select>
-        </div>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[1000px] text-sm">
-            <thead>
-              <tr className="text-left text-xs font-extrabold uppercase text-muted-foreground">
-                <th className="p-2">Rank</th>
-                <th className="p-2">Student</th>
-                <th className="p-2">Set</th>
-                {CHAPTERS.map((c) => (
-                  <th key={c.id} className="p-2 text-center">Ch{c.id}</th>
-                ))}
-                <th className="p-2 text-center">Avg</th>
-                <th className="p-2 text-center">Improve</th>
-                <th className="p-2">Weaker topics</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((s) => {
-                const imp = improvement(s);
-                return (
-                  <tr key={s.id} className="border-t border-border">
-                    <td className="p-2 font-display font-bold">#{formRank(s, students)}</td>
-                    <td className="p-2">
-                      <p className="font-bold">{s.name}</p>
-                      <p className="text-xs text-muted-foreground">{s.email}</p>
-                    </td>
-                    <td className="p-2 font-bold">{s.set}</td>
-                    {s.scores.map((sc, i) => (
-                      <td key={i} className="p-1 text-center">
-                        {editing?.id === s.id && editing.ch === i ? (
-                          <input
-                            autoFocus
-                            type="number"
-                            defaultValue={sc ?? ""}
-                            onBlur={(e) => updateScore(s.id, i, e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-                            className="w-14 rounded-lg border-2 border-primary px-1 text-center font-bold"
-                          />
-                        ) : (
-                          <Button variant="ghost" onClick={() => setEditing({ id: s.id, ch: i })} className={cn("w-12 rounded-lg py-1 font-extrabold", scoreTone(sc))}>
-                            {sc ?? "—"}
-                          </Button>
-                        )}
-                      </td>
-                    ))}
-                    <td className="p-2 text-center font-display font-bold">{average(s)}%</td>
-                    <td className={cn("p-2 text-center font-extrabold", imp >= 0 ? "text-success" : "text-destructive")}>
-                      {imp >= 0 ? "+" : ""}
-                      {imp}%
-                    </td>
-                    <td className="p-2">
-                      <div className="flex flex-wrap gap-1">
-                        {weakTopics(s).map((c) => (
-                          <span key={c.id} className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-extrabold text-destructive">
-                            Ch{c.id} {c.short}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </TeacherOnly></AppShell>
-  );
-}
-````
-
-## File: src/routes/__root.tsx
-````typescript
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  Link,
-  createRootRouteWithContext,
-  useRouter,
-  HeadContent,
-  Scripts,
-  type ErrorComponentProps,
-} from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
-
-import { AppProvider } from "../lib/app-store";
-import { Toaster } from "../components/ui/sonner";
-import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-
-function NotFoundComponent() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error(error);
-  const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    // Replace these placeholders with the app's name and description when first building the app.
-    // Each content route, / included, must still set its own head(). Never add og:image or
-    // twitter:image here: every page without its own would inherit the root's preview image.
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "HLC Math — Mathematics" },
-      { name: "description", content: "Mathematics learning and progress for HLC." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap",
-      },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
-});
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <AppProvider>
-        <Outlet />
-        <Toaster richColors position="top-center" />
-      </AppProvider>
-    </QueryClientProvider>
   );
 }
 ````
@@ -7866,109 +7856,20 @@ function RootComponent() {
 .google-auth { background: #FFFFFF; border: 1px solid #747775; color: #1F1F1F; font-weight: 500; }
 ````
 
-## File: package.json
-````json
-{
-  "name": "tanstack_start_ts",
-  "private": true,
-  "sideEffects": false,
-  "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "overrides": {
-    "rolldown": "1.2.1"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
-    "@lovable.dev/cloud-auth-js": "^1.1.2",
-    "@radix-ui/react-accordion": "^1.2.12",
-    "@radix-ui/react-alert-dialog": "^1.1.15",
-    "@radix-ui/react-aspect-ratio": "^1.1.8",
-    "@radix-ui/react-avatar": "^1.1.11",
-    "@radix-ui/react-checkbox": "^1.3.3",
-    "@radix-ui/react-collapsible": "^1.1.12",
-    "@radix-ui/react-context-menu": "^2.2.16",
-    "@radix-ui/react-dialog": "^1.1.15",
-    "@radix-ui/react-dropdown-menu": "^2.1.16",
-    "@radix-ui/react-hover-card": "^1.1.15",
-    "@radix-ui/react-label": "^2.1.8",
-    "@radix-ui/react-menubar": "^1.1.16",
-    "@radix-ui/react-navigation-menu": "^1.2.14",
-    "@radix-ui/react-popover": "^1.1.15",
-    "@radix-ui/react-progress": "^1.1.8",
-    "@radix-ui/react-radio-group": "^1.3.8",
-    "@radix-ui/react-scroll-area": "^1.2.10",
-    "@radix-ui/react-select": "^2.2.6",
-    "@radix-ui/react-separator": "^1.1.8",
-    "@radix-ui/react-slider": "^1.3.6",
-    "@radix-ui/react-slot": "^1.2.4",
-    "@radix-ui/react-switch": "^1.2.6",
-    "@radix-ui/react-tabs": "^1.1.13",
-    "@radix-ui/react-toggle": "^1.1.10",
-    "@radix-ui/react-toggle-group": "^1.1.11",
-    "@radix-ui/react-tooltip": "^1.2.8",
-    "@supabase/supabase-js": "^2.119.0",
-    "@tailwindcss/vite": "^4.2.1",
-    "@tanstack/react-query": "^5.101.1",
-    "@tanstack/react-router": "1.170.41",
-    "@tanstack/react-start": "1.168.60",
-    "@tanstack/router-plugin": "1.168.42",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "date-fns": "^4.1.0",
-    "embla-carousel-react": "^8.6.0",
-    "input-otp": "^1.4.2",
-    "lucide-react": "^0.575.0",
-    "react": "^19.2.0",
-    "react-day-picker": "^9.14.0",
-    "react-dom": "^19.2.0",
-    "react-hook-form": "^7.71.2",
-    "react-resizable-panels": "^4.6.5",
-    "recharts": "^2.15.4",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.2.1",
-    "tw-animate-css": "^1.3.4",
-    "vaul": "^1.1.2",
-    "vite-tsconfig-paths": "^6.0.2",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "2.26.5",
-    "@testing-library/jest-dom": "^6.6.0",
-    "@testing-library/react": "^16.0.0",
-    "@types/node": "^22.16.5",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^5.2.0",
-    "drizzle-kit": "0.x",
-    "drizzle-orm": "0.x",
-    "eslint": "^9.32.0",
-    "eslint-config-prettier": "^10.1.1",
-    "eslint-plugin-prettier": "^5.2.6",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^15.15.0",
-    "jsdom": "^20.0.3",
-    "nitro": "3.0.260603-beta",
-    "postgres": "^4.1.0",
-    "prettier": "^3.7.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.56.1",
-    "vite": "8.1.5",
-    "vitest": "^4.1.10"
+## File: src/integrations/supabase/previewAuthStorage.ts
+````typescript
+// This file is automatically generated. Do not edit it directly.
+
+export interface PreviewAuthStorage {
+    getItem: (key: string) => string | null | Promise<string | null>;
+    setItem: (key: string, value: string) => void | Promise<void>;
+    removeItem: (key: string) => void | Promise<void>;
   }
-}
+  
+  export function brokeredPreviewStorage(): PreviewAuthStorage | undefined {
+    if (typeof window === 'undefined') return undefined;
+    return window.localStorage;
+  }
 ````
 
 ## File: src/integrations/supabase/types.ts
@@ -8499,6 +8400,318 @@ export const Constants = {
 } as const
 ````
 
+## File: src/routes/_authenticated/courses.index.tsx
+````typescript
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
+import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
+import { useApp } from "@/lib/app-store";
+import { CHAPTERS, chapterStatus } from "@/lib/data";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/courses/")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Chapters — HLC Math" },
+      { name: "description", content: "Mathematics chapters 1–7 with videos, notes and exercises." },
+      { property: "og:title", content: "Chapters — HLC Math" },
+      { property: "og:description", content: "Seven Math chapters to master." },
+    ],
+  }),
+  component: Courses,
+});
+
+function Courses() {
+  const { me, videos } = useApp();
+  return (
+    <AppShell>
+      <h1 className="text-3xl font-bold">Chapter</h1>
+      <p className="font-semibold text-muted-foreground">Mathematics · choose a chapter to open its videos, notes and exercise</p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {CHAPTERS.map((c, i) => {
+          const list = videos.filter(v => v.chapter === c.id);
+          const watched = list.filter(v => me.completedVideos?.includes(v.id)).length;
+          const s = me.scores[i] ?? null;
+          const st = chapterStatus(s, i, me.scores);
+          const S = STATUS[st];
+          return (
+            <Link key={c.id} to="/courses/$chapter" params={{ chapter: String(c.id) }} className="flex flex-col rounded-3xl border-2 border-border bg-card p-5 shadow-chunky transition hover:-translate-y-1 hover:border-primary">
+              <div className="flex items-start justify-between">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-3xl">{c.emoji}</span>
+                <span className={cn("flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold", S.cls)}>
+                  <S.icon className="h-3.5 w-3.5" /> {st}
+                </span>
+              </div>
+              <p className="mt-4 text-xs font-extrabold uppercase tracking-wide text-primary">Chapter {c.id}</p>
+              <h2 className="text-lg font-bold leading-tight">{c.title}</h2>
+              <div className="mt-4">
+                <div className="flex justify-between text-xs font-semibold text-muted-foreground">
+                  <span>{list.length ? `${watched}/${list.length} videos watched` : "No videos yet"}</span>
+                </div>
+                {list.length > 0 && <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-success" style={{ width: `${(watched / list.length) * 100}%` }} /></div>}
+              </div>
+              <div className="mt-auto flex items-center justify-between pt-4">
+                <span className={cn("rounded-full px-3 py-1 text-sm font-extrabold", scoreTone(s))}>
+                  {s === null ? "No score yet" : `Score ${s}%`}
+                </span>
+                <span className="flex items-center text-sm font-semibold text-primary">Open <ChevronRight className="h-4 w-4" /></span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </AppShell>
+  );
+}
+````
+
+## File: src/routes/__root.tsx
+````typescript
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  Outlet,
+  Link,
+  createRootRouteWithContext,
+  useRouter,
+  HeadContent,
+  Scripts,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
+import { useEffect, type ReactNode } from "react";
+
+import { AppProvider } from "../lib/app-store";
+import { Toaster } from "../components/ui/sonner";
+import appCss from "../styles.css?url";
+import { reportLovableError } from "../lib/lovable-error-reporting";
+
+function NotFoundComponent() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-7xl font-bold text-foreground">404</h1>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <div className="mt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Go home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
+  console.error(error);
+  const router = useRouter();
+  useEffect(() => {
+    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+  }, [error]);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          This page didn't load
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Something went wrong on our end. You can try refreshing or head back home.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Try again
+          </button>
+          <a
+            href="/"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Go home
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  head: () => ({
+    // Replace these placeholders with the app's name and description when first building the app.
+    // Each content route, / included, must still set its own head(). Never add og:image or
+    // twitter:image here: every page without its own would inherit the root's preview image.
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "HLC Math — Mathematics" },
+      { name: "description", content: "Mathematics learning and progress for HLC." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap",
+      },
+      {
+        rel: "stylesheet",
+        href: appCss,
+      },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+    ],
+  }),
+  shellComponent: RootShell,
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+  errorComponent: ErrorComponent,
+});
+
+function RootShell({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <AppProvider>
+        <Outlet />
+        <Toaster richColors position="top-center" />
+      </AppProvider>
+    </QueryClientProvider>
+  );
+}
+````
+
+## File: package.json
+````json
+{
+  "name": "tanstack_start_ts",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "overrides": {
+    "rolldown": "1.2.1"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-accordion": "^1.2.12",
+    "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@radix-ui/react-aspect-ratio": "^1.1.8",
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-checkbox": "^1.3.3",
+    "@radix-ui/react-collapsible": "^1.1.12",
+    "@radix-ui/react-context-menu": "^2.2.16",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-hover-card": "^1.1.15",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-menubar": "^1.1.16",
+    "@radix-ui/react-navigation-menu": "^1.2.14",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-progress": "^1.1.8",
+    "@radix-ui/react-radio-group": "^1.3.8",
+    "@radix-ui/react-scroll-area": "^1.2.10",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slider": "^1.3.6",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-switch": "^1.2.6",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@radix-ui/react-toggle": "^1.1.10",
+    "@radix-ui/react-toggle-group": "^1.1.11",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@supabase/supabase-js": "^2.119.0",
+    "@tailwindcss/vite": "^4.2.1",
+    "@tanstack/react-query": "^5.101.1",
+    "@tanstack/react-router": "1.170.41",
+    "@tanstack/react-start": "1.168.60",
+    "@tanstack/router-plugin": "1.168.42",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "date-fns": "^4.1.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
+    "lucide-react": "^0.575.0",
+    "react": "^19.2.0",
+    "react-day-picker": "^9.14.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.71.2",
+    "react-resizable-panels": "^4.6.5",
+    "recharts": "^2.15.4",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.1",
+    "tw-animate-css": "^1.3.4",
+    "vaul": "^1.1.2",
+    "vite-tsconfig-paths": "^6.0.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@lovable.dev/vite-tanstack-config": "2.26.5",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/node": "^22.16.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "drizzle-kit": "0.x",
+    "drizzle-orm": "0.x",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^15.15.0",
+    "jsdom": "^20.0.3",
+    "nitro": "3.0.260603-beta",
+    "postgres": "^4.1.0",
+    "prettier": "^3.7.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.56.1",
+    "vite": "8.1.5",
+    "vitest": "^4.1.10"
+  }
+}
+````
+
 ## File: src/routes/_authenticated/leaderboard.tsx
 ````typescript
 import { createFileRoute } from "@tanstack/react-router";
@@ -8609,6 +8822,313 @@ function Leaderboard() {
         })}
       </div>
     </TeacherOnly></AppShell>
+  );
+}
+````
+
+## File: src/routes/_authenticated/teacher.tsx
+````typescript
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useRef, useState } from "react";
+import { FileUp, Search } from "lucide-react";
+import { parseScoreCsv, scoreSchema } from "@/lib/grade-rules";
+import { Button } from "@/components/ui/button";
+import { LessonMarks } from "@/components/LessonMarks";
+import { SheetGradebook } from "@/components/SheetGradebook";
+import { toast } from "sonner";
+import { AppShell, TeacherOnly, scoreTone } from "@/components/AppShell";
+import { useApp } from "@/lib/app-store";
+import { supabase } from "@/integrations/supabase/client";
+import { CHAPTERS, average, completion, formRank, improvement, type MathSet, weakTopics } from "@/lib/data";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/teacher")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Teacher Analytics — HLC Math" },
+      { name: "description", content: "Compare S2M3 and S2M5 scores, completion and weaker topics." },
+      { property: "og:title", content: "Teacher Analytics — HLC Math" },
+      { property: "og:description", content: "Math class analytics and master score table." },
+    ],
+  }),
+  component: Teacher,
+});
+
+const SETS: MathSet[] = ["S2M3", "S2M5"];
+
+function Teacher() {
+  const { students, refresh } = useApp();
+  const [q, setQ] = useState("");
+  const [setF, setSetF] = useState<"All" | MathSet>("All");
+  const [editing, setEditing] = useState<{ id: string; ch: number } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const stats = SETS.map((set) => {
+    const list = students.filter((s) => s.set === set);
+    const chAvg = CHAPTERS.map((_, i) => {
+      const v = list.map((s) => s.scores[i]).filter((x) => x !== null) as number[];
+      return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+    });
+    const weakest = chAvg
+      .map((v, i) => ({ v, c: CHAPTERS[i] }))
+      .filter((x): x is { v: number; c: (typeof CHAPTERS)[number] } => x.v !== null && Boolean(x.c))
+      .sort((a, b) => (a.v as number) - (b.v as number))
+      .slice(0, 2);
+    return {
+      set,
+      n: list.length,
+      avg: Math.round(list.reduce((a, s) => a + average(s), 0) / (list.length || 1)),
+      comp: Math.round(list.reduce((a, s) => a + completion(s), 0) / (list.length || 1)),
+      chAvg,
+      weakest,
+    };
+  });
+
+  const rows = useMemo(
+    () =>
+      students
+        .filter((s) => setF === "All" || s.set === setF)
+        .filter((s) => (s.name + s.email).toLowerCase().includes(q.toLowerCase()))
+        .sort((a, b) => formRank(a, students) - formRank(b, students)),
+    [students, q, setF],
+  );
+
+  const updateScore = async (id: string, ch: number, val: string) => {
+    try {
+      const parsedScore = scoreSchema.parse(val === "" ? null : Number(val));
+      const { error } = await supabase
+        .from("chapter_scores")
+        .upsert([{ student_id: id, chapter: ch + 1, score: parsedScore }]);
+      if (error) throw error;
+      await refresh();
+      setEditing(null);
+      toast.success("Score saved");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save score");
+    }
+  };
+
+  const importCsv = async (file: File) => {
+    try {
+      const map = parseScoreCsv(await file.text());
+      const unknown = [...map.keys()].filter((email) => !students.some((s) => s.email === email));
+      if (unknown.length)
+        throw new Error(`${unknown.length} email(s) are not in the roster. Add students first.`);
+      const data = students.flatMap((s) => {
+        const scores = map.get(s.email);
+        return scores ? scores.map((score, i) => ({ student_id: s.id, chapter: i + 1, score })) : [];
+      });
+      if (!data.length) throw new Error("No student scores found");
+      const { error } = await supabase.from("chapter_scores").upsert(data);
+      if (error) throw error;
+      await refresh();
+      toast.success(`Saved scores for ${map.size} students`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Import failed");
+    }
+  };
+
+  return (
+    <AppShell>
+      <TeacherOnly>
+        <h1 className="text-3xl font-bold">Class Analytics</h1>
+        <SheetGradebook />
+        <LessonMarks />
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {stats.map((st, k) => (
+            <div
+              key={st.set}
+              className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">{st.set}</h2>
+                <span className="text-sm font-bold text-muted-foreground">{st.n} students</span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div
+                  className={cn(
+                    "rounded-2xl p-3",
+                    k === 0
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-success text-primary-foreground",
+                  )}
+                >
+                  <p className="text-xs font-bold opacity-90">Average score</p>
+                  <p className="font-display text-3xl font-bold">{st.avg}%</p>
+                </div>
+                <div className="rounded-2xl bg-gold p-3 text-accent-foreground">
+                  <p className="text-xs font-bold">Completion</p>
+                  <p className="font-display text-3xl font-bold">{st.comp}%</p>
+                </div>
+              </div>
+              <div className="mt-4 flex h-28 items-end gap-2">
+                {st.chAvg.map((v, i) => (
+                  <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                    <span className="text-[10px] font-bold text-muted-foreground">{v ?? "—"}</span>
+                    <div
+                      className={cn(
+                        "w-full rounded-t-lg",
+                        v !== null && v < 70
+                          ? "bg-destructive/70"
+                          : k === 0
+                            ? "bg-primary"
+                            : "bg-success",
+                      )}
+                      style={{ height: `${(v ?? 0) * 0.8}px` }}
+                    />
+                    <span className="text-[10px] font-bold">Ch{i + 1}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Weaker topics:</span>
+                {st.weakest.map((w) => (
+                  <span
+                    key={w.c.id}
+                    className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-extrabold text-destructive"
+                  >
+                    Ch{w.c.id} {w.c.short} ({w.v}%)
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const f = e.dataTransfer.files[0];
+            if (f) importCsv(f);
+          }}
+          onClick={() => fileRef.current?.click()}
+          className="mt-6 flex cursor-pointer flex-col items-center rounded-3xl border-2 border-dashed border-primary/40 bg-primary/5 p-6 text-center hover:bg-primary/10"
+        >
+          <FileUp className="h-8 w-8 text-primary" />
+          <p className="mt-2 font-display text-lg font-bold">
+            Drop a score CSV here or click to browse
+          </p>
+          <p className="text-sm font-semibold text-muted-foreground">
+            Format: email,ch1,ch2,ch3,ch4,ch5,ch6,ch7 · or click any score below to edit
+          </p>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv"
+            hidden
+            onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])}
+          />
+        </div>
+
+        <div className="mt-6 rounded-3xl border-2 border-border bg-card p-4 shadow-chunky">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="mr-auto text-xl font-bold">Student Master Score Table</h2>
+            <div className="flex items-center gap-2 rounded-2xl border-2 border-input px-3 py-1.5">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search"
+                className="w-32 bg-transparent text-sm font-semibold outline-none"
+              />
+            </div>
+            <select
+              value={setF}
+              onChange={(e) => setSetF(e.target.value as "All" | MathSet)}
+              className="rounded-2xl border-2 border-input bg-card px-3 py-1.5 text-sm font-bold"
+            >
+              <option>All</option>
+              <option>S2M3</option>
+              <option>S2M5</option>
+            </select>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[1000px] text-sm">
+              <thead>
+                <tr className="text-left text-xs font-extrabold uppercase text-muted-foreground">
+                  <th className="p-2">Rank</th>
+                  <th className="p-2">Student</th>
+                  <th className="p-2">Set</th>
+                  {CHAPTERS.map((c) => (
+                    <th key={c.id} className="p-2 text-center">
+                      Ch{c.id}
+                    </th>
+                  ))}
+                  <th className="p-2 text-center">Avg</th>
+                  <th className="p-2 text-center">Improve</th>
+                  <th className="p-2">Weaker topics</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((s) => {
+                  const imp = improvement(s);
+                  return (
+                    <tr key={s.id} className="border-t border-border">
+                      <td className="p-2 font-display font-bold">#{formRank(s, students)}</td>
+                      <td className="p-2">
+                        <p className="font-bold">{s.name}</p>
+                        <p className="text-xs text-muted-foreground">{s.email}</p>
+                      </td>
+                      <td className="p-2 font-bold">{s.set}</td>
+                      {s.scores.map((sc, i) => (
+                        <td key={i} className="p-1 text-center">
+                          {editing?.id === s.id && editing.ch === i ? (
+                            <input
+                              autoFocus
+                              type="number"
+                              defaultValue={sc ?? ""}
+                              onBlur={(e) => updateScore(s.id, i, e.target.value)}
+                              onKeyDown={(e) =>
+                                e.key === "Enter" && (e.target as HTMLInputElement).blur()
+                              }
+                              className="w-14 rounded-lg border-2 border-primary px-1 text-center font-bold"
+                            />
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              onClick={() => setEditing({ id: s.id, ch: i })}
+                              className={cn("w-12 rounded-lg py-1 font-extrabold", scoreTone(sc))}
+                            >
+                              {sc ?? "—"}
+                            </Button>
+                          )}
+                        </td>
+                      ))}
+                      <td className="p-2 text-center font-display font-bold">{average(s)}%</td>
+                      <td
+                        className={cn(
+                          "p-2 text-center font-extrabold",
+                          imp >= 0 ? "text-success" : "text-destructive",
+                        )}
+                      >
+                        {imp >= 0 ? "+" : ""}
+                        {imp}%
+                      </td>
+                      <td className="p-2">
+                        <div className="flex flex-wrap gap-1">
+                          {weakTopics(s).map((c) => (
+                            <span
+                              key={c.id}
+                              className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-extrabold text-destructive"
+                            >
+                              Ch{c.id} {c.short}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </TeacherOnly>
+    </AppShell>
   );
 }
 ````
@@ -8757,6 +9277,133 @@ function Field({ icon, label, children }: { icon: ReactNode; label: string; chil
       {children}
     </div>
   );
+}
+````
+
+## File: drizzle/migrations/meta/_journal.json
+````json
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794207959028,
+      "tag": "0000_private_math_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794207995286,
+      "tag": "0001_chapter_notes_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794282352006,
+      "tag": "0002_restrict_math_function_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794364838779,
+      "tag": "0003_assessment_gradebook",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794450463152,
+      "tag": "0004_chapter_videos",
+      "breakpoints": true
+    }
+  ]
+}
+````
+
+## File: src/lib/data.ts
+````typescript
+export const CHAPTERS = [
+  { id: 1, title: "Approximation and Errors", short: "Approx. & Errors", emoji: "🎯" },
+  { id: 2, title: "Operations and Factorization of Polynomials", short: "Polynomials", emoji: "🧩" },
+  { id: 3, title: "Identities", short: "Identities", emoji: "🟰" },
+  { id: 4, title: "Algebraic Fractions and Formulae", short: "Algebraic Fractions", emoji: "➗" },
+  { id: 5, title: "Linear Equations in Two Unknowns", short: "Linear Equations", emoji: "📈" },
+  { id: 6, title: "Angles and Parallel Lines (II)", short: "Angles & Parallels", emoji: "📐" },
+  { id: 7, title: "Organization and Presentation of Data (II)", short: "Data (II)", emoji: "📊" },
+] as const;
+
+import type { Assessment } from "./assessments";
+
+export type MathSet = "S2M3" | "S2M5";
+
+export interface Student {
+  id: string;
+  userId?: string | null;
+  dailyMarks?: number;
+  videoMarks?: number;
+  /** Ids of chapter videos this student has watched to the end. */
+  completedVideos?: string[];
+  assessments?: Assessment[];
+  hlcNo?: string | null;
+  className?: string;
+  classNo?: string;
+  name: string;
+  email: string;
+  set: MathSet;
+  scores: (number | null)[]; // 7 chapters, null = not yet attempted
+  lastMonthAvg: number;
+  lastMonthFormRank: number;
+  xp: number;
+  streak: number;
+}
+
+export function average(s: Student) {
+  const done = s.scores.filter((x) => x !== null) as number[];
+  return done.length ? Math.round(done.reduce((a, b) => a + b, 0) / done.length) : 0;
+}
+
+export function completion(s: Student) {
+  return Math.round((s.scores.filter((x) => x !== null).length / CHAPTERS.length) * 100);
+}
+
+export function weakTopics(s: Student) {
+  return s.scores
+    .map((sc, i) => ({ sc, ch: CHAPTERS[i] }))
+    .filter((x): x is { sc: number; ch: (typeof CHAPTERS)[number] } => x.sc !== null && x.sc < 60 && Boolean(x.ch))
+    .sort((a, b) => (a.sc as number) - (b.sc as number))
+    .slice(0, 2)
+    .map((x) => x.ch);
+}
+
+export function ranked(list: Student[]) {
+  return [...list].sort((a, b) => average(b) - average(a));
+}
+
+export function formRank(s: Student, all: Student[]) {
+  return ranked(all).findIndex((x) => x.id === s.id) + 1;
+}
+
+export function setRank(s: Student, all: Student[]) {
+  return ranked(all.filter((x) => x.set === s.set)).findIndex((x) => x.id === s.id) + 1;
+}
+
+export function improvement(s: Student) {
+  return s.lastMonthAvg ? Math.round(((average(s) - s.lastMonthAvg) / s.lastMonthAvg) * 100) : 0;
+}
+
+export function level(xp: number) {
+  return Math.floor(xp / 1000) + 1;
+}
+
+export function chapterStatus(score: number | null, idx: number, scores: (number | null)[]) {
+  if (score !== null) return "Completed" as const;
+  const firstOpen = scores.findIndex((x) => x === null);
+  return idx === firstOpen ? ("In Progress" as const) : ("Not Started" as const);
 }
 ````
 
@@ -8940,344 +9587,6 @@ function Big({ label, value, tone }: { label: string; value: string; tone: strin
       <p className="text-sm font-bold opacity-90">{label}</p>
       <p className="font-display text-4xl font-bold">{value}</p>
     </div>
-  );
-}
-````
-
-## File: drizzle/migrations/meta/_journal.json
-````json
-{
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1794207959028,
-      "tag": "0000_private_math_records",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1794207995286,
-      "tag": "0001_chapter_notes_access",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1794282352006,
-      "tag": "0002_restrict_math_function_grants",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1794364838779,
-      "tag": "0003_assessment_gradebook",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1794450463152,
-      "tag": "0004_chapter_videos",
-      "breakpoints": true
-    }
-  ]
-}
-````
-
-## File: src/lib/app-store.tsx
-````typescript
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { User } from '@supabase/supabase-js';
-import type { Student } from './data';
-import type { Database } from '@/integrations/supabase/types';
-import type { Assessment } from './assessments';
-
-type AssessmentRow = Database['public']['Tables']['assessment_scores']['Row'];
-
-/** The database returns at most 1000 rows per request, so page through every assessment row. */
-async function fetchAllAssessments() {
-  const rows: AssessmentRow[] = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase.from('assessment_scores').select('*').order('student_id').order('position').range(from, from + 999);
-    if (error) throw error;
-    rows.push(...(data ?? []));
-    if (!data || data.length < 1000) return rows;
-  }
-}
-
-type Content = Database['public']['Tables']['chapter_content']['Row'];
-export type ChapterVideo = Database['public']['Tables']['chapter_videos']['Row'];
-
-interface Store {
-  session: { email: string; name: string } | null;
-  role: 'student' | 'teacher';
-  students: Student[];
-  me: Student;
-  ready: boolean;
-  error: string | null;
-  content: Content[];
-  videos: ChapterVideo[];
-  lastSync: string | null;
-  refresh: () => Promise<unknown>;
-  logout: () => Promise<void>;
-}
-
-const g = globalThis as unknown as { __hlcCloudCtx?: ReturnType<typeof createContext<Store | null>> };
-const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
-
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [hydrated, setHydrated] = useState(false);
-  const qc = useQueryClient();
-
-  useEffect(() => {
-    let active = true;
-    const verify = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (active) { setUser(data.user); setHydrated(true); }
-    };
-    const { data: listener } = supabase.auth.onAuthStateChange(event => {
-      if (!['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) return;
-      if (event === 'SIGNED_OUT') { setUser(null); qc.clear(); }
-      else { setHydrated(false); setTimeout(() => { void verify(); }, 0); }
-    });
-    void verify();
-    return () => { active = false; listener.subscription.unsubscribe(); };
-  }, [qc]);
-
-  const query = useQuery({
-    queryKey: ['math-records', user?.id], enabled: Boolean(user),
-    queryFn: async () => {
-      const claim = await supabase.rpc('claim_student');
-      if (claim.error) throw claim.error;
-      const [roles, roster, scores, marks, videos, content, assessments, syncs, chapterVideos] = await Promise.all([
-        supabase.from('user_roles').select('role'), supabase.from('students').select('*'),
-        supabase.from('chapter_scores').select('*'), supabase.from('daily_marks').select('*'),
-        supabase.from('chapter_video_completions').select('*'), supabase.from('chapter_content').select('*'),
-        fetchAllAssessments(), supabase.from('sheet_syncs').select('created_at').order('created_at', { ascending: false }).limit(1),
-        supabase.from('chapter_videos').select('*').order('chapter').order('position'),
-      ]);
-      for (const r of [roles, roster, scores, marks, videos, content, syncs, chapterVideos]) if (r.error) throw r.error;
-      const students: Student[] = (roster.data ?? []).map(s => ({
-        id: s.id, userId: s.user_id, name: s.name, email: s.email, set: s.math_set as Student['set'],
-        scores: Array.from({ length: 7 }, (_, i) => scores.data?.find(v => v.student_id === s.id && v.chapter === i + 1)?.score ?? null),
-        lastMonthAvg: s.last_month_avg, lastMonthFormRank: s.last_month_form_rank, xp: s.xp, streak: s.streak,
-        dailyMarks: marks.data?.filter(m => m.student_id === s.id).reduce((a, m) => a + m.marks, 0) ?? 0,
-        videoMarks: videos.data?.filter(v => v.student_id === s.id).length ?? 0,
-        completedVideos: videos.data?.filter(v => v.student_id === s.id && v.video_id).map(v => v.video_id as string) ?? [],
-        assessments: assessments.filter(a => a.student_id === s.id) as Assessment[],
-        hlcNo: s.hlc_no, className: s.class_name, classNo: s.class_no,
-      }));
-      return { lastSync: syncs.data?.[0]?.created_at ?? null, students, role: roles.data?.some(r => r.role === 'teacher') ? 'teacher' as const : 'student' as const, content: content.data ?? [], videos: chapterVideos.data ?? [] };
-    }, retry: false,
-  });
-
-  const students = user ? query.data?.students ?? [] : [];
-  const me = students.find(s => s.userId === user?.id) ?? { id: '', name: user?.user_metadata?.['full_name'] ?? 'Student', email: user?.email ?? '', set: 'S2M3' as const, scores: Array(7).fill(null), lastMonthAvg: 0, lastMonthFormRank: 0, xp: 0, streak: 0, dailyMarks: 0, videoMarks: 0, completedVideos: [] };
-
-  return <Ctx.Provider value={{ session: user ? { email: user.email ?? '', name: me.name } : null, role: query.data?.role ?? 'student', students, me, ready: hydrated && (!user || !query.isPending), error: query.error?.message ?? null, content: query.data?.content ?? [], videos: query.data?.videos ?? [], lastSync: query.data?.lastSync ?? null, refresh: () => query.refetch(), logout: async () => { await supabase.auth.signOut(); qc.clear(); setUser(null); } }}>{children}</Ctx.Provider>;
-}
-
-export function useApp() { const c = useContext(Ctx); if (!c) throw new Error('useApp outside provider'); return c; }
-````
-
-## File: src/lib/data.ts
-````typescript
-export const CHAPTERS = [
-  { id: 1, title: "Approximation and Errors", short: "Approx. & Errors", emoji: "🎯" },
-  { id: 2, title: "Operations and Factorization of Polynomials", short: "Polynomials", emoji: "🧩" },
-  { id: 3, title: "Identities", short: "Identities", emoji: "🟰" },
-  { id: 4, title: "Algebraic Fractions and Formulae", short: "Algebraic Fractions", emoji: "➗" },
-  { id: 5, title: "Linear Equations in Two Unknowns", short: "Linear Equations", emoji: "📈" },
-  { id: 6, title: "Angles and Parallel Lines (II)", short: "Angles & Parallels", emoji: "📐" },
-  { id: 7, title: "Organization and Presentation of Data (II)", short: "Data (II)", emoji: "📊" },
-] as const;
-
-import type { Assessment } from "./assessments";
-
-export type MathSet = "S2M3" | "S2M5";
-
-export interface Student {
-  id: string;
-  userId?: string | null;
-  dailyMarks?: number;
-  videoMarks?: number;
-  /** Ids of chapter videos this student has watched to the end. */
-  completedVideos?: string[];
-  assessments?: Assessment[];
-  hlcNo?: string | null;
-  className?: string;
-  classNo?: string;
-  name: string;
-  email: string;
-  set: MathSet;
-  scores: (number | null)[]; // 7 chapters, null = not yet attempted
-  lastMonthAvg: number;
-  lastMonthFormRank: number;
-  xp: number;
-  streak: number;
-}
-
-export function average(s: Student) {
-  const done = s.scores.filter((x) => x !== null) as number[];
-  return done.length ? Math.round(done.reduce((a, b) => a + b, 0) / done.length) : 0;
-}
-
-export function completion(s: Student) {
-  return Math.round((s.scores.filter((x) => x !== null).length / CHAPTERS.length) * 100);
-}
-
-export function weakTopics(s: Student) {
-  return s.scores
-    .map((sc, i) => ({ sc, ch: CHAPTERS[i] }))
-    .filter((x): x is { sc: number; ch: (typeof CHAPTERS)[number] } => x.sc !== null && x.sc < 60 && Boolean(x.ch))
-    .sort((a, b) => (a.sc as number) - (b.sc as number))
-    .slice(0, 2)
-    .map((x) => x.ch);
-}
-
-export function ranked(list: Student[]) {
-  return [...list].sort((a, b) => average(b) - average(a));
-}
-
-export function formRank(s: Student, all: Student[]) {
-  return ranked(all).findIndex((x) => x.id === s.id) + 1;
-}
-
-export function setRank(s: Student, all: Student[]) {
-  return ranked(all.filter((x) => x.set === s.set)).findIndex((x) => x.id === s.id) + 1;
-}
-
-export function improvement(s: Student) {
-  return s.lastMonthAvg ? Math.round(((average(s) - s.lastMonthAvg) / s.lastMonthAvg) * 100) : 0;
-}
-
-export function level(xp: number) {
-  return Math.floor(xp / 1000) + 1;
-}
-
-export function chapterStatus(score: number | null, idx: number, scores: (number | null)[]) {
-  if (score !== null) return "Completed" as const;
-  const firstOpen = scores.findIndex((x) => x === null);
-  return idx === firstOpen ? ("In Progress" as const) : ("Not Started" as const);
-}
-````
-
-## File: src/routes/index.tsx
-````typescript
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
-import { GraduationCap } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { useApp } from '@/lib/app-store';
-
-export const Route = createFileRoute('/')({
-  head: () => ({
-    meta: [
-      { title: 'Sign in — HLC Math' },
-      { name: 'description', content: 'Sign in to your private HLC Mathematics records.' },
-      { property: 'og:title', content: 'Sign in — HLC Math' },
-      { property: 'og:description', content: 'School mathematics scores and chapter progress.' },
-      { property: 'og:type', content: 'website' },
-      { name: 'twitter:card', content: 'summary_large_image' }
-    ]
-  }),
-  component: Login
-});
-
-function Login() {
-  const { session, ready, role } = useApp();
-  const navigate = useNavigate();
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    if (ready && session) void navigate({ to: role === 'teacher' ? '/teacher' : '/dashboard' });
-  }, [ready, session, role, navigate]);
-
-  const social = async (provider: 'google') => {
-    setMessage('');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-        queryParams: {
-          hd: 'hlc.edu.hk',
-          prompt: 'select_account'
-        }
-      }
-    });
-    if (error) setMessage(error.message);
-  };
-
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm py-12">
-        <GraduationCap className="mb-4 h-10 w-10 text-primary" />
-        <h1 className="text-3xl font-semibold">HLC Math</h1>
-        <p className="mb-8 mt-2 text-muted-foreground">Mathematics</p>
-
-        <div className="mt-6 space-y-3">
-          <Button
-            className="google-auth w-full"
-            variant="outline"
-            onClick={() => social('google')}
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
-              <path
-                fill="#4285F4"
-                d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
-              />
-            </svg>
-            Continue with Google
-          </Button>
-
-          <Button
-            variant="secondary"
-            className="w-full"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              setMessage('');
-              const r = await supabase.auth.signInWithPassword({
-                email: 'demo.student@hlc.edu.hk',
-                password: 'HlcMath2026!'
-              });
-              if (r.error) setMessage(r.error.message);
-              setBusy(false);
-            }}
-          >
-            Try demo student (no login)
-          </Button>
-        </div>
-
-        {message && (
-          <p role="status" className="mt-5 text-sm">
-            {message}
-          </p>
-        )}
-      </div>
-    </main>
   );
 }
 ````
@@ -9556,4 +9865,232 @@ declare module '@tanstack/react-start' {
 - [ ] Multiple named videos per chapter (teacher editor).
 - [ ] Videos play inside the app; mark awarded only after watching to the end (no skipping).
 - [ ] Chapter detail page: videos, notes, exercise, progress.
+````
+
+## File: src/lib/app-store.tsx
+````typescript
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
+import type { Student } from './data';
+import type { Database } from '@/integrations/supabase/types';
+import type { Assessment } from './assessments';
+
+type AssessmentRow = Database['public']['Tables']['assessment_scores']['Row'];
+
+/** The database returns at most 1000 rows per request, so page through every assessment row. */
+async function fetchAllAssessments() {
+  const rows: AssessmentRow[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from('assessment_scores').select('*').order('student_id').order('position').range(from, from + 999);
+    if (error) throw error;
+    rows.push(...(data ?? []));
+    if (!data || data.length < 1000) return rows;
+  }
+}
+
+type Content = Database['public']['Tables']['chapter_content']['Row'];
+export type ChapterVideo = Database['public']['Tables']['chapter_videos']['Row'];
+
+interface Store {
+  session: { email: string; name: string } | null;
+  role: 'student' | 'teacher';
+  students: Student[];
+  me: Student;
+  ready: boolean;
+  error: string | null;
+  content: Content[];
+  videos: ChapterVideo[];
+  lastSync: string | null;
+  refresh: () => Promise<unknown>;
+  logout: () => Promise<void>;
+}
+
+const g = globalThis as unknown as { __hlcCloudCtx?: ReturnType<typeof createContext<Store | null>> };
+const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    let active = true;
+    const verify = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (active) { setUser(data.user); setHydrated(true); }
+    };
+    const { data: listener } = supabase.auth.onAuthStateChange(event => {
+      if (!['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) return;
+      if (event === 'SIGNED_OUT') { setUser(null); qc.clear(); }
+      else { setHydrated(false); setTimeout(() => { void verify(); }, 0); }
+    });
+    void verify();
+    return () => { active = false; listener.subscription.unsubscribe(); };
+  }, [qc]);
+
+  const query = useQuery({
+    queryKey: ['math-records', user?.id], enabled: Boolean(user),
+    queryFn: async () => {
+      const claim = await supabase.rpc('claim_student');
+      if (claim.error) throw claim.error;
+      const [roles, roster, scores, marks, videos, content, assessments, syncs, chapterVideos] = await Promise.all([
+        supabase.from('user_roles').select('role'), supabase.from('students').select('*'),
+        supabase.from('chapter_scores').select('*'), supabase.from('daily_marks').select('*'),
+        supabase.from('chapter_video_completions').select('*'), supabase.from('chapter_content').select('*'),
+        fetchAllAssessments(), supabase.from('sheet_syncs').select('created_at').order('created_at', { ascending: false }).limit(1),
+        supabase.from('chapter_videos').select('*').order('chapter').order('position'),
+      ]);
+      for (const r of [roles, roster, scores, marks, videos, content, syncs, chapterVideos]) if (r.error) throw r.error;
+      const students: Student[] = (roster.data ?? []).map(s => ({
+        id: s.id, userId: s.user_id, name: s.name, email: s.email, set: s.math_set as Student['set'],
+        scores: Array.from({ length: 7 }, (_, i) => scores.data?.find(v => v.student_id === s.id && v.chapter === i + 1)?.score ?? null),
+        lastMonthAvg: s.last_month_avg, lastMonthFormRank: s.last_month_form_rank, xp: s.xp, streak: s.streak,
+        dailyMarks: marks.data?.filter(m => m.student_id === s.id).reduce((a, m) => a + m.marks, 0) ?? 0,
+        videoMarks: videos.data?.filter(v => v.student_id === s.id).length ?? 0,
+        completedVideos: videos.data?.filter(v => v.student_id === s.id && v.video_id).map(v => v.video_id as string) ?? [],
+        assessments: assessments.filter(a => a.student_id === s.id) as Assessment[],
+        hlcNo: s.hlc_no, className: s.class_name, classNo: s.class_no,
+      }));
+      return { lastSync: syncs.data?.[0]?.created_at ?? null, students, role: roles.data?.some(r => r.role === 'teacher') ? 'teacher' as const : 'student' as const, content: content.data ?? [], videos: chapterVideos.data ?? [] };
+    }, retry: false,
+  });
+
+  const students = user ? query.data?.students ?? [] : [];
+  const me = students.find(s => s.userId === user?.id) ?? { id: '', name: user?.user_metadata?.['full_name'] ?? 'Student', email: user?.email ?? '', set: 'S2M3' as const, scores: Array(7).fill(null), lastMonthAvg: 0, lastMonthFormRank: 0, xp: 0, streak: 0, dailyMarks: 0, videoMarks: 0, completedVideos: [] };
+
+  return <Ctx.Provider value={{ session: user ? { email: user.email ?? '', name: me.name } : null, role: query.data?.role ?? 'student', students, me, ready: hydrated && (!user || !query.isPending), error: query.error?.message ?? null, content: query.data?.content ?? [], videos: query.data?.videos ?? [], lastSync: query.data?.lastSync ?? null, refresh: () => query.refetch(), logout: async () => { await supabase.auth.signOut(); qc.clear(); setUser(null); } }}>{children}</Ctx.Provider>;
+}
+
+export function useApp() { const c = useContext(Ctx); if (!c) throw new Error('useApp outside provider'); return c; }
+````
+
+## File: src/routes/index.tsx
+````typescript
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { GraduationCap } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { useApp } from '@/lib/app-store';
+
+export const Route = createFileRoute('/')({
+  head: () => ({
+    meta: [
+      { title: 'Sign in — HLC Math' },
+      { name: 'description', content: 'Sign in to your private HLC Mathematics records.' },
+      { property: 'og:title', content: 'Sign in — HLC Math' },
+      { property: 'og:description', content: 'School mathematics scores and chapter progress.' },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' }
+    ]
+  }),
+  component: Login
+});
+
+function Login() {
+  const { session, ready, role } = useApp();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (ready && session) void navigate({ to: role === 'teacher' ? '/teacher' : '/dashboard' });
+  }, [ready, session, role, navigate]);
+
+  const social = async (provider: 'google') => {
+    setMessage('');
+    setBusy(true);
+    try {
+      const url = import.meta.env['VITE_SUPABASE_URL'] as string;
+      const key = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] as string;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+          // Don't let supabase-js navigate by itself: a plain browser
+          // navigation carries no `apikey` header, which is what causes
+          // {"message":"No API key found in request"}.
+          skipBrowserRedirect: true,
+          queryParams: {
+            hd: 'hlc.edu.hk',
+            prompt: 'select_account'
+          }
+        }
+      });
+      if (error || !data?.url) {
+        setMessage(error?.message ?? 'Could not start Google sign-in');
+        return;
+      }
+      const target = new URL(data.url);
+      if (key && !target.searchParams.has('apikey')) target.searchParams.set('apikey', key);
+      window.location.assign(target.toString());
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-sm py-12">
+        <GraduationCap className="mb-4 h-10 w-10 text-primary" />
+        <h1 className="text-3xl font-semibold">HLC Math</h1>
+        <p className="mb-8 mt-2 text-muted-foreground">Mathematics</p>
+
+        <div className="mt-6 space-y-3">
+          <Button
+            className="google-auth w-full"
+            variant="outline"
+            onClick={() => social('google')}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+              <path
+                fill="#4285F4"
+                d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+              />
+            </svg>
+            Continue with Google
+          </Button>
+
+          <Button
+            variant="secondary"
+            className="w-full"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setMessage('');
+              const r = await supabase.auth.signInWithPassword({
+                email: 'demo.student@hlc.edu.hk',
+                password: 'HlcMath2026!'
+              });
+              if (r.error) setMessage(r.error.message);
+              setBusy(false);
+            }}
+          >
+            Try demo student (no login)
+          </Button>
+        </div>
+
+        {message && (
+          <p role="status" className="mt-5 text-sm">
+            {message}
+          </p>
+        )}
+      </div>
+    </main>
+  );
+}
 ````

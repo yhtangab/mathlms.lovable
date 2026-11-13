@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/lib/app-store';
 
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_6d4BjM4FHDurcIw2BhpeaQ_hsYnu4Ju';
+
 export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
@@ -33,15 +35,13 @@ function Login() {
     setMessage('');
     setBusy(true);
     try {
-      const url = import.meta.env['VITE_SUPABASE_URL'] as string;
-      const key = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] as string;
+      const key =
+        (import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] as string | undefined) ||
+        DEFAULT_SUPABASE_KEY;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: window.location.origin,
-          // Don't let supabase-js navigate by itself: a plain browser
-          // navigation carries no `apikey` header, which is what causes
-          // {"message":"No API key found in request"}.
           skipBrowserRedirect: true,
           queryParams: {
             hd: 'hlc.edu.hk',
@@ -54,7 +54,9 @@ function Login() {
         return;
       }
       const target = new URL(data.url);
-      if (key && !target.searchParams.has('apikey')) target.searchParams.set('apikey', key);
+      if (key && !target.searchParams.has('apikey')) {
+        target.searchParams.set('apikey', key.trim());
+      }
       window.location.assign(target.toString());
     } finally {
       setBusy(false);
@@ -72,6 +74,7 @@ function Login() {
           <Button
             className="google-auth w-full"
             variant="outline"
+            disabled={busy}
             onClick={() => social('google')}
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
@@ -115,7 +118,7 @@ function Login() {
         </div>
 
         {message && (
-          <p role="status" className="mt-5 text-sm">
+          <p role="status" className="mt-5 text-sm text-destructive">
             {message}
           </p>
         )}

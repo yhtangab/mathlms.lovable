@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
+import { useServerFn } from '@tanstack/react-start';
 import { RefreshCw, Sheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { scoreTone } from '@/components/AppShell';
 import { useApp } from '@/lib/app-store';
 import { supabase } from '@/integrations/supabase/client';
+import { syncGoogleSheet } from '@/lib/sheets.functions';
 import { ITEM_CATEGORIES, percent, termSummary, WEIGHTS } from '@/lib/assessments';
 import { parseSetTab, type Category, type MathSet, type ParsedStudent } from '@/lib/sheet-parse';
 import { cn } from '@/lib/utils';
@@ -118,6 +120,7 @@ async function fetchSheetTabsDirect(): Promise<{ formulas: Grid[]; values: Grid[
 
 export function SheetGradebook() {
   const { students, refresh, lastSync } = useApp();
+  const serverSync = useServerFn(syncGoogleSheet);
   const [busy, setBusy] = useState(false);
   const [set, setSet] = useState<'S2M3' | 'S2M5'>('S2M3');
   const [term, setTerm] = useState(1);
@@ -156,6 +159,17 @@ export function SheetGradebook() {
   const runSync = async () => {
     setBusy(true);
     try {
+      // 1. 優先透過後端 Server Function 同步（不會受瀏覽器 CORS 限制）
+      try {
+        const r = await serverSync();
+        await refresh();
+        toast.success(`成功同步 ${r.students} 位學生及 ${r.scores} 項分數紀錄！`);
+        return;
+      } catch (serverErr) {
+        console.warn('[SheetGradebook] Server sync failed, trying direct browser sync:', serverErr);
+      }
+
+      // 2. 後備方案：直接由瀏覽器讀取並寫入 Supabase
       const { data: authData } = await supabase.auth.getUser();
       const userId = authData.user?.id;
       if (!userId) throw new Error('請先登入老師帳號');
