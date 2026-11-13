@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 import { CalendarClock } from "lucide-react";
 import { AppShell, scoreTone } from "@/components/AppShell";
 import { AssessmentReport } from "@/components/AssessmentReport";
-import { Panel } from "@/components/PageParts";
+import { PageHeader, Panel, StatCard } from "@/components/PageParts";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, average, improvement, weakTopics } from "@/lib/data";
 import { COIN_NAME, coinBalance, reasonLabel } from "@/lib/coins";
@@ -16,6 +15,7 @@ import {
   homeworkForSet,
   splitByDue,
 } from "@/lib/homework";
+import { TONES, chapterTone } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -56,44 +56,46 @@ function Dashboard() {
 
   return (
     <AppShell>
-      <header className="border-b border-border pb-4">
-        <h1 className="text-2xl font-semibold">Welcome back, {firstName}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {me.set} Mathematics{classText}
-        </p>
-      </header>
+      <PageHeader
+        title={`Welcome back, ${firstName}`}
+        description={`${me.set} Mathematics${classText}`}
+      />
 
-      <section aria-label="Summary" className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Metric
+      <section aria-label="Summary" className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          tone="blue"
           label={term === undefined ? "Coursework" : `Term ${term} coursework`}
           value={coursework === null ? "—" : String(coursework)}
           suffix="/ 200"
         />
-        <Metric
+        <StatCard
+          tone="green"
           label="Chapter average"
           value={marked ? `${avg}%` : "—"}
           note={
-            marked && me.lastMonthAvg > 0 ? (
-              <span className={imp >= 0 ? "text-success" : "text-destructive"}>
-                {imp >= 0 ? "+" : ""}
-                {imp}% on last month
-              </span>
-            ) : null
+            marked && me.lastMonthAvg > 0 ? `${imp >= 0 ? "+" : ""}${imp}% on last month` : null
           }
         />
-        <Metric
+        <StatCard
+          tone="grape"
           label="Chapters with marks"
           value={String(marked)}
           suffix={`/ ${CHAPTERS.length}`}
         />
-        <Link to="/awards" className="block rounded-lg">
-          <Metric label={COIN_NAME} value={String(coinBalance(me))} note="See rewards" />
+        <Link to="/awards" className="block rounded-xl transition-transform hover:-translate-y-0.5">
+          <StatCard
+            tone="gold"
+            label={COIN_NAME}
+            value={String(coinBalance(me))}
+            note="See rewards"
+          />
         </Link>
       </section>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Panel
+            tone="flame"
             title="Homework"
             description={
               upcoming.length === 0
@@ -101,7 +103,7 @@ function Dashboard() {
                 : `${upcoming.length} upcoming deadline${upcoming.length === 1 ? "" : "s"}`
             }
             actions={
-              <Link to="/homework" className="text-sm font-medium text-primary hover:underline">
+              <Link to="/homework" className="text-sm font-bold text-primary hover:underline">
                 View all
               </Link>
             }
@@ -112,7 +114,7 @@ function Dashboard() {
                 No homework is due. New homework from your teacher will appear here.
               </p>
             ) : (
-              <ul className="divide-y divide-border">
+              <ul className="divide-y-2 divide-border">
                 {upcoming.slice(0, HOMEWORK_PREVIEW).map((h) => {
                   const st = dueStatus(h.due_at);
                   return (
@@ -122,7 +124,7 @@ function Dashboard() {
                         aria-hidden="true"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium leading-snug">{h.title}</p>
+                        <p className="font-semibold leading-snug">{h.title}</p>
                         <p className="text-xs text-muted-foreground">
                           Due {formatDue(h.due_at)}
                           {h.chapter === null ? "" : `, Chapter ${h.chapter}`}
@@ -130,7 +132,7 @@ function Dashboard() {
                       </div>
                       <span
                         className={cn(
-                          "shrink-0 rounded px-2 py-0.5 text-xs font-semibold",
+                          "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold",
                           DUE_TONE[st],
                         )}
                       >
@@ -145,33 +147,41 @@ function Dashboard() {
 
           <AssessmentReport assessments={assessments} />
 
-          <Panel title="Chapter progress" bodyClassName="px-3 py-2">
+          <Panel tone="green" title="Chapter progress" bodyClassName="px-3 py-2">
             <ul>
               {CHAPTERS.map((c, i) => {
                 const s = me.scores[i] ?? null;
+                const tone = TONES[chapterTone(c.id)];
                 return (
                   <li key={c.id}>
                     <Link
                       to="/courses/$chapter"
                       params={{ chapter: String(c.id) }}
-                      className="flex items-center gap-3 rounded-md px-2 py-2.5 hover:bg-muted/60"
+                      className="flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-muted/70"
                     >
-                      <span className="w-8 shrink-0 text-sm font-semibold tabular-nums text-muted-foreground">
+                      <span
+                        className={cn(
+                          "grid h-9 w-9 shrink-0 place-items-center rounded-lg text-sm font-bold",
+                          tone.flat,
+                        )}
+                      >
                         {c.id}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{c.title}</span>
-                      <span className="hidden h-1.5 w-28 overflow-hidden rounded-full bg-muted sm:block">
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                        {c.title}
+                      </span>
+                      <span className="hidden h-2 w-28 overflow-hidden rounded-full bg-muted sm:block">
                         <span
                           className={cn(
                             "block h-full rounded-full",
-                            s !== null && s < 60 ? "bg-destructive" : "bg-success",
+                            s !== null && s < 60 ? "bg-destructive" : tone.bar,
                           )}
                           style={{ width: `${s ?? 0}%` }}
                         />
                       </span>
                       <span
                         className={cn(
-                          "w-14 shrink-0 rounded px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums",
+                          "w-14 shrink-0 rounded-full px-1.5 py-0.5 text-center text-xs font-bold tabular-nums",
                           scoreTone(s),
                         )}
                       >
@@ -186,7 +196,7 @@ function Dashboard() {
         </div>
 
         <aside className="space-y-6">
-          <Panel title="Topics to review">
+          <Panel tone="flame" title="Topics to review">
             {weak.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {marked ? "No chapter is below 60% at the moment." : "No chapter marks yet."}
@@ -198,13 +208,13 @@ function Dashboard() {
                     <Link
                       to="/courses/$chapter"
                       params={{ chapter: String(c.id) }}
-                      className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 hover:border-primary/50"
+                      className="flex items-center justify-between gap-3 rounded-lg border-2 border-border px-3 py-2 transition-colors hover:border-flame/60"
                     >
                       <span className="min-w-0">
                         <span className="block text-xs text-muted-foreground">Chapter {c.id}</span>
-                        <span className="block truncate text-sm font-medium">{c.title}</span>
+                        <span className="block truncate text-sm font-semibold">{c.title}</span>
                       </span>
-                      <span className="shrink-0 text-sm font-semibold text-destructive">
+                      <span className="shrink-0 text-sm font-bold text-destructive">
                         {me.scores[c.id - 1]}%
                       </span>
                     </Link>
@@ -220,9 +230,10 @@ function Dashboard() {
           </Panel>
 
           <Panel
+            tone="gold"
             title={`Recent ${COIN_NAME}`}
             actions={
-              <Link to="/awards" className="text-sm font-medium text-primary hover:underline">
+              <Link to="/awards" className="text-sm font-bold text-primary hover:underline">
                 History
               </Link>
             }
@@ -239,9 +250,9 @@ function Dashboard() {
                     </span>
                     <span
                       className={cn(
-                        "font-semibold tabular-nums",
+                        "font-bold tabular-nums",
                         m.marks > 0
-                          ? "text-success"
+                          ? "text-success-deep"
                           : m.marks < 0
                             ? "text-destructive"
                             : "text-muted-foreground",
@@ -257,30 +268,5 @@ function Dashboard() {
         </aside>
       </div>
     </AppShell>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  suffix,
-  note,
-}: {
-  label: string;
-  value: string;
-  suffix?: string;
-  note?: ReactNode;
-}) {
-  return (
-    <div className="h-full rounded-lg border border-border bg-card p-4 shadow-chunky">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">
-        {value}
-        {suffix ? (
-          <span className="text-sm font-normal text-muted-foreground"> {suffix}</span>
-        ) : null}
-      </p>
-      {note ? <p className="mt-1 text-xs text-muted-foreground">{note}</p> : null}
-    </div>
   );
 }

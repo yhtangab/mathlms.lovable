@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
 import { ChapterVideoPlayer } from "@/components/ChapterVideoPlayer";
-import { Panel } from "@/components/PageParts";
+import { PageHeader, Panel, StatCard } from "@/components/PageParts";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, chapterStatus } from "@/lib/data";
 import { percent } from "@/lib/assessments";
@@ -26,6 +26,7 @@ import {
   homeworkForSet,
   splitByDue,
 } from "@/lib/homework";
+import { chapterTone } from "@/lib/tones";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,7 @@ function ChapterPage() {
     );
   }
 
+  const tone = chapterTone(c.id);
   const active = list.find((v) => v.id === activeId) ?? list.find((v) => !done(v.id)) ?? list[0];
   const materials = content.find((m) => m.chapter === c.id);
   const notes = materials?.notes.trim() ?? "";
@@ -108,81 +110,84 @@ function ChapterPage() {
     <AppShell>
       <Link
         to="/courses"
-        className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary"
+        className="inline-flex items-center gap-1 text-sm font-bold text-muted-foreground hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" /> All chapters
       </Link>
-      <div className="mt-3 flex flex-wrap items-start gap-4 border-b border-border pb-4">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-primary text-lg font-semibold text-primary-foreground">
-          {c.id}
-        </span>
-        <div className="mr-auto min-w-0">
-          <p className="text-sm text-muted-foreground">Chapter {c.id}</p>
-          <h1 className="text-2xl font-semibold leading-tight">{c.title}</h1>
-        </div>
-        <span
-          className={cn("flex items-center gap-1 rounded px-2 py-0.5 text-xs font-semibold", S.cls)}
-        >
-          <S.icon className="h-3.5 w-3.5" /> {st}
-        </span>
+      <div className="mt-3">
+        <PageHeader
+          tone={tone}
+          eyebrow={`Chapter ${c.id}`}
+          title={c.title}
+          actions={
+            <span className="rounded-full bg-card">
+              <span
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold",
+                  S.cls,
+                )}
+              >
+                <S.icon className="h-3.5 w-3.5" /> {st}
+              </span>
+            </span>
+          }
+        />
       </div>
 
-      <section aria-label="Progress" className="mt-6 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-lg border border-border bg-card p-4 shadow-chunky">
-          <p className="text-sm text-muted-foreground">Videos watched</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">
-            {watched}
-            <span className="text-base font-normal text-muted-foreground"> / {list.length}</span>
-          </p>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-success"
-              style={{ width: `${list.length ? (watched / list.length) * 100 : 0}%` }}
-            />
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4 shadow-chunky">
-          <p className="text-sm text-muted-foreground">Math Coins from videos</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{watched}</p>
-          <p className="text-xs text-muted-foreground">One for each video watched to the end</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4 shadow-chunky">
-          <p className="text-sm text-muted-foreground">Chapter score</p>
-          <p
-            className={cn(
-              "mt-2 inline-block rounded px-2 py-0.5 text-lg font-semibold tabular-nums",
-              scoreTone(score),
-            )}
-          >
-            {score === null ? "No mark yet" : `${score}%`}
-          </p>
-        </div>
+      <section aria-label="Progress" className="mt-6 grid gap-4 sm:grid-cols-3">
+        <StatCard
+          tone="green"
+          label="Videos watched"
+          value={String(watched)}
+          suffix={`/ ${list.length}`}
+          note={
+            <span className="mt-1 block h-2 overflow-hidden rounded-full bg-white/30">
+              <span
+                className="block h-full rounded-full bg-white"
+                style={{ width: `${list.length ? (watched / list.length) * 100 : 0}%` }}
+              />
+            </span>
+          }
+        />
+        <StatCard
+          tone="gold"
+          label="Math Coins from videos"
+          value={String(watched)}
+          note="One for each video watched to the end"
+        />
+        <StatCard
+          tone="blue"
+          label="Chapter score"
+          value={score === null ? "—" : `${score}%`}
+          note={score === null ? "No mark yet" : null}
+        />
       </section>
 
       {dueHomework.length > 0 && (
         <Panel
+          tone="flame"
           className="mt-6"
           title="Homework for this chapter"
           actions={
-            <Link to="/homework" className="text-sm font-medium text-primary hover:underline">
+            <Link to="/homework" className="text-sm font-bold text-primary hover:underline">
               All homework
             </Link>
           }
           bodyClassName="px-5 py-1"
         >
-          <ul className="divide-y divide-border">
+          <ul className="divide-y-2 divide-border">
             {dueHomework.map((h) => {
               const status = dueStatus(h.due_at);
               return (
                 <li key={h.id} className="flex items-start gap-3 py-3">
                   <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium">{h.title}</p>
+                    <p className="font-semibold">{h.title}</p>
                     <p className="text-xs text-muted-foreground">Due {formatDue(h.due_at)}</p>
                   </div>
                   <span
                     className={cn(
-                      "shrink-0 rounded px-2 py-0.5 text-xs font-semibold",
+                      "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold",
                       DUE_TONE[status],
                     )}
                   >
@@ -196,6 +201,7 @@ function ChapterPage() {
       )}
 
       <Panel
+        tone={tone}
         className="mt-6"
         title={
           <span className="flex items-center gap-2">
@@ -216,14 +222,14 @@ function ChapterPage() {
               canEarn={canEarn}
               onComplete={complete}
             />
-            <ol className="space-y-1.5">
+            <ol className="space-y-2">
               {list.map((v, i) => (
                 <li key={v.id}>
                   <button
                     type="button"
                     onClick={() => setActiveId(v.id)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-md border p-3 text-left text-sm transition-colors",
+                      "flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left text-sm transition-colors",
                       v.id === active.id
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-primary/50",
@@ -236,7 +242,7 @@ function ChapterPage() {
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="block text-xs text-muted-foreground">Video {i + 1}</span>
-                      <span className="block font-medium">{v.title}</span>
+                      <span className="block font-semibold">{v.title}</span>
                     </span>
                   </button>
                 </li>
@@ -248,10 +254,11 @@ function ChapterPage() {
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <Panel
+          tone="sky"
           className={cn(preview && "md:col-span-2")}
           title={
             <span className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-success" /> Notes
+              <FileText className="h-4 w-4 text-sky-deep" /> Notes
             </span>
           }
         >
@@ -263,14 +270,14 @@ function ChapterPage() {
                   title={`Chapter ${c.id} notes`}
                   loading="lazy"
                   allow="autoplay"
-                  className="h-[70vh] w-full rounded-md border border-border bg-muted"
+                  className="h-[70vh] w-full rounded-lg border-2 border-border bg-muted"
                 />
               )}
               <a
                 href={notes}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary underline"
               >
                 Open notes in Google Drive <ExternalLink className="h-4 w-4" />
               </a>
@@ -289,6 +296,7 @@ function ChapterPage() {
           )}
         </Panel>
         <Panel
+          tone="gold"
           title={
             <span className="flex items-center gap-2">
               <ListChecks className="h-4 w-4 text-gold-deep" /> Exercise
@@ -304,8 +312,8 @@ function ChapterPage() {
       </div>
 
       {quizzes.length > 0 && (
-        <Panel className="mt-6" title="My quiz results for this chapter">
-          <ul className="divide-y divide-border">
+        <Panel tone="grape" className="mt-6" title="My quiz results for this chapter">
+          <ul className="divide-y-2 divide-border">
             {quizzes.map((q) => {
               const p = percent(q);
               return (
@@ -313,12 +321,15 @@ function ChapterPage() {
                   key={`${q.term}-${q.label}`}
                   className="flex items-center justify-between py-2 text-sm"
                 >
-                  <span className="font-medium">
+                  <span className="font-semibold">
                     {q.label.toUpperCase().startsWith("CQ") ? "Chapter quiz" : "Short quiz"}{" "}
                     {q.label}
                   </span>
                   <span
-                    className={cn("rounded px-2 py-0.5 font-semibold tabular-nums", scoreTone(p))}
+                    className={cn(
+                      "rounded-full px-2.5 py-0.5 font-bold tabular-nums",
+                      scoreTone(p),
+                    )}
                   >
                     {q.absent
                       ? "Absent"

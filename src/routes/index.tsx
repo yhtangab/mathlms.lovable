@@ -40,6 +40,18 @@ function isReturningFromGoogle(): boolean {
   return /access_token=|[?&]code=/.test(`${window.location.hash}${window.location.search}`);
 }
 
+/** Four big flat shapes behind the sign-in card. */
+function Shapes() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      <span className="absolute -left-12 top-16 h-32 w-32 rotate-45 rounded-3xl bg-sky/85 md:h-44 md:w-44" />
+      <span className="absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-gold/90 md:left-28 md:h-48 md:w-48" />
+      <span className="absolute -right-10 top-20 h-36 w-36 bg-berry/90 [clip-path:polygon(50%_0%,100%_100%,0%_100%)] md:h-52 md:w-52" />
+      <span className="absolute -bottom-14 -right-6 h-32 w-32 -rotate-12 rounded-3xl bg-success/90 md:h-44 md:w-44" />
+    </div>
+  );
+}
+
 function Login() {
   const { session, ready, role } = useApp();
   const navigate = useNavigate();
@@ -89,34 +101,34 @@ function Login() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-background">
-      <div className="h-1 bg-nav" />
-      <div className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-chunky">
+    <main className="relative flex min-h-screen flex-col overflow-hidden bg-nav">
+      <Shapes />
+      <div className="relative flex flex-1 items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md rounded-2xl border-2 border-border bg-card p-8 shadow-pop">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-md bg-nav text-nav-foreground">
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-gold text-accent-foreground shadow-chunky-gold">
               <GraduationCap className="h-6 w-6" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-lg font-semibold leading-tight">HLC Mathematics</p>
+              <p className="text-lg font-bold leading-tight">HLC Mathematics</p>
               <p className="text-sm text-muted-foreground">Learning management system</p>
             </div>
           </div>
 
-          <h1 className="mt-8 text-xl font-semibold">Sign in</h1>
+          <h1 className="mt-8 text-2xl font-bold">Sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Use your school Google account (@hlc.edu.hk).
           </p>
 
           {returning && !message ? (
-            <p role="status" className="mt-6 text-sm">
+            <p role="status" className="mt-6 text-sm font-medium">
               Finishing sign-in…
             </p>
           ) : null}
 
           <div className="mt-6 space-y-3">
             <Button
-              className="google-auth h-10 w-full"
+              className="google-auth h-11 w-full"
               variant="outline"
               disabled={busy}
               onClick={() => void signInWithGoogle()}
@@ -150,7 +162,7 @@ function Login() {
 
             <Button
               variant="secondary"
-              className="h-10 w-full"
+              className="h-11 w-full"
               disabled={busy}
               onClick={() => void signInDemo()}
             >
@@ -161,7 +173,7 @@ function Login() {
           {message && (
             <p
               role="alert"
-              className="mt-5 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+              className="mt-5 rounded-lg border-2 border-destructive/40 bg-destructive/10 p-3 text-sm font-medium text-destructive"
             >
               {message}
             </p>
