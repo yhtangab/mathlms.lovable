@@ -120,7 +120,9 @@ src/
   lib/
     app-store.tsx
     assessments.ts
+    coins.ts
     data.ts
+    drive-link.ts
     error-capture.ts
     error-page.ts
     grade-rules.ts
@@ -132,6 +134,8 @@ src/
     video-watch.ts
   routes/
     _authenticated/
+      activity.tsx
+      awards.tsx
       courses.$chapter.tsx
       courses.index.tsx
       dashboard.tsx
@@ -163,6 +167,7 @@ supabase/
 AGENTS.md
 bunfig.toml
 components.json
+dev
 drizzle.config.ts
 eslint.config.js
 package.json
@@ -5174,6 +5179,155 @@ export const attachSupabaseAuth = createMiddleware({ type: 'function' }).client(
 )
 ````
 
+## File: src/lib/coins.ts
+````typescript
+import { supabase } from "@/integrations/supabase/client";
+import type { Student } from "./data";
+
+export const COIN_NAME = "Math Coins";
+export const COIN_NAME_ZH = "數學幣";
+export const COIN_EMOJI = "🪙";
+/** Coins for watching one chapter video to the end. */
+export const VIDEO_COINS = 1;
+
+export type MarkReason =
+  | "classwork"
+  | "participation"
+  | "correct_answer"
+  | "incorrect_answer"
+  | "homework"
+  | "bonus"
+  | "deduction";
+
+export interface ReasonInfo {
+  id: MarkReason;
+  label: string;
+  zh: string;
+}
+
+export const REASONS: ReasonInfo[] = [
+  { id: "correct_answer", label: "Correct answer", zh: "答啱問題" },
+  { id: "incorrect_answer", label: "Tried to answer", zh: "有嘗試作答（0 分紀錄）" },
+  { id: "classwork", label: "Classwork completed", zh: "完成課堂練習" },
+  { id: "participation", label: "Great lesson performance", zh: "課堂表現好" },
+  { id: "homework", label: "Homework on time", zh: "準時交齊功課" },
+  { id: "bonus", label: "Bonus", zh: "其他獎勵" },
+  { id: "deduction", label: "Deduction", zh: "扣分（欠交 / 違規）" },
+];
+
+export const QUICK_REASONS: ReasonInfo[] = REASONS.filter(
+  (r) => r.id !== "correct_answer" && r.id !== "incorrect_answer",
+);
+
+export const QUICK_AMOUNTS = [-5, -2, -1, 1, 2, 5];
+
+export function reasonLabel(id: string): string {
+  return REASONS.find((r) => r.id === id)?.label ?? id;
+}
+
+export function coinsEarned(s: Pick<Student, "dailyMarks" | "videoMarks">): number {
+  return (s.dailyMarks ?? 0) + (s.videoMarks ?? 0) * VIDEO_COINS;
+}
+
+export function coinBalance(s: Pick<Student, "dailyMarks" | "videoMarks" | "coinsSpent">): number {
+  return coinsEarned(s) - (s.coinsSpent ?? 0);
+}
+
+const STATUS = {
+  pending: { label: "Waiting for teacher", cls: "bg-gold/25 text-gold-deep" },
+  approved: { label: "Approved · ready to use", cls: "bg-primary/10 text-primary" },
+  used: { label: "Used", cls: "bg-success/15 text-success" },
+  rejected: { label: "Rejected · coins returned", cls: "bg-muted text-muted-foreground" },
+} as const;
+
+export function redemptionStatus(status: string): { label: string; cls: string } {
+  return (
+    STATUS[status as keyof typeof STATUS] ?? {
+      label: status,
+      cls: "bg-muted text-muted-foreground",
+    }
+  );
+}
+
+/** Saves the same marks for every chosen student in one go and returns the new row ids (for undo). */
+export async function giveCoins(input: {
+  studentIds: string[];
+  marks: number;
+  reason: MarkReason;
+  note: string;
+}): Promise<string[]> {
+  if (!input.studentIds.length) throw new Error("Choose at least one student first");
+  if (!Number.isInteger(input.marks) || input.marks < -100 || input.marks > 100) {
+    throw new Error("Marks must be a whole number from -100 to 100");
+  }
+  const { data: auth } = await supabase.auth.getUser();
+  const userId = auth.user?.id;
+  if (!userId) throw new Error("Please sign in with your teacher account again");
+
+  const batchId = crypto.randomUUID();
+  const { data, error } = await supabase
+    .from("daily_marks")
+    .insert(
+      input.studentIds.map((studentId) => ({
+        student_id: studentId,
+        marks: input.marks,
+        reason: input.reason,
+        note: input.note.trim().slice(0, 200),
+        awarded_by: userId,
+        batch_id: batchId,
+      })),
+    )
+    .select("id");
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => row.id);
+}
+
+export async function deleteMarks(ids: string[]): Promise<void> {
+  for (let i = 0; i < ids.length; i += 100) {
+    const { error } = await supabase
+      .from("daily_marks")
+      .delete()
+      .in("id", ids.slice(i, i + 100));
+    if (error) throw new Error(error.message);
+  }
+}
+````
+
+## File: src/lib/drive-link.ts
+````typescript
+/** Old notes were PDFs uploaded to Supabase Storage and saved as "<chapter>/<uuid>.pdf". */
+export function isStoragePath(value: string): boolean {
+  return /^\d+\/[\w-]+\.pdf$/i.test(value.trim());
+}
+
+export function isWebLink(value: string): boolean {
+  try {
+    return new URL(value.trim()).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/** A version of a Google Drive / Docs / Slides / Sheets link that can be shown inside the page. */
+export function notesPreviewUrl(value: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(value.trim());
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:") return null;
+  const id = url.pathname.match(/\/d\/([\w-]{10,})/)?.[1] ?? url.searchParams.get("id") ?? "";
+  if (!/^[\w-]{10,}$/.test(id)) return null;
+  if (url.hostname === "drive.google.com") return `https://drive.google.com/file/d/${id}/preview`;
+  if (url.hostname === "docs.google.com") {
+    const kind = url.pathname.match(/^\/(document|presentation|spreadsheets)\//)?.[1];
+    return kind ? `https://docs.google.com/${kind}/d/${id}/preview` : null;
+  }
+  return null;
+}
+````
+
 ## File: src/lib/error-capture.ts
 ````typescript
 // Captures the original Error out-of-band so server.ts can recover the stack
@@ -5401,6 +5555,1357 @@ export function createWatchTracker() {
     coverage(duration: number) { return duration > 0 ? Math.min(1, watched.size / Math.floor(duration)) : 0; },
     reset() { watched.clear(); last = null; },
   };
+}
+````
+
+## File: src/routes/_authenticated/activity.tsx
+````typescript
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Check, RotateCcw, Search, Sparkles, Undo2, Volume2, VolumeX, X } from "lucide-react";
+import { toast } from "sonner";
+import { AppShell, TeacherOnly } from "@/components/AppShell";
+import { Button } from "@/components/ui/button";
+import { useApp } from "@/lib/app-store";
+import {
+  COIN_EMOJI,
+  COIN_NAME,
+  QUICK_AMOUNTS,
+  QUICK_REASONS,
+  coinBalance,
+  deleteMarks,
+  giveCoins,
+  reasonLabel,
+  type MarkReason,
+} from "@/lib/coins";
+import { sortByClass, type MathSet, type Student } from "@/lib/data";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/activity")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Class activity — HLC Math" },
+      { name: "description", content: "Lucky draw and quick Math Coins for the class." },
+      { property: "og:title", content: "Class activity — HLC Math" },
+      { property: "og:description", content: "Pick a student and reward great answers." },
+    ],
+  }),
+  component: ActivityPage,
+});
+
+const SETS: MathSet[] = ["S2M3", "S2M5"];
+const BALL_COLORS = [
+  "var(--primary)",
+  "var(--success)",
+  "var(--gold-deep)",
+  "var(--flame)",
+  "var(--destructive)",
+  "oklch(0.6 0.15 300)",
+];
+const PILE_ROWS = [5, 4, 3, 2];
+const BALL_SIZE = 30;
+const BALL_COUNT = 14;
+
+const ANIMATION_CSS = `
+.hlc-ball { position: absolute; left: 50%; top: 50%; width: ${BALL_SIZE}px; height: ${BALL_SIZE}px; margin: -${BALL_SIZE / 2}px 0 0 -${BALL_SIZE / 2}px; border-radius: 9999px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: white; box-shadow: inset -4px -4px 6px rgb(0 0 0 / 0.25), inset 3px 3px 5px rgb(255 255 255 / 0.45); transition: transform 0.4s ease; }
+.hlc-ball[data-spin="true"] { animation: hlc-orbit var(--d) linear infinite; animation-delay: var(--delay); }
+@keyframes hlc-orbit { from { transform: rotate(0deg) translateX(var(--r)) rotate(0deg); } to { transform: rotate(360deg) translateX(var(--r)) rotate(-360deg); } }
+.hlc-machine[data-spin="true"] { animation: hlc-shake 0.25s ease-in-out infinite; }
+@keyframes hlc-shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+.hlc-winner { animation: hlc-pop 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both, hlc-glow 1.6s ease-in-out 0.7s infinite; }
+@keyframes hlc-pop { 0% { transform: translateY(-90px) scale(0.2); opacity: 0; } 70% { transform: translateY(6px) scale(1.08); opacity: 1; } 100% { transform: translateY(0) scale(1); } }
+@keyframes hlc-glow { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--gold) 70%, transparent); } 50% { box-shadow: 0 0 48px 12px color-mix(in oklab, var(--gold) 70%, transparent); } }
+.hlc-confetti { position: absolute; left: 50%; top: 45%; width: 10px; height: 14px; border-radius: 2px; opacity: 0; animation: hlc-burst 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) forwards; animation-delay: var(--delay); }
+@keyframes hlc-burst { 0% { transform: translate(-50%, -50%) rotate(0deg); opacity: 1; } 100% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--rot)); opacity: 0; } }
+.hlc-ticker { animation: hlc-flick 0.12s linear infinite alternate; }
+@keyframes hlc-flick { from { opacity: 0.6; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hlc-ball[data-spin="true"], .hlc-machine[data-spin="true"], .hlc-winner, .hlc-ticker, .hlc-confetti { animation: none; } }
+`;
+
+function randomIndex(n: number): number {
+  if (n <= 1) return 0;
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return (buf[0] ?? 0) % n;
+}
+
+/** Where each ball rests at the bottom of the machine when it is not spinning. */
+function pilePosition(i: number): { x: number; y: number } {
+  let index = i;
+  for (let row = 0; row < PILE_ROWS.length; row++) {
+    const count = PILE_ROWS[row] ?? 0;
+    if (index < count) {
+      return { x: (index - (count - 1) / 2) * (BALL_SIZE + 2), y: 78 - row * (BALL_SIZE - 4) };
+    }
+    index -= count;
+  }
+  return { x: 0, y: 0 };
+}
+
+function ActivityPage() {
+  const { students, coinsError } = useApp();
+  const [set, setSet] = useState<MathSet>("S2M3");
+  const list = useMemo(() => sortByClass(students.filter((s) => s.set === set)), [students, set]);
+  return (
+    <AppShell>
+      <TeacherOnly>
+        <style>{ANIMATION_CSS}</style>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="mr-auto">
+            <h1 className="text-3xl font-bold">Class activity</h1>
+            <p className="font-semibold text-muted-foreground">
+              Lucky draw and quick {COIN_NAME} for {set}
+            </p>
+          </div>
+          <div className="flex rounded-2xl bg-muted p-1">
+            {SETS.map((x) => (
+              <Button
+                key={x}
+                variant="ghost"
+                onClick={() => setSet(x)}
+                className={cn(
+                  "rounded-xl px-4 font-extrabold",
+                  set === x
+                    ? "bg-primary text-primary-foreground shadow-chunky-primary hover:bg-primary hover:text-primary-foreground"
+                    : "text-muted-foreground",
+                )}
+              >
+                {x}
+              </Button>
+            ))}
+          </div>
+        </div>
+        {coinsError && (
+          <p
+            role="alert"
+            className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
+          >
+            {coinsError}
+          </p>
+        )}
+        <LuckyDraw key={`draw-${set}`} list={list} />
+        <QuickPoints key={`points-${set}`} list={list} />
+        <RecentActivity />
+      </TeacherOnly>
+    </AppShell>
+  );
+}
+
+type Phase = "idle" | "spinning" | "revealed";
+
+function LuckyDraw({ list }: { list: Student[] }) {
+  const { refresh } = useApp();
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [ticker, setTicker] = useState("");
+  const [winner, setWinner] = useState<Student | null>(null);
+  const [drawn, setDrawn] = useState<string[]>([]);
+  const [noRepeat, setNoRepeat] = useState(true);
+  const [sound, setSound] = useState(true);
+  const [reward, setReward] = useState(1);
+  const [saved, setSaved] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [burst, setBurst] = useState(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audio = useRef<AudioContext | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      void audio.current?.close();
+    },
+    [],
+  );
+
+  const spinning = phase === "spinning";
+  const pool = noRepeat ? list.filter((s) => !drawn.includes(s.id)) : list;
+  const live = winner ? (list.find((s) => s.id === winner.id) ?? winner) : null;
+
+  const balls = useMemo(
+    () =>
+      Array.from({ length: BALL_COUNT }, (_, i) => ({
+        label: list.length
+          ? list[i % list.length]?.classNo || String((i % list.length) + 1)
+          : String(i + 1),
+        color: BALL_COLORS[i % BALL_COLORS.length] ?? "var(--primary)",
+        radius: 28 + (i % 4) * 18,
+        duration: 0.8 + (i % 5) * 0.2,
+        delay: -(i * 0.37),
+        pile: pilePosition(i),
+      })),
+    [list],
+  );
+
+  const confetti = useMemo(
+    () =>
+      Array.from({ length: burst ? 42 : 0 }, (_, i) => {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 120 + Math.random() * 180;
+        return {
+          x: Math.cos(angle) * distance,
+          y: Math.sin(angle) * distance - 60,
+          rot: Math.random() * 720 - 360,
+          color: BALL_COLORS[i % BALL_COLORS.length] ?? "var(--gold)",
+          delay: Math.random() * 0.15,
+        };
+      }),
+    [burst],
+  );
+
+  const beep = (freq: number, seconds: number, volume = 0.05) => {
+    if (!sound) return;
+    try {
+      const ctx = audio.current ?? new AudioContext();
+      audio.current = ctx;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + seconds);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + seconds);
+    } catch {
+      // Sound is optional; some browsers block it.
+    }
+  };
+
+  const fanfare = () => {
+    [523, 659, 784, 1047].forEach((f, i) => {
+      setTimeout(() => beep(f, 0.35, 0.07), i * 120);
+    });
+  };
+
+  const draw = () => {
+    if (spinning) return;
+    if (!pool.length) {
+      toast.info(
+        list.length
+          ? "Everyone has had a turn — press Reset to start again."
+          : "No students in this set yet.",
+      );
+      return;
+    }
+    const pick = pool[randomIndex(pool.length)];
+    if (!pick) return;
+    setPhase("spinning");
+    setWinner(null);
+    setSaved(null);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const steps = reduced ? 3 : 20;
+    let i = 0;
+    const step = () => {
+      i += 1;
+      if (i >= steps) {
+        setTicker(pick.name);
+        setWinner(pick);
+        setPhase("revealed");
+        setDrawn((d) => (d.includes(pick.id) ? d : [...d, pick.id]));
+        setBurst((b) => b + 1);
+        fanfare();
+        return;
+      }
+      setTicker(list[randomIndex(list.length)]?.name ?? "");
+      beep(300 + i * 25, 0.05, 0.03);
+      timer.current = setTimeout(step, 50 + Math.pow(i / steps, 2) * 380);
+    };
+    step();
+  };
+
+  const reset = () => {
+    setDrawn([]);
+    setWinner(null);
+    setSaved(null);
+    setPhase("idle");
+  };
+
+  const undo = async (ids: string[]) => {
+    try {
+      await deleteMarks(ids);
+      await refresh();
+      setSaved(null);
+      toast.success("Undone");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not undo");
+    }
+  };
+
+  const answer = async (correct: boolean) => {
+    if (!winner) return;
+    setBusy(true);
+    try {
+      const ids = await giveCoins({
+        studentIds: [winner.id],
+        marks: correct ? reward : 0,
+        reason: correct ? "correct_answer" : "incorrect_answer",
+        note: "Lucky draw",
+      });
+      await refresh();
+      const message = correct
+        ? `+${reward} ${COIN_NAME} for ${winner.name}`
+        : `Answer recorded for ${winner.name}`;
+      setSaved(message);
+      toast.success(message, { action: { label: "Undo", onClick: () => void undo(ids) } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="mr-auto flex items-center gap-2 text-xl font-bold">
+          <Sparkles className="h-5 w-5 text-gold-deep" /> Lucky draw
+        </h2>
+        <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+          <input
+            type="checkbox"
+            checked={noRepeat}
+            onChange={(e) => setNoRepeat(e.target.checked)}
+            className="h-4 w-4 accent-[var(--primary)]"
+          />
+          No repeats
+        </label>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={sound ? "Turn sound off" : "Turn sound on"}
+          onClick={() => setSound(!sound)}
+        >
+          {sound ? <Volume2 /> : <VolumeX />}
+        </Button>
+        <Button variant="outline" size="sm" onClick={reset} disabled={spinning || !drawn.length}>
+          <RotateCcw /> Reset
+        </Button>
+      </div>
+
+      <div className="mt-5 grid items-center gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="flex flex-col items-center">
+          <div
+            className="hlc-machine relative h-60 w-60 rounded-full border-4 border-primary/40 bg-gradient-to-b from-primary/5 to-primary/20"
+            data-spin={spinning}
+          >
+            <div className="absolute left-8 top-6 h-10 w-16 -rotate-12 rounded-full bg-white/50 blur-sm" />
+            {balls.map((b, i) => (
+              <span
+                key={i}
+                className="hlc-ball"
+                data-spin={spinning}
+                style={
+                  {
+                    background: b.color,
+                    "--r": `${b.radius}px`,
+                    "--d": `${b.duration}s`,
+                    "--delay": `${b.delay}s`,
+                    ...(spinning ? {} : { transform: `translate(${b.pile.x}px, ${b.pile.y}px)` }),
+                  } as CSSProperties
+                }
+              >
+                {b.label}
+              </span>
+            ))}
+          </div>
+          <div className="h-4 w-20 rounded-b-xl bg-primary/40" />
+          <Button
+            size="lg"
+            onClick={draw}
+            disabled={spinning || !list.length}
+            className="mt-4 h-14 w-full rounded-2xl text-lg font-extrabold shadow-chunky-primary"
+          >
+            {spinning ? "Drawing…" : winner ? "Draw again" : "Draw a student"}
+          </Button>
+          <p className="mt-2 text-xs font-semibold text-muted-foreground">
+            {noRepeat
+              ? `${pool.length} of ${list.length} students left`
+              : `${list.length} students in the draw`}
+          </p>
+        </div>
+
+        <div className="relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-3xl bg-muted/60 p-6 text-center">
+          {phase === "idle" && (
+            <p className="font-display text-2xl font-bold text-muted-foreground">
+              Press “Draw a student” 🎱
+            </p>
+          )}
+          {spinning && (
+            <p className="hlc-ticker font-display text-4xl font-bold md:text-6xl">{ticker}</p>
+          )}
+          {phase === "revealed" && live && (
+            <>
+              <div key={burst} className="pointer-events-none absolute inset-0">
+                {confetti.map((p, i) => (
+                  <span
+                    key={i}
+                    className="hlc-confetti"
+                    style={
+                      {
+                        background: p.color,
+                        "--x": `${p.x}px`,
+                        "--y": `${p.y}px`,
+                        "--rot": `${p.rot}deg`,
+                        "--delay": `${p.delay}s`,
+                      } as CSSProperties
+                    }
+                  />
+                ))}
+              </div>
+              <p className="text-sm font-extrabold uppercase tracking-widest text-gold-deep">
+                🎉 Lucky winner 🎉
+              </p>
+              <div className="hlc-winner mt-3 rounded-3xl bg-gold px-8 py-5">
+                <p className="font-display text-4xl font-bold text-accent-foreground md:text-6xl">
+                  {live.name}
+                </p>
+                <p className="mt-1 text-sm font-bold text-accent-foreground/80">
+                  {live.className} {live.classNo} · {COIN_EMOJI} {coinBalance(live)}
+                </p>
+              </div>
+              {saved ? (
+                <p className="mt-5 font-bold text-success">✓ {saved}</p>
+              ) : (
+                <div className="relative mt-5 flex flex-wrap items-center justify-center gap-2">
+                  <div className="flex rounded-xl bg-card p-1">
+                    {[1, 2, 3].map((n) => (
+                      <button
+                        type="button"
+                        key={n}
+                        onClick={() => setReward(n)}
+                        className={cn(
+                          "rounded-lg px-3 py-1 text-sm font-extrabold",
+                          reward === n
+                            ? "bg-success text-primary-foreground"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        +{n}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    disabled={busy}
+                    onClick={() => void answer(true)}
+                    className="bg-success text-primary-foreground hover:bg-success/90"
+                  >
+                    <Check /> Correct +{reward}
+                  </Button>
+                  <Button disabled={busy} variant="outline" onClick={() => void answer(false)}>
+                    <X /> Incorrect
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {noRepeat && drawn.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="font-bold text-muted-foreground">Already drawn:</span>
+          {drawn.map((id) => (
+            <span key={id} className="rounded-full bg-muted px-2 py-0.5 font-semibold">
+              {list.find((s) => s.id === id)?.name ?? "?"}
+            </span>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function QuickPoints({ list }: { list: Student[] }) {
+  const { refresh } = useApp();
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [amount, setAmount] = useState(1);
+  const [reason, setReason] = useState<MarkReason>("classwork");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const q = query.trim().toLowerCase();
+  const shown = q
+    ? list.filter((s) =>
+        `${s.name} ${s.className ?? ""}${s.classNo ?? ""} ${s.hlcNo ?? ""}`
+          .toLowerCase()
+          .includes(q),
+      )
+    : list;
+
+  const toggle = (id: string) =>
+    setSelected((sel) => (sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id]));
+
+  const chooseAmount = (n: number) => {
+    const value = Number.isFinite(n) ? Math.max(-100, Math.min(100, Math.trunc(n))) : 0;
+    setAmount(value);
+    if (value < 0) setReason("deduction");
+    else if (reason === "deduction") setReason("classwork");
+  };
+
+  const chooseReason = (r: MarkReason) => {
+    setReason(r);
+    if (r === "deduction" && amount > 0) setAmount(-amount);
+    if (r !== "deduction" && amount < 0) setAmount(-amount);
+  };
+
+  const undo = async (ids: string[]) => {
+    try {
+      await deleteMarks(ids);
+      await refresh();
+      toast.success("Undone");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not undo");
+    }
+  };
+
+  const save = async () => {
+    if (amount === 0) {
+      toast.error("Choose an amount other than 0");
+      return;
+    }
+    setBusy(true);
+    try {
+      const count = selected.length;
+      const ids = await giveCoins({ studentIds: selected, marks: amount, reason, note });
+      await refresh();
+      setSelected([]);
+      setNote("");
+      toast.success(
+        `${amount > 0 ? "+" : ""}${amount} ${COIN_NAME} saved for ${count} student${count === 1 ? "" : "s"}`,
+        { action: { label: "Undo", onClick: () => void undo(ids) } },
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="mr-auto text-xl font-bold">
+          {COIN_EMOJI} Quick {COIN_NAME} · tick and save
+        </h2>
+        <div className="flex items-center gap-2 rounded-2xl border-2 border-input px-3 py-1.5">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search"
+            aria-label="Search students"
+            className="w-32 bg-transparent text-sm font-semibold outline-none"
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSelected([...new Set([...selected, ...shown.map((s) => s.id)])])}
+        >
+          Select all
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSelected([])}
+          disabled={!selected.length}
+        >
+          Clear
+        </Button>
+      </div>
+
+      {list.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">No students in this set yet.</p>
+      ) : (
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {shown.map((s) => {
+            const on = selected.includes(s.id);
+            return (
+              <label
+                key={s.id}
+                className={cn(
+                  "flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-3 transition",
+                  on ? "border-primary bg-primary/10" : "border-border hover:border-primary/50",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={on}
+                  onChange={() => toggle(s.id)}
+                  className="h-5 w-5 shrink-0 accent-[var(--primary)]"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{s.name}</span>
+                  <span className="block text-xs text-muted-foreground">
+                    {s.className} {s.classNo}
+                  </span>
+                </span>
+                <span className="text-sm font-extrabold tabular-nums">
+                  {COIN_EMOJI} {coinBalance(s)}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="sticky bottom-3 mt-4 flex flex-wrap items-end gap-3 rounded-2xl border-2 border-border bg-card p-3 shadow-lg">
+        <div>
+          <p className="mb-1 text-xs font-bold text-muted-foreground">Amount</p>
+          <div className="flex flex-wrap items-center gap-1">
+            {QUICK_AMOUNTS.map((n) => (
+              <button
+                type="button"
+                key={n}
+                onClick={() => chooseAmount(n)}
+                className={cn(
+                  "min-w-10 rounded-lg px-2 py-1.5 text-sm font-extrabold",
+                  amount === n
+                    ? n < 0
+                      ? "bg-destructive text-destructive-foreground"
+                      : "bg-success text-primary-foreground"
+                    : "bg-muted text-muted-foreground",
+                )}
+              >
+                {n > 0 ? `+${n}` : n}
+              </button>
+            ))}
+            <input
+              type="number"
+              min={-100}
+              max={100}
+              value={amount}
+              aria-label="Custom amount"
+              onChange={(e) => chooseAmount(Number(e.target.value))}
+              className="w-16 rounded-lg border border-input bg-card px-2 py-1.5 text-sm font-bold"
+            />
+          </div>
+        </div>
+        <label className="text-xs font-bold text-muted-foreground">
+          Reason
+          <select
+            value={reason}
+            onChange={(e) => chooseReason(e.target.value as MarkReason)}
+            className="mt-1 block rounded-lg border border-input bg-card p-2 text-sm font-semibold text-foreground"
+          >
+            {QUICK_REASONS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label} · {r.zh}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="min-w-40 flex-1 text-xs font-bold text-muted-foreground">
+          Note (optional)
+          <input
+            value={note}
+            maxLength={200}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="e.g. Ex 5B Q1–6"
+            className="mt-1 block w-full rounded-lg border border-input bg-card p-2 text-sm font-semibold text-foreground"
+          />
+        </label>
+        <Button
+          disabled={busy || !selected.length || amount === 0}
+          onClick={() => void save()}
+          className={cn(
+            "h-10",
+            amount < 0 && "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          )}
+        >
+          {busy
+            ? "Saving…"
+            : `Give ${amount > 0 ? "+" : ""}${amount} to ${selected.length} student${selected.length === 1 ? "" : "s"}`}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+interface LogGroup {
+  key: string;
+  ids: string[];
+  studentIds: string[];
+  marks: number;
+  reason: string;
+  note: string;
+  at: string;
+}
+
+function RecentActivity() {
+  const { markLog, students, refresh } = useApp();
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const names = useMemo(() => new Map(students.map((s) => [s.id, s.name])), [students]);
+  const groups = useMemo(() => {
+    const out: LogGroup[] = [];
+    const index = new Map<string, number>();
+    for (const m of markLog) {
+      const key = m.batch_id ?? m.id;
+      const at = index.get(key);
+      const group = at === undefined ? undefined : out[at];
+      if (group) {
+        group.ids.push(m.id);
+        group.studentIds.push(m.student_id);
+      } else {
+        index.set(key, out.length);
+        out.push({
+          key,
+          ids: [m.id],
+          studentIds: [m.student_id],
+          marks: m.marks,
+          reason: m.reason,
+          note: m.note ?? "",
+          at: m.created_at,
+        });
+      }
+    }
+    return out.slice(0, 12);
+  }, [markLog]);
+
+  const undo = async (g: LogGroup) => {
+    const who = g.studentIds.map((id) => names.get(id) ?? "?").join(", ");
+    if (
+      !window.confirm(
+        `Undo ${g.marks > 0 ? "+" : ""}${g.marks} (${reasonLabel(g.reason)}) for ${who}?`,
+      )
+    )
+      return;
+    setBusyKey(g.key);
+    try {
+      await deleteMarks(g.ids);
+      await refresh();
+      toast.success("Undone");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not undo");
+    } finally {
+      setBusyKey(null);
+    }
+  };
+
+  return (
+    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+      <h2 className="text-xl font-bold">Recent activity</h2>
+      {groups.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">No {COIN_NAME} given yet.</p>
+      ) : (
+        <ul className="mt-3 divide-y divide-border">
+          {groups.map((g) => {
+            const who = g.studentIds.map((id) => names.get(id) ?? "?");
+            return (
+              <li key={g.key} className="flex flex-wrap items-center gap-3 py-2 text-sm">
+                <span className="w-28 shrink-0 text-xs text-muted-foreground">
+                  {new Date(g.at).toLocaleString("en-HK", {
+                    weekday: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                <span
+                  className={cn(
+                    "w-12 rounded-md text-center font-extrabold",
+                    g.marks > 0
+                      ? "bg-success/15 text-success"
+                      : g.marks < 0
+                        ? "bg-destructive/15 text-destructive"
+                        : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {g.marks > 0 ? `+${g.marks}` : g.marks}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="font-semibold">{reasonLabel(g.reason)}</span>
+                  {g.note && <span className="text-muted-foreground"> · {g.note}</span>}
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {who.slice(0, 5).join(", ")}
+                    {who.length > 5 ? ` +${who.length - 5} more` : ""}
+                  </span>
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={busyKey === g.key}
+                  onClick={() => void undo(g)}
+                >
+                  <Undo2 /> Undo
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+````
+
+## File: src/routes/_authenticated/awards.tsx
+````typescript
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Check, Gift, History, Plus, Save, X } from "lucide-react";
+import { toast } from "sonner";
+import { AppShell } from "@/components/AppShell";
+import { Button } from "@/components/ui/button";
+import { useApp, type Redemption, type Reward } from "@/lib/app-store";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  COIN_EMOJI,
+  COIN_NAME,
+  COIN_NAME_ZH,
+  REASONS,
+  VIDEO_COINS,
+  coinBalance,
+  coinsEarned,
+  reasonLabel,
+  redemptionStatus,
+} from "@/lib/coins";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/awards")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Awards — HLC Math" },
+      { name: "description", content: "Spend Math Coins on class rewards." },
+      { property: "og:title", content: "Awards — HLC Math" },
+      {
+        property: "og:description",
+        content: "Earn Math Coins in lessons and swap them for rewards.",
+      },
+    ],
+  }),
+  component: AwardsPage,
+});
+
+const DAY_MS = 86_400_000;
+
+function AwardsPage() {
+  const { role } = useApp();
+  return <AppShell>{role === "teacher" ? <TeacherAwards /> : <StudentAwards />}</AppShell>;
+}
+
+function SetupNotice({ message }: { message: string }) {
+  return (
+    <p role="alert" className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
+      {message}
+    </p>
+  );
+}
+
+function formatDate(value: string | Date) {
+  return new Date(value).toLocaleDateString("en-HK", { day: "numeric", month: "short" });
+}
+
+function StudentAwards() {
+  const { me, rewards, redemptions, markLog, refresh, coinsError } = useApp();
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const balance = coinBalance(me);
+  const mine = redemptions.filter((r) => r.student_id === me.id);
+  const history = markLog.filter((m) => m.student_id === me.id).slice(0, 15);
+  const shop = rewards.filter((r) => r.active);
+
+  const nextAvailable = (reward: Reward): Date | null => {
+    if (!reward.cooldown_days) return null;
+    const last = mine.find((r) => r.reward_id === reward.id && r.status !== "rejected");
+    if (!last) return null;
+    const next = new Date(new Date(last.created_at).getTime() + reward.cooldown_days * DAY_MS);
+    return next.getTime() > Date.now() ? next : null;
+  };
+
+  const redeem = async (reward: Reward) => {
+    setBusy(true);
+    try {
+      const { error } = await supabase.rpc("redeem_reward", { _reward_id: reward.id });
+      if (error) throw new Error(error.message);
+      await refresh();
+      setConfirming(null);
+      toast.success(`${reward.emoji} ${reward.name} requested! Your teacher will confirm it.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not redeem");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <h1 className="text-3xl font-bold">Awards</h1>
+      <p className="font-semibold text-muted-foreground">
+        Earn {COIN_NAME} in lessons and swap them for rewards.
+      </p>
+      {coinsError && <SetupNotice message={coinsError} />}
+
+      <div className="mt-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <section className="rounded-3xl bg-gold p-6 text-accent-foreground shadow-chunky-gold">
+          <p className="text-sm font-bold">
+            My {COIN_NAME} · {COIN_NAME_ZH}
+          </p>
+          <p className="font-display text-5xl font-bold">
+            {COIN_EMOJI} {balance}
+          </p>
+          <p className="mt-1 text-sm font-semibold">
+            Earned {coinsEarned(me)} · Spent {me.coinsSpent ?? 0}
+          </p>
+        </section>
+        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="font-bold">How to earn {COIN_NAME}</h2>
+          <ul className="mt-2 grid gap-1 text-sm sm:grid-cols-2">
+            {REASONS.filter((r) => r.id !== "deduction" && r.id !== "incorrect_answer").map((r) => (
+              <li key={r.id}>✅ {r.label}</li>
+            ))}
+            <li>🎬 Watch a chapter video to the end (+{VIDEO_COINS})</li>
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Missing homework or breaking class rules can take coins away.
+          </p>
+        </section>
+      </div>
+
+      <h2 className="mt-8 flex items-center gap-2 text-xl font-bold">
+        <Gift className="h-5 w-5 text-primary" /> Rewards
+      </h2>
+      {shop.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your teacher has not added rewards yet.
+        </p>
+      ) : (
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {shop.map((r) => {
+            const next = nextAvailable(r);
+            const short = r.cost - balance;
+            return (
+              <div
+                key={r.id}
+                className="flex flex-col rounded-3xl border-2 border-border bg-card p-5 shadow-chunky"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-4xl">{r.emoji}</span>
+                  <span className="rounded-full bg-gold/25 px-3 py-1 text-sm font-extrabold text-gold-deep">
+                    {COIN_EMOJI} {r.cost}
+                  </span>
+                </div>
+                <h3 className="mt-3 text-lg font-bold leading-tight">{r.name}</h3>
+                <p className="mt-1 flex-1 text-sm text-muted-foreground">{r.description}</p>
+                {r.cooldown_days && (
+                  <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                    Once every {r.cooldown_days} days
+                  </p>
+                )}
+                <div className="mt-4">
+                  {next ? (
+                    <Button disabled variant="outline" className="w-full">
+                      Available again {formatDate(next)}
+                    </Button>
+                  ) : short > 0 ? (
+                    <Button disabled variant="outline" className="w-full">
+                      Need {short} more
+                    </Button>
+                  ) : confirming === r.id ? (
+                    <div className="flex gap-2">
+                      <Button disabled={busy} className="flex-1" onClick={() => void redeem(r)}>
+                        <Check /> Spend {r.cost}
+                      </Button>
+                      <Button variant="outline" disabled={busy} onClick={() => setConfirming(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button className="w-full" onClick={() => setConfirming(r.id)}>
+                      Redeem
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="font-bold">My rewards</h2>
+          {mine.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">Nothing redeemed yet.</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-border">
+              {mine.map((r) => {
+                const st = redemptionStatus(r.status);
+                return (
+                  <li key={r.id} className="flex items-center gap-3 py-2 text-sm">
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold">{r.reward_name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(r.created_at)} · {COIN_EMOJI} {r.cost}
+                      </span>
+                    </span>
+                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", st.cls)}>
+                      {st.label}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="flex items-center gap-2 font-bold">
+            <History className="h-4 w-4" /> Coin history
+          </h2>
+          {history.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No lesson coins yet.</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-border">
+              {history.map((m) => (
+                <li key={m.id} className="flex items-center gap-3 py-2 text-sm">
+                  <span className="w-16 shrink-0 text-xs text-muted-foreground">
+                    {formatDate(m.created_at)}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {reasonLabel(m.reason)}
+                    {m.note ? ` · ${m.note}` : ""}
+                  </span>
+                  <span
+                    className={cn(
+                      "font-extrabold tabular-nums",
+                      m.marks > 0
+                        ? "text-success"
+                        : m.marks < 0
+                          ? "text-destructive"
+                          : "text-muted-foreground",
+                    )}
+                  >
+                    {m.marks > 0 ? `+${m.marks}` : m.marks}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </>
+  );
+}
+
+function TeacherAwards() {
+  const { redemptions, students, refresh, coinsError } = useApp();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const names = useMemo(
+    () =>
+      new Map(
+        students.map((s) => [
+          s.id,
+          `${s.name} · ${s.set}${s.classNo ? ` · ${s.className ?? ""} ${s.classNo}` : ""}`,
+        ]),
+      ),
+    [students],
+  );
+  const pending = redemptions.filter((r) => r.status === "pending");
+  const approved = redemptions.filter((r) => r.status === "approved");
+  const done = redemptions
+    .filter((r) => r.status === "used" || r.status === "rejected")
+    .slice(0, 15);
+
+  const decide = async (r: Redemption, status: "approved" | "used" | "rejected") => {
+    setBusyId(r.id);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("reward_redemptions")
+        .update({ status, decided_at: new Date().toISOString(), decided_by: auth.user?.id ?? null })
+        .eq("id", r.id);
+      if (error) throw new Error(error.message);
+      await refresh();
+      toast.success(
+        status === "rejected"
+          ? "Rejected — coins returned"
+          : status === "used"
+            ? "Marked as used"
+            : "Approved",
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not update");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const row = (r: Redemption, actions: "pending" | "approved" | "none") => {
+    const st = redemptionStatus(r.status);
+    return (
+      <li key={r.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">{r.reward_name}</span>
+          <span className="text-xs text-muted-foreground">
+            {names.get(r.student_id) ?? "Unknown student"} · {formatDate(r.created_at)} ·{" "}
+            {COIN_EMOJI} {r.cost}
+          </span>
+        </span>
+        {actions === "pending" && (
+          <>
+            <Button size="sm" disabled={busyId === r.id} onClick={() => void decide(r, "approved")}>
+              <Check /> Approve
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busyId === r.id}
+              onClick={() => void decide(r, "rejected")}
+            >
+              <X /> Reject
+            </Button>
+          </>
+        )}
+        {actions === "approved" && (
+          <>
+            <Button size="sm" disabled={busyId === r.id} onClick={() => void decide(r, "used")}>
+              <Check /> Mark used
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={busyId === r.id}
+              onClick={() => void decide(r, "rejected")}
+            >
+              Cancel & refund
+            </Button>
+          </>
+        )}
+        {actions === "none" && (
+          <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", st.cls)}>
+            {st.label}
+          </span>
+        )}
+      </li>
+    );
+  };
+
+  return (
+    <>
+      <h1 className="text-3xl font-bold">Awards</h1>
+      <p className="font-semibold text-muted-foreground">
+        Students spend {COIN_NAME} here. Approve requests, mark them used, or reject to refund.
+      </p>
+      {coinsError && <SetupNotice message={coinsError} />}
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="font-bold">Waiting for approval ({pending.length})</h2>
+          {pending.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No new requests.</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-border">{pending.map((r) => row(r, "pending"))}</ul>
+          )}
+        </section>
+        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="font-bold">Approved · not used yet ({approved.length})</h2>
+          {approved.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">Nothing waiting to be used.</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-border">
+              {approved.map((r) => row(r, "approved"))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      {done.length > 0 && (
+        <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="font-bold">Recently finished</h2>
+          <ul className="mt-2 divide-y divide-border">{done.map((r) => row(r, "none"))}</ul>
+        </section>
+      )}
+
+      <RewardEditor />
+    </>
+  );
+}
+
+interface Draft {
+  id: string;
+  emoji: string;
+  name: string;
+  description: string;
+  cost: string;
+  cooldown: string;
+  active: boolean;
+  position: number;
+}
+
+function toDraft(r: Reward): Draft {
+  return {
+    id: r.id,
+    emoji: r.emoji,
+    name: r.name,
+    description: r.description,
+    cost: String(r.cost),
+    cooldown: r.cooldown_days === null ? "" : String(r.cooldown_days),
+    active: r.active,
+    position: r.position,
+  };
+}
+
+const field =
+  "w-full rounded-lg border border-input bg-background px-2 py-1.5 text-sm font-semibold";
+
+function RewardEditor() {
+  const { rewards, refresh } = useApp();
+  const [edits, setEdits] = useState<Record<string, Draft>>({});
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const rows = [
+    ...rewards.map((r) => edits[r.id] ?? toDraft(r)),
+    ...Object.values(edits).filter((d) => !rewards.some((r) => r.id === d.id)),
+  ];
+
+  const change = (d: Draft, patch: Partial<Draft>) =>
+    setEdits((e) => ({ ...e, [d.id]: { ...d, ...patch } }));
+
+  const add = () => {
+    const position = Math.max(0, ...rows.map((d) => d.position)) + 1;
+    const draft: Draft = {
+      id: crypto.randomUUID(),
+      emoji: "🎁",
+      name: "",
+      description: "",
+      cost: "10",
+      cooldown: "",
+      active: true,
+      position,
+    };
+    setEdits((e) => ({ ...e, [draft.id]: draft }));
+  };
+
+  const save = async (d: Draft) => {
+    const cost = Number(d.cost);
+    const cooldown = d.cooldown.trim() === "" ? null : Number(d.cooldown);
+    if (!d.name.trim()) {
+      toast.error("Give the reward a name");
+      return;
+    }
+    if (!Number.isInteger(cost) || cost < 1 || cost > 1000) {
+      toast.error("Cost must be a whole number from 1 to 1000");
+      return;
+    }
+    if (cooldown !== null && (!Number.isInteger(cooldown) || cooldown < 1 || cooldown > 365)) {
+      toast.error("Limit must be 1–365 days, or leave it blank for no limit");
+      return;
+    }
+    setBusyId(d.id);
+    try {
+      const { error } = await supabase.from("rewards").upsert({
+        id: d.id,
+        emoji: d.emoji.trim() || "🎁",
+        name: d.name.trim(),
+        description: d.description.trim(),
+        cost,
+        cooldown_days: cooldown,
+        active: d.active,
+        position: d.position,
+      });
+      if (error) throw new Error(error.message);
+      await refresh();
+      setEdits(({ [d.id]: _saved, ...rest }) => rest);
+      toast.success(`${d.name.trim()} saved`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="mr-auto font-bold">Reward list</h2>
+        <Button variant="outline" size="sm" onClick={add}>
+          <Plus /> Add reward
+        </Button>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Untick “Shown” to hide a reward from students. “Limit” = once every N days per student
+        (blank = no limit).
+      </p>
+      <div className="mt-3 hidden grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] gap-2 px-1 text-xs font-bold uppercase text-muted-foreground md:grid">
+        <span>Icon</span>
+        <span>Name</span>
+        <span>Description</span>
+        <span>Cost</span>
+        <span>Limit</span>
+        <span>Shown</span>
+        <span />
+      </div>
+      <div className="mt-1 space-y-2">
+        {rows.map((d) => {
+          const dirty = edits[d.id] !== undefined;
+          return (
+            <div
+              key={d.id}
+              className={cn(
+                "grid gap-2 rounded-2xl border-2 p-2 md:grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] md:items-center",
+                dirty ? "border-primary/60 bg-primary/5" : "border-border",
+              )}
+            >
+              <input
+                aria-label="Icon"
+                value={d.emoji}
+                onChange={(e) => change(d, { emoji: e.target.value })}
+                className={cn(field, "text-center text-lg")}
+              />
+              <input
+                aria-label="Name"
+                value={d.name}
+                placeholder="Reward name"
+                onChange={(e) => change(d, { name: e.target.value })}
+                className={field}
+              />
+              <input
+                aria-label="Description"
+                value={d.description}
+                placeholder="What the student gets"
+                onChange={(e) => change(d, { description: e.target.value })}
+                className={field}
+              />
+              <input
+                aria-label="Cost"
+                type="number"
+                min={1}
+                max={1000}
+                value={d.cost}
+                onChange={(e) => change(d, { cost: e.target.value })}
+                className={field}
+              />
+              <input
+                aria-label="Limit in days"
+                type="number"
+                min={1}
+                max={365}
+                value={d.cooldown}
+                placeholder="—"
+                onChange={(e) => change(d, { cooldown: e.target.value })}
+                className={field}
+              />
+              <label className="flex items-center gap-2 text-sm font-semibold md:justify-center">
+                <input
+                  type="checkbox"
+                  checked={d.active}
+                  onChange={(e) => change(d, { active: e.target.checked })}
+                  className="h-4 w-4 accent-[var(--primary)]"
+                />
+                <span className="md:hidden">Shown</span>
+              </label>
+              <Button size="sm" disabled={!dirty || busyId === d.id} onClick={() => void save(d)}>
+                <Save /> Save
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 ````
 
@@ -5818,6 +7323,45 @@ minimumReleaseAgeExcludes = ["@lovable.dev/vite-tanstack-config", "@lovable.dev/
 }
 ````
 
+## File: dev
+````
+> vite dev
+
+vite.config.ts (10:29) [UNRESOLVED_IMPORT] Could not resolve '@lovabl
+vite.config.ts (10:29) [UNRESOLVED_IMPORT] Could not resolve '@lovable.dev/vite-tanstack-config' in vite.config.ts
+    ╭─[ vite.config.ts:10:30 ]
+    │
+ 10 │ import { defineConfig } from "@lovable.dev/vite-tanstack-config
+ 10 │ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+    │                              ─────────────────┬────────────────
+    │                              ─────────────────┬─────────────────
+    │                                               ╰────────────────
+    │                                               ╰─────────────────── Module not found, treating it as an external dependency
+────╯
+
+failedable.dev/vite-
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms.lovable/node_modules/.vite-temp/vite.config.ts.timestamp-17945751434
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms.lovable/node_modules/.vite-temp/vite.config.ts.timestamp-1794575143454-59034acd2aa588.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_r
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:343:9)
+    at packageResolve (node:internal/modules/esm/resolve:751:25)
+    at moduleResolve (node:internal/modules/esm/resolve:840:18)
+    at defaultResolve (node:internal/modules/esm/resolve:973:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:708:20
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:708:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:728:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:766
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:766:56)
+    at #resolve (node:internal/modules/esm/loader:690:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/l
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:610:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:277:3
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:277:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+````
+
 ## File: eslint.config.js
 ````javascript
 import js from "@eslint/js";
@@ -5864,22 +7408,29 @@ export default tseslint.config(
 
 ## File: vite.config.ts
 ````typescript
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
-//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
-//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
-// Never set ssr.external or resolve.external: the Worker has no runtime module resolution, so
-// the build fails. Never add compression (compressPublicAssets, vite-plugin-compression):
-// hosting already compresses at the edge.
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import viteReact from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+
+const rootDir = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
+  plugins: [
+    tailwindcss(),
+    tanstackStart({
+      // Custom SSR wrapper at src/server.ts. Default router entry is src/router.tsx.
+      server: { entry: "server" },
+    }),
+    viteReact(),
+  ],
+  resolve: {
+    tsconfigPaths: true,
+    alias: {
+      "@": path.resolve(rootDir, "src"),
+    },
   },
 });
 ````
@@ -6436,256 +7987,6 @@ export async function authenticateCronRequest(request: Request): Promise<Respons
 }
 ````
 
-## File: src/lib/sheet-parse.ts
-````typescript
-// Pure rules for turning the teacher's Google Sheet tab into student records.
-export type Category =
-  | "homework"
-  | "short_quiz"
-  | "chapter_quiz"
-  | "term_test"
-  | "mock"
-  | "exam"
-  | "daily"
-  | "overall"
-  | "other";
-export type MathSet = "S2M3" | "S2M5";
-
-export interface ParsedScore {
-  term: 1 | 2;
-  kind: "item" | "summary";
-  category: Category;
-  label: string;
-  score: number | null;
-  absent: boolean;
-  full_marks: number | null;
-  position: number;
-}
-
-export interface ParsedStudent {
-  hlcNo: string;
-  email: string;
-  name: string;
-  className: string;
-  classNo: string;
-  set: MathSet;
-  scores: ParsedScore[];
-}
-
-type Cell = string | number | boolean | null | undefined;
-
-const text = (c: Cell) => (c === null || c === undefined ? "" : String(c)).trim();
-const isFormula = (c: Cell) => typeof c === "string" && c.trim().startsWith("=");
-const HLC_NO = /^HLC\d+$/i;
-
-export function toNumber(c: Cell): number | null {
-  if (typeof c === "number") return Number.isFinite(c) ? c : null;
-  const t = text(c).replace(/%$/, "").replace(/,/g, "");
-  if (!t || t.startsWith("#") || t === "-" || t === "—" || /^n\/?a$/i.test(t)) return null;
-  const n = Number(t);
-  return Number.isFinite(n) ? n : null;
-}
-
-export function isAbsent(c: Cell) {
-  const t = text(c).toUpperCase();
-  return t === "ABS" || t === "ABSENT";
-}
-
-/** "Homework (30%)" -> 30, "1st TT (200)" -> 200, "HW(30)" -> 30. */
-export function bracketMarks(header: string): number | null {
-  const m = header.match(/\(\s*(\d+(?:\.\d+)?)\s*%?\s*\)\s*$/);
-  return m ? Number(m[1]) : null;
-}
-
-export function itemCategory(label: string, group = ""): Category {
-  const l = label.toLowerCase().trim();
-  const g = group.toLowerCase().trim();
-  const combined = `${g} ${l}`;
-
-  if (/^hw|\bhw\b|homework|assignment|worksheet|\bws\b|\bex\b|\bch\d*\s*hw/i.test(combined)) {
-    return "homework";
-  }
-  if (/^sq|\bsq\b|short\s*quiz|s\.?q\.?\d/i.test(combined)) {
-    return "short_quiz";
-  }
-  if (/^cq|\bcq\b|chapter\s*quiz|ch\.?\s*quiz|c\.?q\.?\d|post-summer|quiz/i.test(combined)) {
-    return "chapter_quiz";
-  }
-  if (/\btt\b|term\s*test|t\da1|\but\b|unit\s*test|uniform\s*test/i.test(combined)) {
-    return "term_test";
-  }
-  if (/mock/i.test(combined)) {
-    return "mock";
-  }
-  if (/exam|t\da3/i.test(combined)) {
-    return "exam";
-  }
-  return "other";
-}
-
-export function summaryCategory(header: string): Category {
-  const h = header.toLowerCase().trim();
-  if (/^t\da2|annual|overall|coursework/i.test(h)) return "overall";
-  if (/^t\da1|\btt\b|term\s*test/i.test(h)) return "term_test";
-  if (/^t\da3|exam/i.test(h) && !/mock/i.test(h)) return "exam";
-  if (/homework|^hw|\bhw\b/i.test(h)) return "homework";
-  if (/short\s*quiz|^sq|\bsq\b/i.test(h)) return "short_quiz";
-  if (/chapter\s*quiz|^cq|\bcq\b/i.test(h)) return "chapter_quiz";
-  if (/mock/i.test(h)) return "mock";
-  if (/daily/i.test(h)) return "daily";
-  return "other";
-}
-
-const round1 = (n: number | null) => (n === null ? null : Math.round(n * 10) / 10);
-
-function isSummaryHeaderName(h: string): boolean {
-  const clean = h.trim();
-  if (!clean) return false;
-  if (/^daily/i.test(clean)) return true;
-  if (
-    /^(homework|short\s*quiz|chapter\s*quiz|mock(\s*exam)?|1st\s*tt|2nd\s*tt|t\da\d|annual|overall)\b/i.test(
-      clean,
-    )
-  ) {
-    return bracketMarks(clean) !== null;
-  }
-  if (/\(\s*\d+(?:\.\d+)?\s*%\s*\)\s*$/.test(clean)) return true;
-  return false;
-}
-
-/**
- * formulas: the tab read with FORMULA rendering (tells typed marks apart from calculated columns).
- * values: the same tab read with UNFORMATTED_VALUE rendering (calculated results).
- */
-export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]): ParsedStudent[] {
-  const gridF = formulas.length ? formulas : values;
-  const gridV = values.length ? values : formulas;
-
-  let itemRow = gridF.findIndex((r) => /^hlc\s*no\.?$/i.test(text(r?.[0])));
-  if (itemRow < 0) {
-    itemRow = gridF.findIndex((r) => r?.some((c) => /^hlc\s*no\.?$/i.test(text(c))));
-  }
-  if (itemRow < 0) {
-    const firstStudentIdx = gridF.findIndex((r) => HLC_NO.test(text(r?.[0])));
-    if (firstStudentIdx > 0) itemRow = firstStudentIdx - 1;
-  }
-  if (itemRow < 0) {
-    throw new Error(`${set}: could not find the "HLC no." heading in column A`);
-  }
-
-  const groupRow = itemRow > 0 ? itemRow - 1 : itemRow;
-
-  const fullRow = gridF.findIndex(
-    (r, idx) =>
-      idx !== itemRow && r?.some((c) => /^(full\s*marks?|max\.?\s*marks?|滿分)$/i.test(text(c))),
-  );
-
-  const studentRows = gridF
-    .map((r, i) => ({ r, i }))
-    .filter((x) => x.i > itemRow && HLC_NO.test(text(x.r?.[0])));
-
-  const width = Math.max(
-    0,
-    ...gridF.map((r) => r?.length ?? 0),
-    ...gridV.map((r) => r?.length ?? 0),
-  );
-  const header = (row: number, c: number) => (row >= 0 ? text(gridF[row]?.[c]) : "");
-
-  const emailCol =
-    [groupRow, itemRow]
-      .map((row) => (gridF[row] ?? []).findIndex((c) => /e-?mail/i.test(text(c))))
-      .find((i) => i >= 0) ?? -1;
-
-  type Col = Omit<ParsedScore, "score" | "absent"> & { col: number };
-  const cols: Col[] = [];
-  let term: 1 | 2 = 1;
-  let activeGroup = "";
-
-  for (let c = 6; c < width; c++) {
-    if (c === emailCol) continue;
-
-    const rawGroup = header(groupRow, c);
-    const name = header(itemRow, c);
-
-    if (rawGroup) {
-      if (isSummaryHeaderName(rawGroup)) {
-        activeGroup = "";
-      } else {
-        activeGroup = rawGroup;
-      }
-    }
-    const group = rawGroup || activeGroup;
-
-    const computedByFormula = studentRows.some((s) => isFormula(s.r?.[c]));
-    const summaryByHeader = isSummaryHeaderName(name) || (!name && isSummaryHeaderName(rawGroup));
-    const computed = computedByFormula || summaryByHeader;
-
-    if (/^t2|2nd/i.test(name) || /^t2|2nd/i.test(rawGroup)) term = 2;
-
-    if (name && !computed && !name.includes("_%") && !name.startsWith("#")) {
-      const fullFromRow = fullRow >= 0 ? toNumber(gridV[fullRow]?.[c]) : null;
-      const fullFromHeader = bracketMarks(name);
-      const full = fullFromRow ?? fullFromHeader ?? null;
-      const cat = itemCategory(name, group);
-
-      cols.push({
-        col: c,
-        term,
-        kind: "item",
-        category: cat,
-        label: name,
-        full_marks: full,
-        position: c,
-      });
-    } else {
-      const label = name && bracketMarks(name) !== null ? name : rawGroup || name;
-      const full = bracketMarks(label) ?? (fullRow >= 0 ? toNumber(gridV[fullRow]?.[c]) : null);
-      if (label && full !== null && !label.startsWith("#")) {
-        cols.push({
-          col: c,
-          term,
-          kind: "summary",
-          category: summaryCategory(label),
-          label,
-          full_marks: full,
-          position: c,
-        });
-      }
-    }
-
-    if (/^t1a3/i.test(rawGroup) || /^t1a3/i.test(name)) term = 2;
-  }
-
-  const seen = new Set<string>();
-  const unique = cols.filter((c) => {
-    const k = `${c.term}|${c.kind}|${c.label}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-
-  return studentRows.map(({ r, i }) => {
-    const hlcNo = text(r[0]).toUpperCase();
-    const typedEmail = emailCol >= 0 ? text(r[emailCol]).toLowerCase() : "";
-    return {
-      hlcNo,
-      set,
-      email: typedEmail.includes("@") ? typedEmail : `${hlcNo.toLowerCase()}@hlc.edu.hk`,
-      name: text(r[3]) || hlcNo,
-      className: text(r[1]),
-      classNo: text(r[2]),
-      scores: unique.flatMap(({ col, ...meta }) => {
-        const raw = gridV[i]?.[col];
-        const absent = isAbsent(raw);
-        const score = round1(toNumber(raw));
-        if (meta.kind === "summary" && score === null) return [];
-        return [{ ...meta, score, absent }];
-      }),
-    };
-  });
-}
-````
-
 ## File: supabase/config.toml
 ````toml
 project_id = "mbyselvthprrfjioyvhu"
@@ -6816,28 +8117,6 @@ npm run dev
 }
 ````
 
-## File: src/components/AppShell.tsx
-````typescript
-import { Link, useNavigate } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
-import { BookOpen, CheckCircle2, Circle, GraduationCap, PlayCircle, LayoutDashboard, LogOut, Trophy, Upload, Users } from 'lucide-react';
-import { useApp } from '@/lib/app-store';
-import { Button } from '@/components/ui/button';
-export function AppShell({ children }: { children: ReactNode }) {
-  const { session, role, logout, ready, error, me } = useApp();
-  const navigate = useNavigate();
-  const links = role === 'student' ? [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }, { to: '/courses', label: 'Chapter', icon: BookOpen }] : [{ to: '/teacher', label: 'Analytics', icon: Users }, { to: '/upload', label: 'Chapter content', icon: Upload }, { to: '/leaderboard', label: 'Leaderboard', icon: Trophy }];
-  return <div className="min-h-screen bg-background"><header className="sticky top-0 z-30 border-b border-border bg-card"><div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3"><Link to={role === 'teacher' ? '/teacher' : '/dashboard'} className="flex items-center gap-2 font-display text-xl font-semibold"><GraduationCap className="h-6 w-6 text-primary" />HLC Math</Link><nav className="order-3 flex w-full gap-1 overflow-x-auto md:order-none md:ml-6 md:w-auto">{links.map(l => <Link key={l.to} to={l.to} className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground" activeProps={{ className: 'bg-muted text-primary' }}><l.icon className="h-4 w-4" />{l.label}</Link>)}</nav><div className="ml-auto flex items-center gap-2"><span className="text-sm capitalize text-muted-foreground">{role}</span><Button variant="ghost" size="icon" aria-label="Sign out" title={session?.email} onClick={async () => { await logout(); await navigate({ to: '/', replace: true }); }}><LogOut /></Button></div></div></header><main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{!ready ? <p>Loading your records…</p> : error ? <p role="alert" className="text-destructive">{error}</p> : !session ? <Link to="/">Sign in</Link> : role === 'student' && !me.id ? <p>Your school account is not linked to a student record yet. Please contact your teacher.</p> : children}</main></div>;
-}
-export function TeacherOnly({ children }: { children: ReactNode }) { const { role } = useApp(); return role === 'teacher' ? children : <p>Teacher access required.</p>; }
-export function scoreTone(s: number | null) { return s === null ? 'bg-muted text-muted-foreground' : s >= 85 ? 'bg-success/15 text-success' : s >= 60 ? 'bg-primary/10 text-primary' : 'bg-destructive/15 text-destructive'; }
-export const CHAPTER_STATUS = {
-  Completed: { cls: 'bg-success/15 text-success', icon: CheckCircle2 },
-  'In Progress': { cls: 'bg-gold/25 text-gold-deep', icon: PlayCircle },
-  'Not Started': { cls: 'bg-muted text-muted-foreground', icon: Circle },
-};
-````
-
 ## File: src/integrations/supabase/client.server.ts
 ````typescript
 import { createClient } from '@supabase/supabase-js';
@@ -6912,12 +8191,28 @@ export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdm
 });
 ````
 
-## File: src/lib/assessments.ts
+## File: src/lib/lovable-error-reporting.ts
 ````typescript
-import type { Category } from "./sheet-parse";
 
-export interface Assessment {
-  term: number;
+````
+
+## File: src/lib/sheet-parse.ts
+````typescript
+// Pure rules for turning the teacher's Google Sheet tab into student records.
+export type Category =
+  | "homework"
+  | "short_quiz"
+  | "chapter_quiz"
+  | "term_test"
+  | "mock"
+  | "exam"
+  | "daily"
+  | "overall"
+  | "other";
+export type MathSet = "S2M3" | "S2M5";
+
+export interface ParsedScore {
+  term: 1 | 2;
   kind: "item" | "summary";
   category: Category;
   label: string;
@@ -6927,222 +8222,239 @@ export interface Assessment {
   position: number;
 }
 
-export const ITEM_CATEGORIES: { id: Category; label: string }[] = [
-  { id: "homework", label: "Homework" },
-  { id: "short_quiz", label: "Short Quiz" },
-  { id: "chapter_quiz", label: "Chapter Quiz" },
-  { id: "term_test", label: "Term Test" },
-  { id: "mock", label: "Mock Exam" },
-  { id: "exam", label: "Exam" },
-];
-
-/** Coursework weights from the teacher's sheet: total out of 100, doubled to /200 (T1A2). */
-export const WEIGHTS = [
-  { id: "homework", label: "Homework", weight: 30 },
-  { id: "short_quiz", label: "Short Quiz", weight: 20 },
-  { id: "chapter_quiz", label: "Chapter Quiz", weight: 30 },
-  { id: "mock", label: "Mock Exam", weight: 10 },
-  { id: "daily", label: "Daily", weight: 10 },
-] as const satisfies readonly { id: Category; label: string; weight: number }[];
-
-const round1 = (n: number) => Math.round(n * 10) / 10;
-
-export function percent(a: Pick<Assessment, "score" | "full_marks">) {
-  if (a.score === null) return null;
-  if (a.full_marks && a.full_marks > 0) {
-    return Math.round((a.score / a.full_marks) * 100);
-  }
-  return a.score >= 0 && a.score <= 100 ? Math.round(a.score) : null;
+export interface ParsedStudent {
+  hlcNo: string;
+  email: string;
+  name: string;
+  className: string;
+  classNo: string;
+  set: MathSet;
+  scores: ParsedScore[];
 }
 
-export function termsOf(list: Assessment[]) {
-  return [...new Set(list.map((a) => a.term))].sort();
+type Cell = string | number | boolean | null | undefined;
+
+const text = (c: Cell) => (c === null || c === undefined ? "" : String(c)).trim();
+const isFormula = (c: Cell) => typeof c === "string" && c.trim().startsWith("=");
+const HLC_NO = /^HLC\d+$/i;
+const HLC_HEADING = /^hlc\s*no\.?$/i;
+const FULL_MARKS_HEADING = /^(full\s*marks?|max\.?\s*marks?|滿分)$/i;
+const WEIGHT_HEADER = /\(\s*\d+(?:\.\d+)?\s*%\s*\)\s*$/;
+// Column G. A = HLC no., B = Class, C = No., D = Name in English, E = 姓名, F = Sex.
+const FIRST_SCORE_COLUMN = 6;
+
+export function toNumber(c: Cell): number | null {
+  if (typeof c === "number") return Number.isFinite(c) ? c : null;
+  const t = text(c).replace(/%$/, "").replace(/,/g, "");
+  if (!t || t.startsWith("#") || t === "-" || t === "—" || /^n\/?a$/i.test(t)) return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
 }
 
-/** Average of marked items (absent and blank ignored, like the sheet's AVERAGE) times the category weight. */
-export function contribution(
-  list: Assessment[],
-  term: number,
-  category: Category,
-  weight: number,
-): number | null {
-  if (category === "daily") {
-    const d = list.find((a) => a.term === term && a.kind === "summary" && a.category === "daily");
-    return d?.score ?? null;
+export function isAbsent(c: Cell) {
+  const t = text(c).toUpperCase().replace(/\.$/, "");
+  return t === "ABS" || t === "ABSENT";
+}
+
+/** "Homework (30%)" -> 30, "1st TT (200)" -> 200, "HW(30)" -> 30. */
+export function bracketMarks(header: string): number | null {
+  const m = header.match(/\(\s*(\d+(?:\.\d+)?)\s*%?\s*\)\s*$/);
+  return m ? Number(m[1]) : null;
+}
+
+export function itemCategory(label: string, group = ""): Category {
+  const l = label.toLowerCase().trim();
+  const g = group.toLowerCase().trim();
+  const combined = `${g} ${l}`;
+
+  if (/^hw|\bhw\b|homework|assignment|worksheet|\bws\b|\bex\b|\bch\d*\s*hw/i.test(combined)) {
+    return "homework";
+  }
+  if (/^sq|\bsq\b|short\s*quiz|s\.?q\.?\d/i.test(combined)) {
+    return "short_quiz";
+  }
+  if (/^cq|\bcq\b|chapter\s*quiz|ch\.?\s*quiz|c\.?q\.?\d|post-summer|quiz/i.test(combined)) {
+    return "chapter_quiz";
+  }
+  if (/\btt\b|term\s*test|t\da1|\but\b|unit\s*test|uniform\s*test/i.test(combined)) {
+    return "term_test";
+  }
+  if (/mock/i.test(combined)) {
+    return "mock";
+  }
+  if (/exam|t\da3/i.test(combined)) {
+    return "exam";
+  }
+  return "other";
+}
+
+export function summaryCategory(header: string): Category {
+  const h = header.toLowerCase().trim();
+  if (/^t\da2|annual|overall|coursework/i.test(h)) return "overall";
+  if (/^t\da1|\btt\b|term\s*test/i.test(h)) return "term_test";
+  if (/^t\da3|exam/i.test(h) && !/mock/i.test(h)) return "exam";
+  if (/homework|^hw|\bhw\b/i.test(h)) return "homework";
+  if (/short\s*quiz|^sq|\bsq\b/i.test(h)) return "short_quiz";
+  if (/chapter\s*quiz|^cq|\bcq\b/i.test(h)) return "chapter_quiz";
+  if (/mock/i.test(h)) return "mock";
+  if (/daily/i.test(h)) return "daily";
+  return "other";
+}
+
+const round1 = (n: number | null) => (n === null ? null : Math.round(n * 10) / 10);
+
+function isSummaryHeaderName(h: string): boolean {
+  const clean = h.trim();
+  if (!clean) return false;
+  if (/^daily/i.test(clean)) return true;
+  if (
+    /^(homework|short\s*quiz|chapter\s*quiz|mock(\s*exam)?|1st\s*tt|2nd\s*tt|t\da\d|annual|overall)\b/i.test(
+      clean,
+    )
+  ) {
+    return bracketMarks(clean) !== null;
+  }
+  return WEIGHT_HEADER.test(clean);
+}
+
+/** A weighted coursework column such as "Homework (30%)" or "Daily (10%)". */
+function isWeightHeader(h: string): boolean {
+  const clean = h.trim();
+  if (!clean) return false;
+  return /^daily/i.test(clean) || WEIGHT_HEADER.test(clean);
+}
+
+/**
+ * formulas: the tab read with formulas kept (tells typed marks apart from calculated columns).
+ * values: the same tab read as calculated values.
+ */
+export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]): ParsedStudent[] {
+  const gridF = formulas.length ? formulas : values;
+  const gridV = values.length ? values : formulas;
+  // Only trust "is this cell a formula?" when the source really kept formulas.
+  const hasFormulaInfo = gridF.some((r) => r?.some((c) => isFormula(c)));
+
+  let itemRow = gridF.findIndex((r) => HLC_HEADING.test(text(r?.[0])));
+  if (itemRow < 0) {
+    itemRow = gridF.findIndex((r) => r?.some((c) => HLC_HEADING.test(text(c))));
+  }
+  if (itemRow < 0) {
+    const firstStudentIdx = gridF.findIndex((r) => HLC_NO.test(text(r?.[0])));
+    if (firstStudentIdx > 0) itemRow = firstStudentIdx - 1;
+  }
+  if (itemRow < 0) {
+    throw new Error(`${set}: could not find the "HLC no." heading in column A`);
   }
 
-  const withFull = list.filter(
-    (a) =>
-      a.term === term &&
-      a.kind === "item" &&
-      a.category === category &&
-      !a.absent &&
-      a.score !== null &&
-      a.full_marks &&
-      a.full_marks > 0,
+  const groupRow = itemRow > 0 ? itemRow - 1 : itemRow;
+
+  const fullRow = gridF.findIndex(
+    (r, idx) => idx !== itemRow && r?.some((c) => FULL_MARKS_HEADING.test(text(c))),
   );
-  if (withFull.length > 0) {
-    const ratios = withFull.map((a) => (a.score as number) / (a.full_marks as number));
-    return round1((ratios.reduce((x, y) => x + y, 0) / ratios.length) * weight);
-  }
 
-  const summaryItem = list.find(
-    (a) => a.term === term && a.kind === "summary" && a.category === category && a.score !== null,
+  const studentRows = gridF
+    .map((r, i) => ({ r, i }))
+    .filter((x) => x.i > itemRow && HLC_NO.test(text(x.r?.[0])));
+
+  const width = Math.max(
+    0,
+    ...gridF.map((r) => r?.length ?? 0),
+    ...gridV.map((r) => r?.length ?? 0),
   );
-  if (summaryItem && summaryItem.score !== null) {
-    return round1(summaryItem.score);
+  const header = (row: number, c: number) => (row >= 0 ? text(gridF[row]?.[c]) : "");
+
+  const emailCol =
+    [groupRow, itemRow]
+      .map((row) => (gridF[row] ?? []).findIndex((c) => /e-?mail/i.test(text(c))))
+      .find((i) => i >= 0) ?? -1;
+
+  type Col = Omit<ParsedScore, "score" | "absent"> & { col: number };
+  const cols: Col[] = [];
+  const usedLabels = new Map<string, number>();
+  let term: 1 | 2 = 1;
+  let activeGroup = "";
+
+  for (let c = FIRST_SCORE_COLUMN; c < width; c++) {
+    if (c === emailCol) continue;
+
+    const rawGroup = header(groupRow, c);
+    const name = header(itemRow, c);
+
+    // Merged group headings only fill their first cell, so carry them to the right.
+    if (rawGroup) activeGroup = isSummaryHeaderName(rawGroup) ? "" : rawGroup;
+    const group = rawGroup || activeGroup;
+
+    let formulaCells = 0;
+    let typedCells = 0;
+    for (const s of studentRows) {
+      const cell = s.r?.[c];
+      if (isFormula(cell)) formulaCells++;
+      else if (text(cell) !== "") typedCells++;
+    }
+    const computedByFormula = formulaCells > 0 && formulaCells >= typedCells;
+    const computed = hasFormulaInfo
+      ? computedByFormula || isWeightHeader(name) || (!name && isWeightHeader(rawGroup))
+      : isSummaryHeaderName(name) || (!name && isSummaryHeaderName(rawGroup));
+
+    if (/^t2|2nd/i.test(name) || /^t2|2nd/i.test(rawGroup)) term = 2;
+
+    if (name && !computed && !name.includes("_%") && !name.startsWith("#")) {
+      const fullFromRow = fullRow >= 0 ? toNumber(gridV[fullRow]?.[c]) : null;
+      const full = fullFromRow ?? bracketMarks(name);
+      // Two columns with the same heading are both kept instead of one silently disappearing.
+      const key = `${term}|item|${name}`;
+      const seen = (usedLabels.get(key) ?? 0) + 1;
+      usedLabels.set(key, seen);
+      cols.push({
+        col: c,
+        term,
+        kind: "item",
+        category: itemCategory(name, group),
+        label: seen === 1 ? name : `${name} (${seen})`,
+        full_marks: full,
+        position: c,
+      });
+    } else {
+      const label = name && bracketMarks(name) !== null ? name : rawGroup || name;
+      const full = bracketMarks(label) ?? (fullRow >= 0 ? toNumber(gridV[fullRow]?.[c]) : null);
+      const key = `${term}|summary|${label}`;
+      if (label && full !== null && !label.startsWith("#") && !usedLabels.has(key)) {
+        usedLabels.set(key, 1);
+        cols.push({
+          col: c,
+          term,
+          kind: "summary",
+          category: summaryCategory(label),
+          label,
+          full_marks: full,
+          position: c,
+        });
+      }
+    }
+
+    if (/^t1a3/i.test(rawGroup) || /^t1a3/i.test(name)) term = 2;
   }
 
-  return null;
-}
-
-export function termSummary(list: Assessment[], term: number) {
-  const parts = WEIGHTS.map((w) => ({ ...w, value: contribution(list, term, w.id, w.weight) }));
-  const sum = parts.reduce((t, p) => t + (p.value ?? 0), 0);
-  return { parts, coursework200: round1(sum * 2) };
-}
-````
-
-## File: src/lib/lovable-error-reporting.ts
-````typescript
-
-````
-
-## File: src/routes/_authenticated/courses.$chapter.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, CheckCircle2, FileText, ListChecks, PlayCircle, Video } from "lucide-react";
-import { toast } from "sonner";
-import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
-import { ChapterVideoPlayer } from "@/components/ChapterVideoPlayer";
-import { useApp } from "@/lib/app-store";
-import { CHAPTERS, chapterStatus } from "@/lib/data";
-import { percent } from "@/lib/assessments";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/courses/$chapter")({
-  head: ({ params }) => {
-    const c = CHAPTERS.find(x => String(x.id) === params.chapter);
-    const title = c ? `Chapter ${c.id}: ${c.title} — HLC Math` : "Chapter — HLC Math";
+  return studentRows.map(({ r, i }) => {
+    const hlcNo = text(r[0]).toUpperCase();
+    const typedEmail = emailCol >= 0 ? text(r[emailCol]).toLowerCase() : "";
     return {
-      meta: [
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-        { title },
-        { name: "description", content: c ? `Videos, notes, exercise and progress for ${c.title}.` : "Math chapter." },
-        { property: "og:title", content: title },
-        { property: "og:description", content: "Watch the lessons, read the notes and practise." },
-      ],
+      hlcNo,
+      set,
+      email: typedEmail.includes("@") ? typedEmail : `${hlcNo.toLowerCase()}@hlc.edu.hk`,
+      name: text(r[3]) || hlcNo,
+      className: text(r[1]),
+      classNo: text(r[2]),
+      scores: cols.flatMap(({ col, ...meta }) => {
+        const raw = gridV[i]?.[col];
+        const absent = isAbsent(raw);
+        const score = round1(toNumber(raw));
+        if (meta.kind === "summary" && score === null) return [];
+        if (meta.category === "other" && score === null && !absent) return [];
+        return [{ ...meta, score, absent }];
+      }),
     };
-  },
-  component: ChapterPage,
-});
-
-function ChapterPage() {
-  const { chapter } = Route.useParams();
-  const { me, role, videos, content, refresh } = useApp();
-  const c = CHAPTERS.find(x => String(x.id) === chapter);
-  const list = videos.filter(v => v.chapter === c?.id);
-  const done = (id: string) => Boolean(me.completedVideos?.includes(id));
-  const [activeId, setActiveId] = useState<string | null>(null);
-  if (!c) return <AppShell><p>Chapter not found.</p><Link to="/courses" className="text-primary underline">Back to chapters</Link></AppShell>;
-
-  const active = list.find(v => v.id === activeId) ?? list.find(v => !done(v.id)) ?? list[0];
-  const materials = content.find(m => m.chapter === c.id);
-  const idx = c.id - 1;
-  const score = me.scores[idx] ?? null;
-  const st = chapterStatus(score, idx, me.scores);
-  const S = STATUS[st];
-  const watched = list.filter(v => done(v.id)).length;
-  const canEarn = role === "student" && Boolean(me.id);
-  const quizzes = (me.assessments ?? []).filter(a => a.kind === "item" && new RegExp(`^(SQ|CQ)\\s*${c.id}(\\.\\d+)?$`, "i").test(a.label.trim()));
-
-  const complete = async (videoId: string) => {
-    const { data, error } = await supabase.rpc("complete_chapter_video", { _video_id: videoId });
-    if (error) throw error;
-    await refresh();
-    if (data) toast.success("Video completed — 1 mark saved");
-  };
-
-  return (
-    <AppShell>
-      <Link to="/courses" className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-primary"><ArrowLeft className="h-4 w-4" /> All chapters</Link>
-      <div className="mt-3 flex flex-wrap items-start gap-4">
-        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-3xl">{c.emoji}</span>
-        <div className="mr-auto min-w-0">
-          <p className="text-xs font-extrabold uppercase tracking-wide text-primary">Chapter {c.id}</p>
-          <h1 className="text-2xl font-bold leading-tight md:text-3xl">{c.title}</h1>
-        </div>
-        <span className={cn("flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold", S.cls)}><S.icon className="h-3.5 w-3.5" /> {st}</span>
-      </div>
-
-      <section aria-label="Progress" className="mt-6 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border-2 border-border bg-card p-4">
-          <p className="text-sm font-semibold text-muted-foreground">Videos watched</p>
-          <p className="font-display text-3xl font-bold">{watched}<span className="text-lg text-muted-foreground"> / {list.length}</span></p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-success" style={{ width: `${list.length ? (watched / list.length) * 100 : 0}%` }} /></div>
-        </div>
-        <div className="rounded-2xl border-2 border-border bg-card p-4">
-          <p className="text-sm font-semibold text-muted-foreground">Video marks earned</p>
-          <p className="font-display text-3xl font-bold">{watched}</p>
-          <p className="text-xs text-muted-foreground">1 mark for each video watched to the end</p>
-        </div>
-        <div className="rounded-2xl border-2 border-border bg-card p-4">
-          <p className="text-sm font-semibold text-muted-foreground">Chapter score</p>
-          <p className={cn("mt-1 inline-block rounded-full px-3 py-1 text-lg font-extrabold", scoreTone(score))}>{score === null ? "No score yet" : `${score}%`}</p>
-        </div>
-      </section>
-
-      <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-        <h2 className="flex items-center gap-2 text-lg font-bold"><Video className="h-5 w-5 text-primary" /> Videos</h2>
-        {!active ? <p className="mt-2 text-sm text-muted-foreground">Your teacher has not added videos for this chapter yet.</p> : (
-          <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-            <ChapterVideoPlayer key={active.id} video={active} completed={done(active.id)} canEarn={canEarn} onComplete={complete} />
-            <ol className="space-y-2">
-              {list.map((v, i) => (
-                <li key={v.id}>
-                  <button onClick={() => setActiveId(v.id)} className={cn("flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left text-sm", v.id === active.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}>
-                    {done(v.id) ? <CheckCircle2 className="h-5 w-5 shrink-0 text-success" /> : <PlayCircle className="h-5 w-5 shrink-0 text-muted-foreground" />}
-                    <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">Video {i + 1}</span><span className="block font-semibold">{v.title}</span></span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </section>
-
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="flex items-center gap-2 text-lg font-bold"><FileText className="h-5 w-5 text-success" /> Notes</h2>
-          {materials?.notes ? (
-            <Button className="mt-3" variant="outline" onClick={async () => { const { data, error } = await supabase.storage.from("chapter-notes").createSignedUrl(materials.notes, 300); if (error) toast.error(error.message); else window.open(data.signedUrl, "_blank", "noopener,noreferrer"); }}>Open chapter notes (PDF)</Button>
-          ) : <p className="mt-2 text-sm text-muted-foreground">No notes uploaded yet.</p>}
-        </section>
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="flex items-center gap-2 text-lg font-bold"><ListChecks className="h-5 w-5 text-gold-deep" /> Exercise</h2>
-          {materials?.quiz ? <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{materials.quiz}</p> : <p className="mt-2 text-sm text-muted-foreground">No exercise added yet.</p>}
-        </section>
-      </div>
-
-      {quizzes.length > 0 && (
-        <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="text-lg font-bold">My quiz results for this chapter</h2>
-          <ul className="mt-3 divide-y divide-border">
-            {quizzes.map(q => { const p = percent(q); return (
-              <li key={`${q.term}-${q.label}`} className="flex items-center justify-between py-2 text-sm">
-                <span className="font-semibold">{q.label.startsWith("CQ") ? "Chapter quiz" : "Short quiz"} {q.label}</span>
-                <span className={cn("rounded-full px-3 py-0.5 font-bold", scoreTone(p))}>{q.absent ? "Absent" : q.score === null ? "—" : `${q.score}${q.full_marks ? ` / ${q.full_marks}` : ""}`}</span>
-              </li>
-            ); })}
-          </ul>
-        </section>
-      )}
-    </AppShell>
-  );
+  });
 }
 ````
 
@@ -7329,6 +8641,136 @@ export const startInstance = createStart(() => ({
 .google-auth { background: #FFFFFF; border: 1px solid #747775; color: #1F1F1F; font-weight: 500; }
 ````
 
+## File: src/components/AppShell.tsx
+````typescript
+import { Link, useNavigate } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Circle,
+  Dices,
+  Gift,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+  PlayCircle,
+  Trophy,
+  Upload,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+import { useApp } from "@/lib/app-store";
+import { Button } from "@/components/ui/button";
+
+interface NavLink {
+  to: "/dashboard" | "/courses" | "/awards" | "/teacher" | "/activity" | "/upload" | "/leaderboard";
+  label: string;
+  icon: LucideIcon;
+}
+
+const STUDENT_LINKS: NavLink[] = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/courses", label: "Chapter", icon: BookOpen },
+  { to: "/awards", label: "Awards", icon: Gift },
+];
+
+const TEACHER_LINKS: NavLink[] = [
+  { to: "/teacher", label: "Analytics", icon: Users },
+  { to: "/activity", label: "Class activity", icon: Dices },
+  { to: "/upload", label: "Chapter content", icon: Upload },
+  { to: "/awards", label: "Awards", icon: Gift },
+  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+];
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const { session, role, logout, ready, error, me } = useApp();
+  const navigate = useNavigate();
+  const links = role === "student" ? STUDENT_LINKS : TEACHER_LINKS;
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-30 border-b border-border bg-card">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
+          <Link
+            to={role === "teacher" ? "/teacher" : "/dashboard"}
+            className="flex items-center gap-2 font-display text-xl font-semibold"
+          >
+            <GraduationCap className="h-6 w-6 text-primary" />
+            HLC Math
+          </Link>
+          <nav className="order-3 flex w-full gap-1 overflow-x-auto md:order-none md:ml-6 md:w-auto">
+            {links.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground"
+                activeProps={{ className: "bg-muted text-primary" }}
+              >
+                <l.icon className="h-4 w-4" />
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-sm capitalize text-muted-foreground">{role}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Sign out"
+              title={session?.email}
+              onClick={async () => {
+                await logout();
+                await navigate({ to: "/", replace: true });
+              }}
+            >
+              <LogOut />
+            </Button>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">
+        {!ready ? (
+          <p>Loading your records…</p>
+        ) : error ? (
+          <p role="alert" className="text-destructive">
+            {error}
+          </p>
+        ) : !session ? (
+          <Link to="/">Sign in</Link>
+        ) : role === "student" && !me.id ? (
+          <p>
+            Your school account is not linked to a student record yet. Please contact your teacher.
+          </p>
+        ) : (
+          children
+        )}
+      </main>
+    </div>
+  );
+}
+
+export function TeacherOnly({ children }: { children: ReactNode }) {
+  const { role } = useApp();
+  return role === "teacher" ? children : <p>Teacher access required.</p>;
+}
+
+export function scoreTone(s: number | null) {
+  return s === null
+    ? "bg-muted text-muted-foreground"
+    : s >= 85
+      ? "bg-success/15 text-success"
+      : s >= 60
+        ? "bg-primary/10 text-primary"
+        : "bg-destructive/15 text-destructive";
+}
+
+export const CHAPTER_STATUS = {
+  Completed: { cls: "bg-success/15 text-success", icon: CheckCircle2 },
+  "In Progress": { cls: "bg-gold/25 text-gold-deep", icon: PlayCircle },
+  "Not Started": { cls: "bg-muted text-muted-foreground", icon: Circle },
+};
+````
+
 ## File: src/integrations/supabase/previewAuthStorage.ts
 ````typescript
 // This file is automatically generated. Do not edit it directly.
@@ -7343,6 +8785,358 @@ export interface PreviewAuthStorage {
     if (typeof window === 'undefined') return undefined;
     return window.localStorage;
   }
+````
+
+## File: src/routes/_authenticated/courses.$chapter.tsx
+````typescript
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ExternalLink,
+  FileText,
+  ListChecks,
+  PlayCircle,
+  Video,
+} from "lucide-react";
+import { toast } from "sonner";
+import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
+import { ChapterVideoPlayer } from "@/components/ChapterVideoPlayer";
+import { useApp } from "@/lib/app-store";
+import { CHAPTERS, chapterStatus } from "@/lib/data";
+import { percent } from "@/lib/assessments";
+import { isWebLink, notesPreviewUrl } from "@/lib/drive-link";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/courses/$chapter")({
+  head: ({ params }) => {
+    const c = CHAPTERS.find((x) => String(x.id) === params.chapter);
+    const title = c ? `Chapter ${c.id}: ${c.title} — HLC Math` : "Chapter — HLC Math";
+    return {
+      meta: [
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { title },
+        {
+          name: "description",
+          content: c ? `Videos, notes, exercise and progress for ${c.title}.` : "Math chapter.",
+        },
+        { property: "og:title", content: title },
+        { property: "og:description", content: "Watch the lessons, read the notes and practise." },
+      ],
+    };
+  },
+  component: ChapterPage,
+});
+
+function ChapterPage() {
+  const { chapter } = Route.useParams();
+  const { me, role, videos, content, refresh } = useApp();
+  const c = CHAPTERS.find((x) => String(x.id) === chapter);
+  const list = videos.filter((v) => v.chapter === c?.id);
+  const done = (id: string) => Boolean(me.completedVideos?.includes(id));
+  const [activeId, setActiveId] = useState<string | null>(null);
+  if (!c) {
+    return (
+      <AppShell>
+        <p>Chapter not found.</p>
+        <Link to="/courses" className="text-primary underline">
+          Back to chapters
+        </Link>
+      </AppShell>
+    );
+  }
+
+  const active = list.find((v) => v.id === activeId) ?? list.find((v) => !done(v.id)) ?? list[0];
+  const materials = content.find((m) => m.chapter === c.id);
+  const notes = materials?.notes.trim() ?? "";
+  const preview = notesPreviewUrl(notes);
+  const idx = c.id - 1;
+  const score = me.scores[idx] ?? null;
+  const st = chapterStatus(score, idx, me.scores);
+  const S = STATUS[st];
+  const watched = list.filter((v) => done(v.id)).length;
+  const canEarn = role === "student" && Boolean(me.id);
+  const quizzes = (me.assessments ?? []).filter(
+    (a) =>
+      a.kind === "item" && new RegExp(`^(SQ|CQ)\\s*${c.id}(\\.\\d+)?$`, "i").test(a.label.trim()),
+  );
+
+  const complete = async (videoId: string) => {
+    const { data, error } = await supabase.rpc("complete_chapter_video", { _video_id: videoId });
+    if (error) throw error;
+    await refresh();
+    if (data) toast.success("Video completed — 1 Math Coin earned");
+  };
+
+  const openOldPdf = async (path: string) => {
+    const { data, error } = await supabase.storage.from("chapter-notes").createSignedUrl(path, 300);
+    if (error) toast.error(error.message);
+    else window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <AppShell>
+      <Link
+        to="/courses"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-primary"
+      >
+        <ArrowLeft className="h-4 w-4" /> All chapters
+      </Link>
+      <div className="mt-3 flex flex-wrap items-start gap-4">
+        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-3xl">
+          {c.emoji}
+        </span>
+        <div className="mr-auto min-w-0">
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary">
+            Chapter {c.id}
+          </p>
+          <h1 className="text-2xl font-bold leading-tight md:text-3xl">{c.title}</h1>
+        </div>
+        <span
+          className={cn(
+            "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold",
+            S.cls,
+          )}
+        >
+          <S.icon className="h-3.5 w-3.5" /> {st}
+        </span>
+      </div>
+
+      <section aria-label="Progress" className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border-2 border-border bg-card p-4">
+          <p className="text-sm font-semibold text-muted-foreground">Videos watched</p>
+          <p className="font-display text-3xl font-bold">
+            {watched}
+            <span className="text-lg text-muted-foreground"> / {list.length}</span>
+          </p>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-success"
+              style={{ width: `${list.length ? (watched / list.length) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+        <div className="rounded-2xl border-2 border-border bg-card p-4">
+          <p className="text-sm font-semibold text-muted-foreground">Math Coins from videos</p>
+          <p className="font-display text-3xl font-bold">🪙 {watched}</p>
+          <p className="text-xs text-muted-foreground">1 coin for each video watched to the end</p>
+        </div>
+        <div className="rounded-2xl border-2 border-border bg-card p-4">
+          <p className="text-sm font-semibold text-muted-foreground">Chapter score</p>
+          <p
+            className={cn(
+              "mt-1 inline-block rounded-full px-3 py-1 text-lg font-extrabold",
+              scoreTone(score),
+            )}
+          >
+            {score === null ? "No score yet" : `${score}%`}
+          </p>
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+        <h2 className="flex items-center gap-2 text-lg font-bold">
+          <Video className="h-5 w-5 text-primary" /> Videos
+        </h2>
+        {!active ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your teacher has not added videos for this chapter yet.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+            <ChapterVideoPlayer
+              key={active.id}
+              video={active}
+              completed={done(active.id)}
+              canEarn={canEarn}
+              onComplete={complete}
+            />
+            <ol className="space-y-2">
+              {list.map((v, i) => (
+                <li key={v.id}>
+                  <button
+                    onClick={() => setActiveId(v.id)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left text-sm",
+                      v.id === active.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50",
+                    )}
+                  >
+                    {done(v.id) ? (
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+                    ) : (
+                      <PlayCircle className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-xs text-muted-foreground">Video {i + 1}</span>
+                      <span className="block font-semibold">{v.title}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </section>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        <section
+          className={cn(
+            "rounded-3xl border-2 border-border bg-card p-5 shadow-chunky",
+            preview && "md:col-span-2",
+          )}
+        >
+          <h2 className="flex items-center gap-2 text-lg font-bold">
+            <FileText className="h-5 w-5 text-success" /> Notes
+          </h2>
+          {isWebLink(notes) ? (
+            <>
+              {preview && (
+                <iframe
+                  src={preview}
+                  title={`Chapter ${c.id} notes`}
+                  loading="lazy"
+                  allow="autoplay"
+                  className="mt-3 h-[70vh] w-full rounded-xl border-2 border-border bg-muted"
+                />
+              )}
+              <a
+                href={notes}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary underline"
+              >
+                Open notes in Google Drive <ExternalLink className="h-4 w-4" />
+              </a>
+              {preview && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  If the notes don&apos;t show, sign in to Google with your school account.
+                </p>
+              )}
+            </>
+          ) : notes ? (
+            <Button className="mt-3" variant="outline" onClick={() => void openOldPdf(notes)}>
+              Open chapter notes (PDF)
+            </Button>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">No notes uploaded yet.</p>
+          )}
+        </section>
+        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
+            <ListChecks className="h-5 w-5 text-gold-deep" /> Exercise
+          </h2>
+          {materials?.quiz ? (
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{materials.quiz}</p>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">No exercise added yet.</p>
+          )}
+        </section>
+      </div>
+
+      {quizzes.length > 0 && (
+        <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+          <h2 className="text-lg font-bold">My quiz results for this chapter</h2>
+          <ul className="mt-3 divide-y divide-border">
+            {quizzes.map((q) => {
+              const p = percent(q);
+              return (
+                <li
+                  key={`${q.term}-${q.label}`}
+                  className="flex items-center justify-between py-2 text-sm"
+                >
+                  <span className="font-semibold">
+                    {q.label.toUpperCase().startsWith("CQ") ? "Chapter quiz" : "Short quiz"}{" "}
+                    {q.label}
+                  </span>
+                  <span className={cn("rounded-full px-3 py-0.5 font-bold", scoreTone(p))}>
+                    {q.absent
+                      ? "Absent"
+                      : q.score === null
+                        ? "—"
+                        : `${q.score}${q.full_marks ? ` / ${q.full_marks}` : ""}`}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+    </AppShell>
+  );
+}
+````
+
+## File: src/routes/_authenticated/courses.index.tsx
+````typescript
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
+import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
+import { useApp } from "@/lib/app-store";
+import { CHAPTERS, chapterStatus } from "@/lib/data";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/courses/")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Chapters — HLC Math" },
+      { name: "description", content: "Mathematics chapters 1–7 with videos, notes and exercises." },
+      { property: "og:title", content: "Chapters — HLC Math" },
+      { property: "og:description", content: "Seven Math chapters to master." },
+    ],
+  }),
+  component: Courses,
+});
+
+function Courses() {
+  const { me, videos } = useApp();
+  return (
+    <AppShell>
+      <h1 className="text-3xl font-bold">Chapter</h1>
+      <p className="font-semibold text-muted-foreground">Mathematics · choose a chapter to open its videos, notes and exercise</p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {CHAPTERS.map((c, i) => {
+          const list = videos.filter(v => v.chapter === c.id);
+          const watched = list.filter(v => me.completedVideos?.includes(v.id)).length;
+          const s = me.scores[i] ?? null;
+          const st = chapterStatus(s, i, me.scores);
+          const S = STATUS[st];
+          return (
+            <Link key={c.id} to="/courses/$chapter" params={{ chapter: String(c.id) }} className="flex flex-col rounded-3xl border-2 border-border bg-card p-5 shadow-chunky transition hover:-translate-y-1 hover:border-primary">
+              <div className="flex items-start justify-between">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-3xl">{c.emoji}</span>
+                <span className={cn("flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold", S.cls)}>
+                  <S.icon className="h-3.5 w-3.5" /> {st}
+                </span>
+              </div>
+              <p className="mt-4 text-xs font-extrabold uppercase tracking-wide text-primary">Chapter {c.id}</p>
+              <h2 className="text-lg font-bold leading-tight">{c.title}</h2>
+              <div className="mt-4">
+                <div className="flex justify-between text-xs font-semibold text-muted-foreground">
+                  <span>{list.length ? `${watched}/${list.length} videos watched` : "No videos yet"}</span>
+                </div>
+                {list.length > 0 && <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-success" style={{ width: `${(watched / list.length) * 100}%` }} /></div>}
+              </div>
+              <div className="mt-auto flex items-center justify-between pt-4">
+                <span className={cn("rounded-full px-3 py-1 text-sm font-extrabold", scoreTone(s))}>
+                  {s === null ? "No score yet" : `Score ${s}%`}
+                </span>
+                <span className="flex items-center text-sm font-semibold text-primary">Open <ChevronRight className="h-4 w-4" /></span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </AppShell>
+  );
+}
 ````
 
 ## File: src/integrations/supabase/types.ts
@@ -7535,28 +9329,34 @@ export type Database = {
       daily_marks: {
         Row: {
           awarded_by: string
+          batch_id: string | null
           created_at: string
           id: string
           lesson_date: string
           marks: number
+          note: string
           reason: string
           student_id: string
         }
         Insert: {
           awarded_by: string
+          batch_id?: string | null
           created_at?: string
           id?: string
           lesson_date?: string
           marks: number
+          note?: string
           reason: string
           student_id: string
         }
         Update: {
           awarded_by?: string
+          batch_id?: string | null
           created_at?: string
           id?: string
           lesson_date?: string
           marks?: number
+          note?: string
           reason?: string
           student_id?: string
         }
@@ -7585,6 +9385,93 @@ export type Database = {
           display_name?: string
           id?: string
           preferences?: Json
+        }
+        Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          cost: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          reward_id: string | null
+          reward_name: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          reward_id?: string | null
+          reward_name: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          reward_id?: string | null
+          reward_name?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          active: boolean
+          cooldown_days: number | null
+          cost: number
+          created_at: string
+          description: string
+          emoji: string
+          id: string
+          name: string
+          position: number
+        }
+        Insert: {
+          active?: boolean
+          cooldown_days?: number | null
+          cost: number
+          created_at?: string
+          description?: string
+          emoji?: string
+          id?: string
+          name: string
+          position?: number
+        }
+        Update: {
+          active?: boolean
+          cooldown_days?: number | null
+          cost?: number
+          created_at?: string
+          description?: string
+          emoji?: string
+          id?: string
+          name?: string
+          position?: number
         }
         Relationships: []
       }
@@ -7724,7 +9611,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      student_coin_totals: {
+        Row: {
+          daily_earned: number | null
+          spent: number | null
+          student_id: string | null
+          video_earned: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       claim_student: { Args: never; Returns: undefined }
@@ -7737,6 +9632,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      redeem_reward: { Args: { _reward_id: string }; Returns: string }
     }
     Enums: {
       app_role: "teacher" | "student"
@@ -7873,6 +9769,168 @@ export const Constants = {
 } as const
 ````
 
+## File: src/lib/assessments.ts
+````typescript
+import type { Category } from "./sheet-parse";
+
+export interface Assessment {
+  term: number;
+  kind: "item" | "summary";
+  category: Category;
+  label: string;
+  score: number | null;
+  absent: boolean;
+  full_marks: number | null;
+  position: number;
+}
+
+export const ITEM_CATEGORIES: { id: Category; label: string }[] = [
+  { id: "homework", label: "Homework" },
+  { id: "short_quiz", label: "Short Quiz" },
+  { id: "chapter_quiz", label: "Chapter Quiz" },
+  { id: "term_test", label: "Term Test" },
+  { id: "mock", label: "Mock Exam" },
+  { id: "exam", label: "Exam" },
+];
+
+/** Coursework weights from the teacher's sheet: total out of 100, doubled to /200 (T1A2). */
+export const WEIGHTS = [
+  { id: "homework", label: "Homework", weight: 30 },
+  { id: "short_quiz", label: "Short Quiz", weight: 20 },
+  { id: "chapter_quiz", label: "Chapter Quiz", weight: 30 },
+  { id: "mock", label: "Mock Exam", weight: 10 },
+  { id: "daily", label: "Daily", weight: 10 },
+] as const satisfies readonly { id: Category; label: string; weight: number }[];
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+const QUIZ_CATEGORIES: Category[] = ["short_quiz", "chapter_quiz"];
+
+/** Ways a column heading can name its chapter. The first pattern that matches wins. */
+const CHAPTER_PATTERNS: RegExp[] = [
+  /\bch(?:apter)?\s*\.?\s*(\d{1,2})(?!\d)/i, // "Ch1", "Ch.1", "Chapter 1", "SQ Ch2"
+  /^(?:SQ|CQ|HW|Q|QUIZ|WS|EX)\s*[-_.]?\s*(\d{1,2})\s*[.\-_]\s*\d+/i, // "SQ1.1", "CQ 2-1", "HW3.2"
+  /^(?:SQ|CQ|QUIZ|Q)\s*[-_.]?\s*(\d{1,2})$/i, // "SQ1", "CQ 2", "Quiz 3"
+  /^(\d{1,2})\s*\.\s*\d+$/, // "1.1" under an SQ / CQ group heading
+];
+
+export function percent(a: Pick<Assessment, "score" | "full_marks">) {
+  if (a.score === null) return null;
+  if (a.full_marks && a.full_marks > 0) {
+    return Math.round((a.score / a.full_marks) * 100);
+  }
+  return a.score >= 0 && a.score <= 100 ? Math.round(a.score) : null;
+}
+
+export function termsOf(list: Assessment[]) {
+  return [...new Set(list.map((a) => a.term))].sort();
+}
+
+export function chapterOfLabel(label: string, maxChapter = 7): number | null {
+  const t = label.trim();
+  for (const re of CHAPTER_PATTERNS) {
+    const n = Number(re.exec(t)?.[1]);
+    if (Number.isInteger(n) && n >= 1 && n <= maxChapter) return n;
+  }
+  return null;
+}
+
+function markedPercent(a: Assessment): number | null {
+  if (a.absent || a.score === null || a.full_marks === null || a.full_marks <= 0) return null;
+  return (a.score / a.full_marks) * 100;
+}
+
+function chapterAverage(
+  list: Assessment[],
+  categories: Category[],
+  chapter: number,
+  maxChapter: number,
+): number | null {
+  const values = list
+    .filter(
+      (a) =>
+        a.kind === "item" &&
+        categories.includes(a.category) &&
+        chapterOfLabel(a.label, maxChapter) === chapter,
+    )
+    .map(markedPercent)
+    .filter((p): p is number => p !== null);
+  return values.length ? Math.round(values.reduce((x, y) => x + y, 0) / values.length) : null;
+}
+
+/**
+ * Chapter score from the Google Sheet: the average percentage of that chapter's short quizzes
+ * and chapter quizzes; if a chapter has no quiz yet, its homework average is used instead.
+ */
+export function chapterScoresFromAssessments(list: Assessment[], chapters = 7): (number | null)[] {
+  return Array.from(
+    { length: chapters },
+    (_, i) =>
+      chapterAverage(list, QUIZ_CATEGORIES, i + 1, chapters) ??
+      chapterAverage(list, ["homework"], i + 1, chapters),
+  );
+}
+
+/** Quiz columns whose heading does not name a chapter, so they cannot count towards Ch1–Ch7. */
+export function unmatchedChapterLabels(list: Assessment[], chapters = 7): string[] {
+  return [
+    ...new Set(
+      list
+        .filter(
+          (a) =>
+            a.kind === "item" &&
+            QUIZ_CATEGORIES.includes(a.category) &&
+            chapterOfLabel(a.label, chapters) === null,
+        )
+        .map((a) => a.label),
+    ),
+  ].sort();
+}
+
+/** Average of marked items (absent and blank ignored, like the sheet's AVERAGE) times the category weight. */
+export function contribution(
+  list: Assessment[],
+  term: number,
+  category: Category,
+  weight: number,
+): number | null {
+  if (category === "daily") {
+    const d = list.find((a) => a.term === term && a.kind === "summary" && a.category === "daily");
+    return d?.score ?? null;
+  }
+
+  const withFull = list.filter(
+    (a) =>
+      a.term === term &&
+      a.kind === "item" &&
+      a.category === category &&
+      !a.absent &&
+      a.score !== null &&
+      a.full_marks &&
+      a.full_marks > 0,
+  );
+  if (withFull.length > 0) {
+    const ratios = withFull.map((a) => (a.score as number) / (a.full_marks as number));
+    return round1((ratios.reduce((x, y) => x + y, 0) / ratios.length) * weight);
+  }
+
+  const summaryItem = list.find(
+    (a) => a.term === term && a.kind === "summary" && a.category === category && a.score !== null,
+  );
+  if (summaryItem && summaryItem.score !== null) {
+    return round1(summaryItem.score);
+  }
+
+  return null;
+}
+
+export function termSummary(list: Assessment[], term: number) {
+  const parts = WEIGHTS.map((w) => ({ ...w, value: contribution(list, term, w.id, w.weight) }));
+  const sum = parts.reduce((t, p) => t + (p.value ?? 0), 0);
+  return { parts, coursework200: round1(sum * 2) };
+}
+````
+
 ## File: src/lib/sheets.functions.ts
 ````typescript
 import { createServerFn } from "@tanstack/react-start";
@@ -7883,11 +9941,83 @@ const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
 const GOOGLE_SHEETS_API_URL = "https://sheets.googleapis.com/v4";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
+// The xlsx export keeps every tab, the real cell values and the formulas. The gviz CSV endpoint
+// does not: it blanks out text in mostly-numeric columns, which wipes the "SQ1.1" heading row.
+const PUBLIC_XLSX_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=xlsx`;
 const TABS: MathSet[] = ["S2M3", "S2M5"];
+const MAX_ROWS = 1000;
+const MAX_COLS = 400;
+const WRITE_CHUNK = 500;
+const DELETE_CHUNK = 100;
+
 type Cell = string | number | boolean | null;
 type Grid = Cell[][];
 
+export type SheetSource = "service_account" | "api_key" | "public_xlsx";
+
+export interface TabReport {
+  set: MathSet;
+  students: number;
+  term1Items: number;
+  term2Items: number;
+  scores: number;
+}
+
+export interface SyncReport {
+  source: SheetSource;
+  students: number;
+  scores: number;
+  syncedAt: string;
+  tabs: TabReport[];
+  duplicates: string[];
+}
+
+interface SheetGrids {
+  formulas: Grid[];
+  values: Grid[];
+  source: SheetSource;
+}
+
+interface XlsxCell {
+  t?: string;
+  v?: unknown;
+  w?: string;
+  f?: string;
+}
+
+type XlsxSheet = Record<string, unknown>;
+
+interface XlsxRange {
+  s: { r: number; c: number };
+  e: { r: number; c: number };
+}
+
+interface XlsxModule {
+  read: (
+    data: Uint8Array,
+    opts: Record<string, unknown>,
+  ) => { SheetNames: string[]; Sheets: Record<string, XlsxSheet | undefined> };
+  utils: {
+    decode_range: (ref: string) => XlsxRange;
+    encode_cell: (cell: { r: number; c: number }) => string;
+  };
+}
+
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function cleanEnv(raw: string | undefined): string {
+  return (raw ?? "").trim().replace(/^['"]|['"]$/g, "");
+}
+
+function chunk<T>(list: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
+}
 
 function normalizePrivateKey(raw: string): string {
   let cleaned = raw.trim();
@@ -7896,7 +10026,7 @@ function normalizePrivateKey(raw: string): string {
       const parsed = JSON.parse(cleaned) as { private_key?: string };
       if (parsed.private_key) cleaned = parsed.private_key;
     } catch {
-      // ignore
+      // Not JSON: treat the value as the key itself.
     }
   }
   return cleaned.replace(/^['"]|['"]$/g, "").replace(/\\n/g, "\n");
@@ -7908,10 +10038,10 @@ function extractClientEmail(emailRaw: string | undefined, keyRaw: string | undef
       const parsed = JSON.parse(keyRaw.trim()) as { client_email?: string };
       if (parsed.client_email) return parsed.client_email.trim();
     } catch {
-      // ignore
+      // Not JSON: fall back to the separate email variable.
     }
   }
-  return (emailRaw ?? "").trim().replace(/^['"]|['"]$/g, "");
+  return cleanEnv(emailRaw);
 }
 
 async function getServiceAccountAccessToken(
@@ -7966,90 +10096,7 @@ async function getServiceAccountAccessToken(
     token: tokenData.access_token,
     expiresAt: now + (tokenData.expires_in ?? 3600),
   };
-
   return tokenData.access_token;
-}
-
-function parseCellValue(raw: string): Cell {
-  const trimmed = raw.trim();
-  if (trimmed === "") return "";
-  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
-    const n = Number(trimmed);
-    if (Number.isFinite(n)) return n;
-  }
-  return trimmed;
-}
-
-function parseCsvGrid(csvText: string): Grid {
-  const rows: Grid = [];
-  let row: Cell[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < csvText.length; i++) {
-    const ch = csvText.charAt(i);
-    const next = csvText.charAt(i + 1);
-
-    if (inQuotes) {
-      if (ch === '"' && next === '"') {
-        current += '"';
-        i++;
-      } else if (ch === '"') {
-        inQuotes = false;
-      } else {
-        current += ch;
-      }
-    } else {
-      if (ch === '"') {
-        inQuotes = true;
-      } else if (ch === ",") {
-        row.push(parseCellValue(current));
-        current = "";
-      } else if (ch === "\r" && next === "\n") {
-        row.push(parseCellValue(current));
-        rows.push(row);
-        row = [];
-        current = "";
-        i++;
-      } else if (ch === "\n") {
-        row.push(parseCellValue(current));
-        rows.push(row);
-        row = [];
-        current = "";
-      } else {
-        current += ch;
-      }
-    }
-  }
-  if (current.length > 0 || row.length > 0) {
-    row.push(parseCellValue(current));
-    rows.push(row);
-  }
-  return rows;
-}
-
-async function readPublicTabsFallback(): Promise<{ formulas: Grid[]; values: Grid[] }> {
-  const values: Grid[] = [];
-  const formulas: Grid[] = [];
-
-  for (const tab of TABS) {
-    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(tab)}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`無法直接讀取分頁 ${tab} (HTTP ${res.status})`);
-    }
-    const contentType = res.headers.get("content-type") ?? "";
-    const text = await res.text();
-    if (contentType.includes("text/html") || text.trim().startsWith("<!DOCTYPE html")) {
-      throw new Error("Google Sheet 尚未開啟「知道連結的任何人可檢視」權限");
-    }
-
-    const grid = parseCsvGrid(text);
-    values.push(grid);
-    formulas.push(grid);
-  }
-
-  return { formulas, values };
 }
 
 async function readTabsViaApi(
@@ -8057,8 +10104,10 @@ async function readTabsViaApi(
   headers: Record<string, string>,
   extraQuery = "",
 ): Promise<Grid[]> {
-  const ranges = TABS.map((t) => `ranges=${encodeURIComponent(`${t}!A1:GZ300`)}`).join("&");
-  const url = `${GOOGLE_SHEETS_API_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=${render}${extraQuery}`;
+  const ranges = TABS.map((t) => `ranges=${encodeURIComponent(`'${t}'!A1:ZZ${MAX_ROWS}`)}`).join(
+    "&",
+  );
+  const url = `${GOOGLE_SHEETS_API_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=${render}&majorDimension=ROWS${extraQuery}`;
   const res = await fetch(url, { headers });
   if (!res.ok) {
     const body = await res.text();
@@ -8068,14 +10117,86 @@ async function readTabsViaApi(
   return TABS.map((_, i) => json.valueRanges?.[i]?.values ?? []);
 }
 
-async function loadAllSheetGrids(): Promise<{ formulas: Grid[]; values: Grid[] }> {
+async function loadXlsx(): Promise<XlsxModule> {
+  const mod = (await import("xlsx")) as unknown as Partial<XlsxModule> & { default?: XlsxModule };
+  if (typeof mod.read === "function" && mod.utils) return mod as XlsxModule;
+  if (mod.default && typeof mod.default.read === "function") return mod.default;
+  throw new Error("無法載入 xlsx 解析器，請確認已經執行安裝指令");
+}
+
+function cellValue(cell: XlsxCell | undefined): Cell {
+  if (!cell) return null;
+  if (cell.t === "e") return typeof cell.w === "string" ? cell.w : "#ERROR";
+  const v = cell.v;
+  if (typeof v === "number" || typeof v === "boolean" || typeof v === "string") return v;
+  if (v instanceof Date) return v.toISOString();
+  return null;
+}
+
+function sheetToGrids(XLSX: XlsxModule, sheet: XlsxSheet): { formulas: Grid; values: Grid } {
+  const ref = sheet["!ref"];
+  if (typeof ref !== "string" || ref === "") return { formulas: [], values: [] };
+  const range = XLSX.utils.decode_range(ref);
+  const lastRow = Math.min(range.e.r, MAX_ROWS - 1);
+  const lastCol = Math.min(range.e.c, MAX_COLS - 1);
+  const formulas: Grid = [];
+  const values: Grid = [];
+  // Always start from A1 so row and column numbers line up with the sheet.
+  for (let r = 0; r <= lastRow; r++) {
+    const formulaRow: Cell[] = [];
+    const valueRow: Cell[] = [];
+    for (let c = 0; c <= lastCol; c++) {
+      const cell = sheet[XLSX.utils.encode_cell({ r, c })] as XlsxCell | undefined;
+      const value = cellValue(cell);
+      valueRow.push(value);
+      formulaRow.push(cell && typeof cell.f === "string" && cell.f !== "" ? `=${cell.f}` : value);
+    }
+    formulas.push(formulaRow);
+    values.push(valueRow);
+  }
+  return { formulas, values };
+}
+
+async function readPublicWorkbook(): Promise<{ formulas: Grid[]; values: Grid[] }> {
+  const res = await fetch(PUBLIC_XLSX_URL, { redirect: "follow" });
+  if (!res.ok) {
+    throw new Error(`下載試算表失敗 (HTTP ${res.status})`);
+  }
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  // A real .xlsx file is a zip archive and starts with "PK"; a Google login page is HTML.
+  if (bytes.length < 4 || bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
+    throw new Error(
+      "Google 冇俾下載試算表（請確認已開放「知道連結的任何人 → 檢視者」，以及冇關閉檢視者的下載權限）",
+    );
+  }
+  const XLSX = await loadXlsx();
+  const workbook = XLSX.read(bytes, {
+    type: "array",
+    cellFormula: true,
+    cellText: true,
+    cellDates: false,
+  });
+  const formulas: Grid[] = [];
+  const values: Grid[] = [];
+  for (const tab of TABS) {
+    const sheetName = workbook.SheetNames.find((n) => n.trim().toUpperCase() === tab.toUpperCase());
+    const sheet = sheetName === undefined ? undefined : workbook.Sheets[sheetName];
+    if (!sheet) throw new Error(`試算表入面搵唔到分頁「${tab}」`);
+    const grids = sheetToGrids(XLSX, sheet);
+    formulas.push(grids.formulas);
+    values.push(grids.values);
+  }
+  return { formulas, values };
+}
+
+async function loadAllSheetGrids(): Promise<SheetGrids> {
+  const failures: string[] = [];
   const serviceEmail =
     process.env["GOOGLE_SERVICE_ACCOUNT_EMAIL"] || process.env["VITE_GOOGLE_SERVICE_ACCOUNT_EMAIL"];
   const privateKey = process.env["GOOGLE_PRIVATE_KEY"] || process.env["VITE_GOOGLE_PRIVATE_KEY"];
-  const sheetsApiKey =
-    process.env["GOOGLE_SHEETS_API_KEY"] || process.env["VITE_GOOGLE_SHEETS_API_KEY"];
-
-  let serviceAccountError: string | null = null;
+  const sheetsApiKey = cleanEnv(
+    process.env["GOOGLE_SHEETS_API_KEY"] || process.env["VITE_GOOGLE_SHEETS_API_KEY"],
+  );
 
   if (serviceEmail && privateKey) {
     try {
@@ -8085,59 +10206,90 @@ async function loadAllSheetGrids(): Promise<{ formulas: Grid[]; values: Grid[] }
         readTabsViaApi("FORMULA", headers),
         readTabsViaApi("UNFORMATTED_VALUE", headers),
       ]);
-      return { formulas, values };
+      return { formulas, values, source: "service_account" };
     } catch (err) {
-      serviceAccountError = err instanceof Error ? err.message : String(err);
-      console.warn(
-        "[Google Sheets] Service Account failed, trying fallback:",
-        serviceAccountError,
-      );
+      failures.push(`Service Account：${errorMessage(err)}`);
     }
   }
 
   if (sheetsApiKey) {
     try {
-      const query = `&key=${encodeURIComponent(sheetsApiKey.trim())}`;
+      const query = `&key=${encodeURIComponent(sheetsApiKey)}`;
       const [formulas, values] = await Promise.all([
         readTabsViaApi("FORMULA", {}, query),
         readTabsViaApi("UNFORMATTED_VALUE", {}, query),
       ]);
-      return { formulas, values };
+      return { formulas, values, source: "api_key" };
     } catch (err) {
-      console.warn("[Google Sheets] API Key failed, trying public link fallback:", err);
+      failures.push(`API key：${errorMessage(err)}`);
     }
   }
 
   try {
-    return await readPublicTabsFallback();
-  } catch {
-    if (serviceAccountError) {
-      throw new Error(
-        `${serviceAccountError} —— 請將 Google Sheet 右上角「共用」設為「知道連結的任何人可檢視 (Viewer)」，或檢查 Service Account Email 是否正確。`,
-      );
-    }
-    throw new Error(
-      "無法讀取 Google Sheet：請將 Google Sheet 右上角「共用」設為「知道連結的任何人可檢視 (Viewer)」。",
-    );
+    const grids = await readPublicWorkbook();
+    return { ...grids, source: "public_xlsx" };
+  } catch (err) {
+    failures.push(`公開連結：${errorMessage(err)}`);
   }
+
+  throw new Error(`無法讀取 Google Sheet。${failures.join("；")}`);
 }
 
 export const syncGoogleSheet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<SyncReport> => {
     const { supabase, userId } = context;
-    const { data: allowed } = await supabase.rpc("has_role", {
+    const { data: allowed, error: roleError } = await supabase.rpc("has_role", {
       _user_id: userId,
       _role: "teacher",
     });
-    if (!allowed) throw new Error("Teacher access required");
+    if (roleError) throw new Error(`檢查老師權限失敗：${roleError.message}`);
+    if (!allowed) throw new Error("只有老師帳號 (Teacher) 可以同步成績");
 
-    const { formulas, values } = await loadAllSheetGrids();
-    const parsed: ParsedStudent[] = TABS.flatMap((set, i) =>
-      parseSetTab(set, formulas[i] ?? [], values[i] ?? []),
-    );
+    const { formulas, values, source } = await loadAllSheetGrids();
+    const perTab = TABS.map((set, i) => ({
+      set,
+      students: parseSetTab(set, formulas[i] ?? [], values[i] ?? []),
+    }));
+
+    // The same email twice in one upsert makes Postgres reject the whole batch.
+    const byEmail = new Map<string, ParsedStudent>();
+    const duplicates: string[] = [];
+    for (const { students } of perTab) {
+      for (const p of students) {
+        if (byEmail.has(p.email)) duplicates.push(`${p.set} ${p.hlcNo}`);
+        else byEmail.set(p.email, p);
+      }
+    }
+    const parsed = [...byEmail.values()];
     if (!parsed.length) {
-      throw new Error("No students with an HLC no. were found in the S2M3 or S2M5 tabs");
+      throw new Error("S2M3 / S2M5 分頁入面搵唔到任何有 HLC no. 嘅學生");
+    }
+
+    const tabs: TabReport[] = perTab.map(({ set, students }) => {
+      const term1 = new Set<string>();
+      const term2 = new Set<string>();
+      let filled = 0;
+      for (const p of students) {
+        for (const s of p.scores) {
+          if (s.kind === "item") (s.term === 1 ? term1 : term2).add(s.label);
+          if (s.score !== null || s.absent) filled++;
+        }
+      }
+      return {
+        set,
+        students: students.length,
+        term1Items: term1.size,
+        term2Items: term2.size,
+        scores: filled,
+      };
+    });
+
+    // Never wipe the saved marks because of a sheet that could not be read properly.
+    if (tabs.every((t) => t.scores === 0)) {
+      throw new Error(
+        "讀到學生名單，但一個分數都讀唔到，為免清走舊分數，今次同步已停止。請檢查分頁有冇「HLC no.」標題列，以及分數係咪由 G 欄開始。",
+      );
     }
 
     const { data: roster, error: rosterError } = await supabase
@@ -8154,529 +10306,41 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
         { onConflict: "email" },
       )
       .select("id, email");
-    if (rosterError) throw new Error(`Could not save the class list: ${rosterError.message}`);
+    if (rosterError) throw new Error(`儲存學生名單失敗：${rosterError.message}`);
     const idByEmail = new Map((roster ?? []).map((r) => [r.email, r.id]));
 
     const syncedAt = new Date().toISOString();
     const rows = parsed.flatMap((p) => {
       const studentId = idByEmail.get(p.email);
       if (!studentId) return [];
-      return p.scores.map((s) => ({
-        ...s,
-        student_id: studentId,
-        synced_at: syncedAt,
-      }));
+      return p.scores.map((s) => ({ ...s, student_id: studentId, synced_at: syncedAt }));
     });
 
-    for (let i = 0; i < rows.length; i += 500) {
-      const { error } = await supabase.from("assessment_scores").upsert(rows.slice(i, i + 500));
-      if (error) throw new Error(`Could not save scores: ${error.message}`);
+    for (const part of chunk(rows, WRITE_CHUNK)) {
+      const { error } = await supabase
+        .from("assessment_scores")
+        .upsert(part, { onConflict: "student_id,term,kind,label" });
+      if (error) throw new Error(`儲存分數失敗：${error.message}`);
     }
-    const { error: cleanError } = await supabase
-      .from("assessment_scores")
-      .delete()
-      .in("student_id", [...idByEmail.values()])
-      .lt("synced_at", syncedAt);
-    if (cleanError) throw new Error(`Could not tidy old scores: ${cleanError.message}`);
 
-    await supabase.from("sheet_syncs").insert({
+    for (const ids of chunk([...idByEmail.values()], DELETE_CHUNK)) {
+      const { error } = await supabase
+        .from("assessment_scores")
+        .delete()
+        .in("student_id", ids)
+        .lt("synced_at", syncedAt);
+      if (error) throw new Error(`清理舊分數失敗：${error.message}`);
+    }
+
+    const { error: logError } = await supabase.from("sheet_syncs").insert({
       synced_by: userId,
       students: parsed.length,
       scores: rows.length,
     });
-    return { students: parsed.length, scores: rows.length, syncedAt };
+    if (logError) console.warn("[Google Sheets] Could not record the sync time:", logError.message);
+
+    return { source, students: parsed.length, scores: rows.length, syncedAt, tabs, duplicates };
   });
-````
-
-## File: src/routes/_authenticated/courses.index.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
-import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
-import { useApp } from "@/lib/app-store";
-import { CHAPTERS, chapterStatus } from "@/lib/data";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/courses/")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Chapters — HLC Math" },
-      { name: "description", content: "Mathematics chapters 1–7 with videos, notes and exercises." },
-      { property: "og:title", content: "Chapters — HLC Math" },
-      { property: "og:description", content: "Seven Math chapters to master." },
-    ],
-  }),
-  component: Courses,
-});
-
-function Courses() {
-  const { me, videos } = useApp();
-  return (
-    <AppShell>
-      <h1 className="text-3xl font-bold">Chapter</h1>
-      <p className="font-semibold text-muted-foreground">Mathematics · choose a chapter to open its videos, notes and exercise</p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {CHAPTERS.map((c, i) => {
-          const list = videos.filter(v => v.chapter === c.id);
-          const watched = list.filter(v => me.completedVideos?.includes(v.id)).length;
-          const s = me.scores[i] ?? null;
-          const st = chapterStatus(s, i, me.scores);
-          const S = STATUS[st];
-          return (
-            <Link key={c.id} to="/courses/$chapter" params={{ chapter: String(c.id) }} className="flex flex-col rounded-3xl border-2 border-border bg-card p-5 shadow-chunky transition hover:-translate-y-1 hover:border-primary">
-              <div className="flex items-start justify-between">
-                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-3xl">{c.emoji}</span>
-                <span className={cn("flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold", S.cls)}>
-                  <S.icon className="h-3.5 w-3.5" /> {st}
-                </span>
-              </div>
-              <p className="mt-4 text-xs font-extrabold uppercase tracking-wide text-primary">Chapter {c.id}</p>
-              <h2 className="text-lg font-bold leading-tight">{c.title}</h2>
-              <div className="mt-4">
-                <div className="flex justify-between text-xs font-semibold text-muted-foreground">
-                  <span>{list.length ? `${watched}/${list.length} videos watched` : "No videos yet"}</span>
-                </div>
-                {list.length > 0 && <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-success" style={{ width: `${(watched / list.length) * 100}%` }} /></div>}
-              </div>
-              <div className="mt-auto flex items-center justify-between pt-4">
-                <span className={cn("rounded-full px-3 py-1 text-sm font-extrabold", scoreTone(s))}>
-                  {s === null ? "No score yet" : `Score ${s}%`}
-                </span>
-                <span className="flex items-center text-sm font-semibold text-primary">Open <ChevronRight className="h-4 w-4" /></span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </AppShell>
-  );
-}
-````
-
-## File: src/components/SheetGradebook.tsx
-````typescript
-import { useMemo, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { RefreshCw, Sheet } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { scoreTone } from "@/components/AppShell";
-import { useApp } from "@/lib/app-store";
-import { supabase } from "@/integrations/supabase/client";
-import { syncGoogleSheet } from "@/lib/sheets.functions";
-import { ITEM_CATEGORIES, percent, termSummary, WEIGHTS } from "@/lib/assessments";
-import { parseSetTab, type Category, type MathSet, type ParsedStudent } from "@/lib/sheet-parse";
-import { cn } from "@/lib/utils";
-
-const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
-const TABS: MathSet[] = ["S2M3", "S2M5"];
-type Cell = string | number | boolean | null;
-type Grid = Cell[][];
-
-function parseCellValue(raw: string): Cell {
-  const trimmed = raw.trim();
-  if (trimmed === "") return "";
-  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
-    const n = Number(trimmed);
-    if (Number.isFinite(n)) return n;
-  }
-  return trimmed;
-}
-
-function parseCsvGrid(csvText: string): Grid {
-  const rows: Grid = [];
-  let row: Cell[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < csvText.length; i++) {
-    const ch = csvText.charAt(i);
-    const next = csvText.charAt(i + 1);
-
-    if (inQuotes) {
-      if (ch === '"' && next === '"') {
-        current += '"';
-        i++;
-      } else if (ch === '"') {
-        inQuotes = false;
-      } else {
-        current += ch;
-      }
-    } else {
-      if (ch === '"') {
-        inQuotes = true;
-      } else if (ch === ",") {
-        row.push(parseCellValue(current));
-        current = "";
-      } else if (ch === "\r" && next === "\n") {
-        row.push(parseCellValue(current));
-        rows.push(row);
-        row = [];
-        current = "";
-        i++;
-      } else if (ch === "\n") {
-        row.push(parseCellValue(current));
-        rows.push(row);
-        row = [];
-        current = "";
-      } else {
-        current += ch;
-      }
-    }
-  }
-  if (current.length > 0 || row.length > 0) {
-    row.push(parseCellValue(current));
-    rows.push(row);
-  }
-  return rows;
-}
-
-async function fetchSheetTabsDirect(): Promise<{ formulas: Grid[]; values: Grid[] }> {
-  const values: Grid[] = [];
-  const formulas: Grid[] = [];
-
-  for (const tab of TABS) {
-    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(tab)}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`無法讀取 Google Sheet 分頁 ${tab} (HTTP ${res.status})`);
-    }
-    const text = await res.text();
-    if (text.trim().startsWith("<!DOCTYPE html") || text.includes("<html")) {
-      throw new Error(
-        "請先打開 Google Sheet「2627 Name list (For LMS)」，按右上角「共用 (Share)」，將一般存取權改為「知道連結的任何人 -> 檢視者 (Viewer)」！",
-      );
-    }
-
-    const grid = parseCsvGrid(text);
-    values.push(grid);
-    formulas.push(grid);
-  }
-
-  return { formulas, values };
-}
-
-export function SheetGradebook() {
-  const { students, refresh, lastSync } = useApp();
-  const serverSync = useServerFn(syncGoogleSheet);
-  const [busy, setBusy] = useState(false);
-  const [set, setSet] = useState<"S2M3" | "S2M5">("S2M3");
-  const [term, setTerm] = useState(1);
-  const [view, setView] = useState<Category | "summary">("summary");
-
-  const list = students
-    .filter((s) => s.set === set)
-    .sort((a, b) =>
-      ((a.className ?? "") + (a.classNo ?? "").padStart(3, "0")).localeCompare(
-        (b.className ?? "") + (b.classNo ?? "").padStart(3, "0"),
-      ),
-    );
-
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<Category, number>();
-    for (const c of ITEM_CATEGORIES) {
-      const labels = new Set<string>();
-      for (const s of list) {
-        for (const a of s.assessments ?? []) {
-          if (a.kind === "item" && a.term === term && a.category === c.id) {
-            labels.add(a.label);
-          }
-        }
-      }
-      counts.set(c.id, labels.size);
-    }
-    return counts;
-  }, [list, term]);
-
-  const columns = useMemo(() => {
-    const seen = new Map<string, { label: string; full: number | null; position: number }>();
-    for (const s of list) {
-      for (const a of s.assessments ?? []) {
-        if (a.kind === "item" && a.term === term && a.category === view && !seen.has(a.label)) {
-          seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
-        }
-      }
-    }
-    return [...seen.values()].sort((a, b) => a.position - b.position);
-  }, [list, term, view]);
-
-  const missingFull = useMemo(
-    () => [
-      ...new Set(
-        students.flatMap((s) =>
-          (s.assessments ?? [])
-            .filter((a) => a.kind === "item" && a.score !== null && !a.full_marks)
-            .map((a) => `${s.set} ${a.label}`),
-        ),
-      ),
-    ],
-    [students],
-  );
-
-  const runSync = async () => {
-    setBusy(true);
-    try {
-      try {
-        const r = await serverSync();
-        await refresh();
-        toast.success(`成功同步 ${r.students} 位學生及 ${r.scores} 項分數紀錄！`);
-        return;
-      } catch (serverErr) {
-        console.warn("[SheetGradebook] Server sync failed, trying direct browser sync:", serverErr);
-      }
-
-      const { data: authData } = await supabase.auth.getUser();
-      const userId = authData.user?.id;
-      if (!userId) throw new Error("請先登入老師帳號");
-
-      const { data: allowed } = await supabase.rpc("has_role", {
-        _user_id: userId,
-        _role: "teacher",
-      });
-      if (!allowed) throw new Error("只有老師帳號 (Teacher) 可以執行同步");
-
-      const { formulas, values } = await fetchSheetTabsDirect();
-      const parsed: ParsedStudent[] = TABS.flatMap((tabSet, i) =>
-        parseSetTab(tabSet, formulas[i] ?? [], values[i] ?? []),
-      );
-      if (!parsed.length) {
-        throw new Error("在 S2M3 或 S2M5 分頁中找不到帶有 HLC no. 的學生資料");
-      }
-
-      const { data: roster, error: rosterError } = await supabase
-        .from("students")
-        .upsert(
-          parsed.map((p) => ({
-            email: p.email,
-            name: p.name,
-            math_set: p.set,
-            hlc_no: p.hlcNo,
-            class_name: p.className,
-            class_no: p.classNo,
-          })),
-          { onConflict: "email" },
-        )
-        .select("id, email");
-      if (rosterError) throw new Error(`儲存學生名單失敗: ${rosterError.message}`);
-      const idByEmail = new Map((roster ?? []).map((r) => [r.email, r.id]));
-
-      const syncedAt = new Date().toISOString();
-      const rows = parsed.flatMap((p) => {
-        const studentId = idByEmail.get(p.email);
-        if (!studentId) return [];
-        return p.scores.map((s) => ({
-          ...s,
-          student_id: studentId,
-          synced_at: syncedAt,
-        }));
-      });
-
-      for (let i = 0; i < rows.length; i += 500) {
-        const { error } = await supabase.from("assessment_scores").upsert(rows.slice(i, i + 500));
-        if (error) throw new Error(`儲存分數失敗: ${error.message}`);
-      }
-
-      const { error: cleanError } = await supabase
-        .from("assessment_scores")
-        .delete()
-        .in("student_id", [...idByEmail.values()])
-        .lt("synced_at", syncedAt);
-      if (cleanError) throw new Error(`清理舊分數失敗: ${cleanError.message}`);
-
-      await supabase.from("sheet_syncs").insert({
-        synced_by: userId,
-        students: parsed.length,
-        scores: rows.length,
-      });
-
-      await refresh();
-      toast.success(`成功同步 ${parsed.length} 位學生及 ${rows.length} 項分數紀錄！`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Sync failed");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="mr-auto">
-          <h2 className="flex items-center gap-2 text-xl font-bold">
-            <Sheet className="h-5 w-5 text-success" />
-            Assessment gradebook
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            From{" "}
-            <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">
-              2627 Name list (For LMS)
-            </a>{" "}
-            ·{" "}
-            {lastSync
-              ? `last synced ${new Date(lastSync).toLocaleString("en-HK", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}`
-              : "not synced yet"}
-          </p>
-        </div>
-        <Button onClick={runSync} disabled={busy}>
-          <RefreshCw className={cn(busy && "animate-spin")} />
-          {busy ? "Syncing…" : "Sync from Google Sheet"}
-        </Button>
-      </div>
-      {missingFull.length > 0 && (
-        <p className="mt-3 rounded-md bg-gold/20 p-2 text-sm text-gold-deep">
-          Full marks missing in the sheet for: {missingFull.join(", ")}. Percentages for these
-          can&apos;t be worked out until the &quot;Full marks&quot; row is filled in.
-        </p>
-      )}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <select
-          aria-label="Set"
-          value={set}
-          onChange={(e) => setSet(e.target.value as "S2M3" | "S2M5")}
-          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
-        >
-          <option>S2M3</option>
-          <option>S2M5</option>
-        </select>
-        <select
-          aria-label="Term"
-          value={term}
-          onChange={(e) => setTerm(Number(e.target.value))}
-          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
-        >
-          <option value={1}>Term 1</option>
-          <option value={2}>Term 2</option>
-        </select>
-        <div className="flex flex-wrap gap-1 rounded-xl bg-muted p-1">
-          <button
-            type="button"
-            onClick={() => setView("summary")}
-            className={cn(
-              "rounded-lg px-3 py-1 text-xs font-bold transition",
-              view === "summary"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Weighted summary
-          </button>
-          {ITEM_CATEGORIES.map((c) => {
-            const count = categoryCounts.get(c.id) ?? 0;
-            return (
-              <button
-                type="button"
-                key={c.id}
-                onClick={() => setView(c.id)}
-                className={cn(
-                  "rounded-lg px-3 py-1 text-xs font-bold transition",
-                  view === c.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {c.label} {count > 0 ? `(${count})` : ""}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <div className="mt-4 overflow-x-auto">
-        {list.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No students in {set} yet — press Sync to bring in the class list.
-          </p>
-        ) : view !== "summary" && columns.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">
-            Term {term} 暫時沒有 {ITEM_CATEGORIES.find((c) => c.id === view)?.label} 的分數紀錄。
-          </p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs font-bold uppercase text-muted-foreground">
-                <th className="p-2">Class</th>
-                <th className="p-2">Student</th>
-                {view === "summary" ? (
-                  <>
-                    {WEIGHTS.map((w) => (
-                      <th key={w.id} className="p-2 text-center">
-                        {w.label} ({w.weight})
-                      </th>
-                    ))}
-                    <th className="p-2 text-center">Total /200</th>
-                  </>
-                ) : (
-                  columns.map((c) => (
-                    <th key={c.label} className="p-2 text-center">
-                      {c.label}
-                      {c.full ? ` (${c.full})` : ""}
-                    </th>
-                  ))
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((s) => {
-                const sum = termSummary(s.assessments ?? [], term);
-                return (
-                  <tr key={s.id} className="border-t border-border">
-                    <td className="p-2 whitespace-nowrap text-muted-foreground">
-                      {s.className} {s.classNo}
-                    </td>
-                    <td className="p-2">
-                      <p className="font-semibold">{s.name}</p>
-                      <p className="text-xs text-muted-foreground">{s.hlcNo ?? s.email}</p>
-                    </td>
-                    {view === "summary" ? (
-                      <>
-                        {sum.parts.map((p) => (
-                          <td key={p.id} className="p-2 text-center tabular-nums">
-                            {p.value ?? "—"}
-                          </td>
-                        ))}
-                        <td className="p-2 text-center font-display font-bold tabular-nums">
-                          {sum.coursework200}
-                        </td>
-                      </>
-                    ) : (
-                      columns.map((c) => {
-                        const a = s.assessments?.find(
-                          (x) => x.kind === "item" && x.term === term && x.label === c.label,
-                        );
-                        const pct = a ? percent(a) : null;
-                        return (
-                          <td key={c.label} className="p-1 text-center">
-                            <span
-                              className={cn(
-                                "inline-block min-w-12 rounded-md px-1 py-0.5 text-xs font-bold tabular-nums",
-                                a?.absent ? "bg-muted text-muted-foreground" : scoreTone(pct),
-                              )}
-                            >
-                              {!a || (a.score === null && !a.absent)
-                                ? "—"
-                                : a.absent
-                                  ? "ABS"
-                                  : a.score}
-                            </span>
-                          </td>
-                        );
-                      })
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </section>
-  );
-}
 ````
 
 ## File: src/routes/_authenticated/leaderboard.tsx
@@ -8789,460 +10453,6 @@ function Leaderboard() {
         })}
       </div>
     </TeacherOnly></AppShell>
-  );
-}
-````
-
-## File: src/routes/_authenticated/teacher.tsx
-````typescript
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
-import { FileUp, Search } from "lucide-react";
-import { parseScoreCsv, scoreSchema } from "@/lib/grade-rules";
-import { Button } from "@/components/ui/button";
-import { LessonMarks } from "@/components/LessonMarks";
-import { SheetGradebook } from "@/components/SheetGradebook";
-import { toast } from "sonner";
-import { AppShell, TeacherOnly, scoreTone } from "@/components/AppShell";
-import { useApp } from "@/lib/app-store";
-import { supabase } from "@/integrations/supabase/client";
-import { CHAPTERS, average, completion, formRank, improvement, type MathSet, weakTopics } from "@/lib/data";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/teacher")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Teacher Analytics — HLC Math" },
-      { name: "description", content: "Compare S2M3 and S2M5 scores, completion and weaker topics." },
-      { property: "og:title", content: "Teacher Analytics — HLC Math" },
-      { property: "og:description", content: "Math class analytics and master score table." },
-    ],
-  }),
-  component: Teacher,
-});
-
-const SETS: MathSet[] = ["S2M3", "S2M5"];
-
-function Teacher() {
-  const { students, refresh } = useApp();
-  const [q, setQ] = useState("");
-  const [setF, setSetF] = useState<"All" | MathSet>("All");
-  const [editing, setEditing] = useState<{ id: string; ch: number } | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const stats = SETS.map((set) => {
-    const list = students.filter((s) => s.set === set);
-    const chAvg = CHAPTERS.map((_, i) => {
-      const v = list.map((s) => s.scores[i]).filter((x) => x !== null) as number[];
-      return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
-    });
-    const weakest = chAvg
-      .map((v, i) => ({ v, c: CHAPTERS[i] }))
-      .filter((x): x is { v: number; c: (typeof CHAPTERS)[number] } => x.v !== null && Boolean(x.c))
-      .sort((a, b) => (a.v as number) - (b.v as number))
-      .slice(0, 2);
-    return {
-      set,
-      n: list.length,
-      avg: Math.round(list.reduce((a, s) => a + average(s), 0) / (list.length || 1)),
-      comp: Math.round(list.reduce((a, s) => a + completion(s), 0) / (list.length || 1)),
-      chAvg,
-      weakest,
-    };
-  });
-
-  const rows = useMemo(
-    () =>
-      students
-        .filter((s) => setF === "All" || s.set === setF)
-        .filter((s) => (s.name + s.email).toLowerCase().includes(q.toLowerCase()))
-        .sort((a, b) => formRank(a, students) - formRank(b, students)),
-    [students, q, setF],
-  );
-
-  const updateScore = async (id: string, ch: number, val: string) => {
-    try {
-      const parsedScore = scoreSchema.parse(val === "" ? null : Number(val));
-      const { error } = await supabase
-        .from("chapter_scores")
-        .upsert([{ student_id: id, chapter: ch + 1, score: parsedScore }]);
-      if (error) throw error;
-      await refresh();
-      setEditing(null);
-      toast.success("Score saved");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not save score");
-    }
-  };
-
-  const importCsv = async (file: File) => {
-    try {
-      const map = parseScoreCsv(await file.text());
-      const unknown = [...map.keys()].filter((email) => !students.some((s) => s.email === email));
-      if (unknown.length)
-        throw new Error(`${unknown.length} email(s) are not in the roster. Add students first.`);
-      const data = students.flatMap((s) => {
-        const scores = map.get(s.email);
-        return scores ? scores.map((score, i) => ({ student_id: s.id, chapter: i + 1, score })) : [];
-      });
-      if (!data.length) throw new Error("No student scores found");
-      const { error } = await supabase.from("chapter_scores").upsert(data);
-      if (error) throw error;
-      await refresh();
-      toast.success(`Saved scores for ${map.size} students`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Import failed");
-    }
-  };
-
-  return (
-    <AppShell>
-      <TeacherOnly>
-        <h1 className="text-3xl font-bold">Class Analytics</h1>
-        <SheetGradebook />
-        <LessonMarks />
-
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {stats.map((st, k) => (
-            <div
-              key={st.set}
-              className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky"
-            >
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">{st.set}</h2>
-                <span className="text-sm font-bold text-muted-foreground">{st.n} students</span>
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <div
-                  className={cn(
-                    "rounded-2xl p-3",
-                    k === 0
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-success text-primary-foreground",
-                  )}
-                >
-                  <p className="text-xs font-bold opacity-90">Average score</p>
-                  <p className="font-display text-3xl font-bold">{st.avg}%</p>
-                </div>
-                <div className="rounded-2xl bg-gold p-3 text-accent-foreground">
-                  <p className="text-xs font-bold">Completion</p>
-                  <p className="font-display text-3xl font-bold">{st.comp}%</p>
-                </div>
-              </div>
-              <div className="mt-4 flex h-28 items-end gap-2">
-                {st.chAvg.map((v, i) => (
-                  <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold text-muted-foreground">{v ?? "—"}</span>
-                    <div
-                      className={cn(
-                        "w-full rounded-t-lg",
-                        v !== null && v < 70
-                          ? "bg-destructive/70"
-                          : k === 0
-                            ? "bg-primary"
-                            : "bg-success",
-                      )}
-                      style={{ height: `${(v ?? 0) * 0.8}px` }}
-                    />
-                    <span className="text-[10px] font-bold">Ch{i + 1}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-xs font-bold text-muted-foreground">Weaker topics:</span>
-                {st.weakest.map((w) => (
-                  <span
-                    key={w.c.id}
-                    className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-extrabold text-destructive"
-                  >
-                    Ch{w.c.id} {w.c.short} ({w.v}%)
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            const f = e.dataTransfer.files[0];
-            if (f) importCsv(f);
-          }}
-          onClick={() => fileRef.current?.click()}
-          className="mt-6 flex cursor-pointer flex-col items-center rounded-3xl border-2 border-dashed border-primary/40 bg-primary/5 p-6 text-center hover:bg-primary/10"
-        >
-          <FileUp className="h-8 w-8 text-primary" />
-          <p className="mt-2 font-display text-lg font-bold">
-            Drop a score CSV here or click to browse
-          </p>
-          <p className="text-sm font-semibold text-muted-foreground">
-            Format: email,ch1,ch2,ch3,ch4,ch5,ch6,ch7 · or click any score below to edit
-          </p>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".csv"
-            hidden
-            onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])}
-          />
-        </div>
-
-        <div className="mt-6 rounded-3xl border-2 border-border bg-card p-4 shadow-chunky">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="mr-auto text-xl font-bold">Student Master Score Table</h2>
-            <div className="flex items-center gap-2 rounded-2xl border-2 border-input px-3 py-1.5">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search"
-                className="w-32 bg-transparent text-sm font-semibold outline-none"
-              />
-            </div>
-            <select
-              value={setF}
-              onChange={(e) => setSetF(e.target.value as "All" | MathSet)}
-              className="rounded-2xl border-2 border-input bg-card px-3 py-1.5 text-sm font-bold"
-            >
-              <option>All</option>
-              <option>S2M3</option>
-              <option>S2M5</option>
-            </select>
-          </div>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[1000px] text-sm">
-              <thead>
-                <tr className="text-left text-xs font-extrabold uppercase text-muted-foreground">
-                  <th className="p-2">Rank</th>
-                  <th className="p-2">Student</th>
-                  <th className="p-2">Set</th>
-                  {CHAPTERS.map((c) => (
-                    <th key={c.id} className="p-2 text-center">
-                      Ch{c.id}
-                    </th>
-                  ))}
-                  <th className="p-2 text-center">Avg</th>
-                  <th className="p-2 text-center">Improve</th>
-                  <th className="p-2">Weaker topics</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((s) => {
-                  const imp = improvement(s);
-                  return (
-                    <tr key={s.id} className="border-t border-border">
-                      <td className="p-2 font-display font-bold">#{formRank(s, students)}</td>
-                      <td className="p-2">
-                        <p className="font-bold">{s.name}</p>
-                        <p className="text-xs text-muted-foreground">{s.email}</p>
-                      </td>
-                      <td className="p-2 font-bold">{s.set}</td>
-                      {s.scores.map((sc, i) => (
-                        <td key={i} className="p-1 text-center">
-                          {editing?.id === s.id && editing.ch === i ? (
-                            <input
-                              autoFocus
-                              type="number"
-                              defaultValue={sc ?? ""}
-                              onBlur={(e) => updateScore(s.id, i, e.target.value)}
-                              onKeyDown={(e) =>
-                                e.key === "Enter" && (e.target as HTMLInputElement).blur()
-                              }
-                              className="w-14 rounded-lg border-2 border-primary px-1 text-center font-bold"
-                            />
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              onClick={() => setEditing({ id: s.id, ch: i })}
-                              className={cn("w-12 rounded-lg py-1 font-extrabold", scoreTone(sc))}
-                            >
-                              {sc ?? "—"}
-                            </Button>
-                          )}
-                        </td>
-                      ))}
-                      <td className="p-2 text-center font-display font-bold">{average(s)}%</td>
-                      <td
-                        className={cn(
-                          "p-2 text-center font-extrabold",
-                          imp >= 0 ? "text-success" : "text-destructive",
-                        )}
-                      >
-                        {imp >= 0 ? "+" : ""}
-                        {imp}%
-                      </td>
-                      <td className="p-2">
-                        <div className="flex flex-wrap gap-1">
-                          {weakTopics(s).map((c) => (
-                            <span
-                              key={c.id}
-                              className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-extrabold text-destructive"
-                            >
-                              Ch{c.id} {c.short}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </TeacherOnly>
-    </AppShell>
-  );
-}
-````
-
-## File: src/routes/_authenticated/upload.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, Eye, FileText, ListChecks, Plus, Trash2, Video } from "lucide-react";
-import { toast } from "sonner";
-import { AppShell, TeacherOnly } from "@/components/AppShell";
-import { CHAPTERS } from "@/lib/data";
-import { useApp } from "@/lib/app-store";
-import { parseVideoSource } from "@/lib/video-watch";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/upload")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Chapter Content — HLC Math" },
-      { name: "description", content: "Add named videos, notes and exercises for each Math chapter." },
-      { property: "og:title", content: "Chapter Content — HLC Math" },
-      { property: "og:description", content: "Prepare S2 chapter content for students." },
-    ],
-  }),
-  component: Upload,
-});
-
-interface DraftVideo { id: string; title: string; url: string }
-interface Draft { notes: string; quiz: string; videos: DraftVideo[] }
-const input = "w-full rounded-xl border-2 border-input bg-background px-3 py-2 font-semibold outline-none focus:border-primary";
-
-function Upload() {
-  const { content, videos, refresh } = useApp();
-  const [busy, setBusy] = useState(false);
-  const [ch, setCh] = useState(1);
-  const [drafts, setDrafts] = useState<Record<number, Draft>>({});
-  const saved = (chapter: number): Draft => {
-    const c = content.find(x => x.chapter === chapter);
-    return { notes: c?.notes ?? "", quiz: c?.quiz ?? "", videos: videos.filter(v => v.chapter === chapter).map(v => ({ id: v.id, title: v.title, url: v.url })) };
-  };
-  const cur = drafts[ch] ?? saved(ch);
-  const update = (patch: Partial<Draft>) => setDrafts({ ...drafts, [ch]: { ...cur, ...patch } });
-  const setVideo = (i: number, patch: Partial<DraftVideo>) => update({ videos: cur.videos.map((v, j) => (j === i ? { ...v, ...patch } : v)) });
-  const move = (i: number, d: number) => { const list = [...cur.videos]; const [v] = list.splice(i, 1); if (v) list.splice(i + d, 0, v); update({ videos: list }); };
-
-  const save = async () => {
-    setBusy(true);
-    try {
-      cur.videos.forEach((v, i) => {
-        if (!v.title.trim()) throw new Error(`Give video ${i + 1} a name`);
-        if (!parseVideoSource(v.url)) throw new Error(`Video ${i + 1} ("${v.title}") needs a YouTube link or an https link to an .mp4/.webm file`);
-      });
-      const { error } = await supabase.from("chapter_content").upsert({ chapter: ch, notes: cur.notes, quiz: cur.quiz });
-      if (error) throw error;
-      const keep = new Set(cur.videos.map(v => v.id));
-      const removed = videos.filter(v => v.chapter === ch && !keep.has(v.id)).map(v => v.id);
-      if (removed.length) { const r = await supabase.from("chapter_videos").delete().in("id", removed); if (r.error) throw r.error; }
-      if (cur.videos.length) {
-        const r = await supabase.from("chapter_videos").upsert(cur.videos.map((v, i) => ({ id: v.id, chapter: ch, title: v.title.trim(), url: v.url.trim(), position: i })));
-        if (r.error) throw r.error;
-      }
-      await refresh();
-      setDrafts(d => { const n = { ...d }; delete n[ch]; return n; });
-      toast.success(`Chapter ${ch} content saved`);
-    } catch (err) { toast.error(err instanceof Error ? err.message : "Could not save"); } finally { setBusy(false); }
-  };
-
-  return (
-    <AppShell><TeacherOnly>
-      <h1 className="text-3xl font-bold">Chapter content</h1>
-      <p className="font-semibold text-muted-foreground">Add videos, notes and an exercise for each chapter. Students earn 1 mark for each video they watch to the end.</p>
-      <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
-        <div className="flex gap-2 overflow-x-auto lg:flex-col">
-          {CHAPTERS.map(c => {
-            const n = videos.filter(v => v.chapter === c.id).length;
-            return (
-              <Button variant="ghost" key={c.id} onClick={() => setCh(c.id)}
-                className={cn("flex h-auto min-w-48 items-center gap-3 rounded-2xl border-2 p-3 text-left", ch === c.id ? "border-primary bg-primary/10" : "border-border bg-card")}>
-                <span className="text-2xl">{c.emoji}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-extrabold text-primary">Chapter {c.id}{drafts[c.id] ? " · unsaved" : ""}</span>
-                  <span className="block truncate text-sm font-bold">{c.short}</span>
-                </span>
-                <span className="text-xs font-bold text-muted-foreground">{n} video{n === 1 ? "" : "s"}</span>
-              </Button>
-            );
-          })}
-        </div>
-        <div className="space-y-5 rounded-3xl border-2 border-border bg-card p-6 shadow-chunky">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="mr-auto text-xl font-bold">Ch {ch}: {CHAPTERS[ch - 1]?.title}</h2>
-            <Link to="/courses/$chapter" params={{ chapter: String(ch) }} className="inline-flex items-center gap-1 text-sm font-semibold text-primary"><Eye className="h-4 w-4" /> Preview chapter page</Link>
-          </div>
-
-          <Field icon={<Video className="h-5 w-5 text-primary" />} label="Videos">
-            <div className="space-y-3">
-              {cur.videos.length === 0 && <p className="text-sm text-muted-foreground">No videos yet.</p>}
-              {cur.videos.map((v, i) => {
-                const ok = !v.url || parseVideoSource(v.url);
-                return (
-                  <div key={v.id} className="rounded-2xl border-2 border-border p-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-muted-foreground">{i + 1}.</span>
-                      <input aria-label={`Video ${i + 1} name`} value={v.title} onChange={e => setVideo(i, { title: e.target.value })} placeholder="Video name, e.g. 5.1 Solving by substitution" className={input} />
-                      <Button size="icon" variant="ghost" aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp /></Button>
-                      <Button size="icon" variant="ghost" aria-label="Move down" disabled={i === cur.videos.length - 1} onClick={() => move(i, 1)}><ArrowDown /></Button>
-                      <Button size="icon" variant="ghost" aria-label={`Remove video ${i + 1}`} onClick={() => update({ videos: cur.videos.filter((_, j) => j !== i) })}><Trash2 /></Button>
-                    </div>
-                    <input aria-label={`Video ${i + 1} link`} value={v.url} onChange={e => setVideo(i, { url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" className={cn(input, "mt-2", !ok && "border-destructive")} />
-                    {!ok && <p className="mt-1 text-xs text-destructive">Use a YouTube link or an https link to an .mp4/.webm file so it can play inside HLC Math.</p>}
-                  </div>
-                );
-              })}
-              <Button variant="outline" onClick={() => update({ videos: [...cur.videos, { id: crypto.randomUUID(), title: "", url: "" }] })}><Plus /> Add video</Button>
-              <p className="text-xs text-muted-foreground">Removing a video keeps the marks students already earned from it.</p>
-            </div>
-          </Field>
-
-          <Field icon={<FileText className="h-5 w-5 text-success" />} label="Chapter notes (PDF)">
-            <label className="flex cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-input bg-background px-4 py-6 text-sm font-bold text-muted-foreground hover:border-primary">
-              {cur.notes ? "PDF attached · click to replace" : "Click to choose a PDF"}
-              <input type="file" accept="application/pdf" hidden onChange={async e => { const file = e.target.files?.[0]; if (!file) return; setBusy(true); try { const path = `${ch}/${crypto.randomUUID()}.pdf`; const { error } = await supabase.storage.from("chapter-notes").upload(path, file, { contentType: "application/pdf" }); if (error) throw error; update({ notes: path }); toast.success("PDF uploaded — remember to save"); } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); } finally { setBusy(false); } }} />
-            </label>
-          </Field>
-
-          <Field icon={<ListChecks className="h-5 w-5 text-gold-deep" />} label="Exercise">
-            <textarea value={cur.quiz} onChange={e => update({ quiz: e.target.value })} rows={6} placeholder={"Q1. Solve x + y = 5 and x − y = 1.\nQ2. …"} className={input} />
-          </Field>
-
-          <Button disabled={busy} onClick={save}>{busy ? "Saving…" : "Save chapter content"}</Button>
-        </div>
-      </div>
-    </TeacherOnly></AppShell>
-  );
-}
-
-function Field({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
-  return (
-    <div>
-      <p className="mb-2 flex items-center gap-2 text-sm font-extrabold">{icon} {label}</p>
-      {children}
-    </div>
   );
 }
 ````
@@ -9380,6 +10590,1200 @@ function RootComponent() {
 }
 ````
 
+## File: drizzle/migrations/meta/_journal.json
+````json
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794207959028,
+      "tag": "0000_private_math_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794207995286,
+      "tag": "0001_chapter_notes_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794282352006,
+      "tag": "0002_restrict_math_function_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794364838779,
+      "tag": "0003_assessment_gradebook",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794450463152,
+      "tag": "0004_chapter_videos",
+      "breakpoints": true
+    }
+  ]
+}
+````
+
+## File: src/components/SheetGradebook.tsx
+````typescript
+import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { AlertTriangle, CheckCircle2, RefreshCw, Sheet } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { scoreTone } from "@/components/AppShell";
+import { useApp } from "@/lib/app-store";
+import { syncGoogleSheet, type SheetSource, type SyncReport } from "@/lib/sheets.functions";
+import { ITEM_CATEGORIES, percent, termSummary, termsOf, WEIGHTS } from "@/lib/assessments";
+import type { Category, MathSet } from "@/lib/sheet-parse";
+import { cn } from "@/lib/utils";
+
+const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
+const TERM_OPTIONS = [1, 2] as const;
+const SOURCE_LABEL: Record<SheetSource, string> = {
+  service_account: "Google Service Account",
+  api_key: "Google Sheets API key",
+  public_xlsx: "公開連結（完整試算表）",
+};
+
+export function SheetGradebook() {
+  const { students, refresh, lastSync } = useApp();
+  const serverSync = useServerFn(syncGoogleSheet);
+  const [busy, setBusy] = useState(false);
+  const [report, setReport] = useState<SyncReport | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [set, setSet] = useState<MathSet>("S2M3");
+  const [term, setTerm] = useState<number>(1);
+  const [view, setView] = useState<Category | "summary">("summary");
+
+  const list = useMemo(
+    () =>
+      students
+        .filter((s) => s.set === set)
+        .sort((a, b) =>
+          `${a.className ?? ""}${(a.classNo ?? "").padStart(3, "0")}`.localeCompare(
+            `${b.className ?? ""}${(b.classNo ?? "").padStart(3, "0")}`,
+          ),
+        ),
+    [students, set],
+  );
+
+  const termsWithScores = useMemo(
+    () =>
+      termsOf(
+        list.flatMap((s) =>
+          (s.assessments ?? []).filter((a) => a.kind === "item" && (a.score !== null || a.absent)),
+        ),
+      ),
+    [list],
+  );
+  // If the chosen term has no marks yet, show the first term that does.
+  const activeTerm =
+    termsWithScores.length === 0 || termsWithScores.includes(term)
+      ? term
+      : (termsWithScores[0] ?? term);
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<Category, number>();
+    for (const c of ITEM_CATEGORIES) {
+      const labels = new Set<string>();
+      for (const s of list) {
+        for (const a of s.assessments ?? []) {
+          if (a.kind === "item" && a.term === activeTerm && a.category === c.id) {
+            labels.add(a.label);
+          }
+        }
+      }
+      counts.set(c.id, labels.size);
+    }
+    return counts;
+  }, [list, activeTerm]);
+
+  const columns = useMemo(() => {
+    const seen = new Map<string, { label: string; full: number | null; position: number }>();
+    for (const s of list) {
+      for (const a of s.assessments ?? []) {
+        if (
+          a.kind === "item" &&
+          a.term === activeTerm &&
+          a.category === view &&
+          !seen.has(a.label)
+        ) {
+          seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
+        }
+      }
+    }
+    return [...seen.values()].sort((a, b) => a.position - b.position);
+  }, [list, activeTerm, view]);
+
+  const missingFull = useMemo(
+    () => [
+      ...new Set(
+        students.flatMap((s) =>
+          (s.assessments ?? [])
+            .filter((a) => a.kind === "item" && a.score !== null && !a.full_marks)
+            .map((a) => `${s.set} ${a.label}`),
+        ),
+      ),
+    ],
+    [students],
+  );
+
+  const runSync = async () => {
+    setBusy(true);
+    setSyncError(null);
+    try {
+      const result = await serverSync();
+      setReport(result);
+      await refresh();
+      toast.success(`成功同步 ${result.students} 位學生、${result.scores} 項分數紀錄！`);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "同步失敗";
+      setSyncError(message);
+      toast.error(message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="mr-auto">
+          <h2 className="flex items-center gap-2 text-xl font-bold">
+            <Sheet className="h-5 w-5 text-success" />
+            Assessment gradebook
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            From{" "}
+            <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">
+              2627 Name list (For LMS)
+            </a>{" "}
+            ·{" "}
+            {lastSync
+              ? `last synced ${new Date(lastSync).toLocaleString("en-HK", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}`
+              : "not synced yet"}
+          </p>
+        </div>
+        <Button onClick={runSync} disabled={busy}>
+          <RefreshCw className={cn(busy && "animate-spin")} />
+          {busy ? "Syncing…" : "Sync from Google Sheet"}
+        </Button>
+      </div>
+
+      {syncError && (
+        <div
+          role="alert"
+          className="mt-3 flex gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p className="whitespace-pre-wrap">{syncError}</p>
+        </div>
+      )}
+
+      {report && !syncError && (
+        <div className="mt-3 rounded-xl bg-success/10 p-3 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-success">
+            <CheckCircle2 className="h-4 w-4" />
+            同步完成：{SOURCE_LABEL[report.source]} · {report.students} 位學生 · {report.scores}{" "}
+            項分數
+          </p>
+          <ul className="mt-1 space-y-0.5 text-muted-foreground">
+            {report.tabs.map((t) => (
+              <li key={t.set}>
+                {t.set}：{t.students} 位學生 · Term 1 {t.term1Items} 個評估項目 · Term 2{" "}
+                {t.term2Items} 個評估項目 · 已填 {t.scores} 個分數
+              </li>
+            ))}
+          </ul>
+          {report.duplicates.length > 0 && (
+            <p className="mt-1 text-gold-deep">
+              重複出現嘅學生（只保留第一次出現）：{report.duplicates.join(", ")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {missingFull.length > 0 && (
+        <p className="mt-3 rounded-md bg-gold/20 p-2 text-sm text-gold-deep">
+          Full marks missing in the sheet for: {missingFull.join(", ")}. Percentages for these
+          can&apos;t be worked out until the &quot;Full marks&quot; row is filled in.
+        </p>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <select
+          aria-label="Set"
+          value={set}
+          onChange={(e) => setSet(e.target.value as MathSet)}
+          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
+        >
+          <option>S2M3</option>
+          <option>S2M5</option>
+        </select>
+        <select
+          aria-label="Term"
+          value={activeTerm}
+          onChange={(e) => setTerm(Number(e.target.value))}
+          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
+        >
+          {TERM_OPTIONS.map((t) => (
+            <option key={t} value={t}>
+              Term {t}
+              {termsWithScores.includes(t) ? "" : "（未有分數）"}
+            </option>
+          ))}
+        </select>
+        <div className="flex flex-wrap gap-1 rounded-xl bg-muted p-1">
+          <button
+            type="button"
+            onClick={() => setView("summary")}
+            className={cn(
+              "rounded-lg px-3 py-1 text-xs font-bold transition",
+              view === "summary"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            Weighted summary
+          </button>
+          {ITEM_CATEGORIES.map((c) => {
+            const count = categoryCounts.get(c.id) ?? 0;
+            return (
+              <button
+                type="button"
+                key={c.id}
+                onClick={() => setView(c.id)}
+                className={cn(
+                  "rounded-lg px-3 py-1 text-xs font-bold transition",
+                  view === c.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {c.label} {count > 0 ? `(${count})` : ""}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-4 overflow-x-auto">
+        {list.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {set} 暫時未有學生 — 請按「Sync from Google Sheet」匯入名單同分數。
+          </p>
+        ) : view !== "summary" && columns.length === 0 ? (
+          <p className="py-4 text-sm text-muted-foreground">
+            Term {activeTerm} 暫時沒有 {ITEM_CATEGORIES.find((c) => c.id === view)?.label}{" "}
+            的分數紀錄。
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs font-bold uppercase text-muted-foreground">
+                <th className="p-2">Class</th>
+                <th className="p-2">Student</th>
+                {view === "summary" ? (
+                  <>
+                    {WEIGHTS.map((w) => (
+                      <th key={w.id} className="p-2 text-center">
+                        {w.label} ({w.weight})
+                      </th>
+                    ))}
+                    <th className="p-2 text-center">Total /200</th>
+                  </>
+                ) : (
+                  columns.map((c) => (
+                    <th key={c.label} className="p-2 text-center">
+                      {c.label}
+                      {c.full ? ` (${c.full})` : ""}
+                    </th>
+                  ))
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((s) => {
+                const sum = termSummary(s.assessments ?? [], activeTerm);
+                return (
+                  <tr key={s.id} className="border-t border-border">
+                    <td className="whitespace-nowrap p-2 text-muted-foreground">
+                      {s.className} {s.classNo}
+                    </td>
+                    <td className="p-2">
+                      <p className="font-semibold">{s.name}</p>
+                      <p className="text-xs text-muted-foreground">{s.hlcNo ?? s.email}</p>
+                    </td>
+                    {view === "summary" ? (
+                      <>
+                        {sum.parts.map((p) => (
+                          <td key={p.id} className="p-2 text-center tabular-nums">
+                            {p.value ?? "—"}
+                          </td>
+                        ))}
+                        <td className="p-2 text-center font-display font-bold tabular-nums">
+                          {sum.coursework200}
+                        </td>
+                      </>
+                    ) : (
+                      columns.map((c) => {
+                        const a = s.assessments?.find(
+                          (x) => x.kind === "item" && x.term === activeTerm && x.label === c.label,
+                        );
+                        const pct = a ? percent(a) : null;
+                        return (
+                          <td key={c.label} className="p-1 text-center">
+                            <span
+                              title={pct === null ? "" : `${pct}%`}
+                              className={cn(
+                                "inline-block min-w-12 rounded-md px-1 py-0.5 text-xs font-bold tabular-nums",
+                                a?.absent ? "bg-muted text-muted-foreground" : scoreTone(pct),
+                              )}
+                            >
+                              {!a || (a.score === null && !a.absent)
+                                ? "—"
+                                : a.absent
+                                  ? "ABS"
+                                  : a.score}
+                            </span>
+                          </td>
+                        );
+                      })
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </section>
+  );
+}
+````
+
+## File: src/routes/_authenticated/teacher.tsx
+````typescript
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useRef, useState } from "react";
+import { Eraser, FileUp, Plus, Search } from "lucide-react";
+import { toast } from "sonner";
+import { parseScoreCsv, scoreSchema } from "@/lib/grade-rules";
+import { Button } from "@/components/ui/button";
+import { SheetGradebook } from "@/components/SheetGradebook";
+import { AppShell, TeacherOnly, scoreTone } from "@/components/AppShell";
+import { useApp } from "@/lib/app-store";
+import { supabase } from "@/integrations/supabase/client";
+import { unmatchedChapterLabels } from "@/lib/assessments";
+import {
+  CHAPTERS,
+  average,
+  completion,
+  formRank,
+  improvement,
+  type MathSet,
+  weakTopics,
+} from "@/lib/data";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/teacher")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Teacher Analytics — HLC Math" },
+      {
+        name: "description",
+        content: "Compare S2M3 and S2M5 scores, completion and weaker topics.",
+      },
+      { property: "og:title", content: "Teacher Analytics — HLC Math" },
+      { property: "og:description", content: "Math class analytics and master score table." },
+    ],
+  }),
+  component: Teacher,
+});
+
+const SETS: MathSet[] = ["S2M3", "S2M5"];
+
+function Teacher() {
+  const { students, refresh } = useApp();
+  const [q, setQ] = useState("");
+  const [setF, setSetF] = useState<"All" | MathSet>("All");
+  const [editing, setEditing] = useState<{ id: string; ch: number } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const stats = SETS.map((set) => {
+    const list = students.filter((s) => s.set === set);
+    const chAvg = CHAPTERS.map((_, i) => {
+      const v = list
+        .map((s) => s.scores[i])
+        .filter((x) => x !== null && x !== undefined) as number[];
+      return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+    });
+    const weakest = chAvg
+      .map((v, i) => ({ v, c: CHAPTERS[i] }))
+      .filter((x): x is { v: number; c: (typeof CHAPTERS)[number] } => x.v !== null && Boolean(x.c))
+      .sort((a, b) => a.v - b.v)
+      .slice(0, 2);
+    return {
+      set,
+      n: list.length,
+      avg: Math.round(list.reduce((a, s) => a + average(s), 0) / (list.length || 1)),
+      comp: Math.round(list.reduce((a, s) => a + completion(s), 0) / (list.length || 1)),
+      chAvg,
+      weakest,
+    };
+  });
+
+  const rows = useMemo(
+    () =>
+      students
+        .filter((s) => setF === "All" || s.set === setF)
+        .filter((s) => (s.name + s.email).toLowerCase().includes(q.toLowerCase()))
+        .sort((a, b) => formRank(a, students) - formRank(b, students)),
+    [students, q, setF],
+  );
+
+  const manualStudents = students.filter((s) => (s.scoreSources ?? []).includes("manual"));
+  const manualCount = students.reduce(
+    (n, s) => n + (s.scoreSources ?? []).filter((x) => x === "manual").length,
+    0,
+  );
+  const unmatched = useMemo(
+    () => unmatchedChapterLabels(students.flatMap((s) => s.assessments ?? [])),
+    [students],
+  );
+
+  const updateScore = async (id: string, ch: number, val: string) => {
+    try {
+      const parsedScore = scoreSchema.parse(val.trim() === "" ? null : Number(val));
+      const { error } = await supabase
+        .from("chapter_scores")
+        .upsert([{ student_id: id, chapter: ch + 1, score: parsedScore }]);
+      if (error) throw error;
+      await refresh();
+      setEditing(null);
+      toast.success(
+        parsedScore === null ? "Cleared — showing the Google Sheet score" : "Score saved",
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save score");
+    }
+  };
+
+  const clearManual = async () => {
+    const ids = manualStudents.map((s) => s.id);
+    if (!ids.length) return;
+    if (
+      !window.confirm(
+        `刪除 ${ids.length} 位學生喺 App 入面手動輸入嘅章節分數？之後會改為顯示 Google Sheet 計出嚟嘅分數。`,
+      )
+    ) {
+      return;
+    }
+    try {
+      for (let i = 0; i < ids.length; i += 100) {
+        const { error } = await supabase
+          .from("chapter_scores")
+          .delete()
+          .in("student_id", ids.slice(i, i + 100));
+        if (error) throw error;
+      }
+      await refresh();
+      toast.success("Now showing Google Sheet scores");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not clear scores");
+    }
+  };
+
+  const importCsv = async (file: File) => {
+    try {
+      const map = parseScoreCsv(await file.text());
+      const unknown = [...map.keys()].filter((email) => !students.some((s) => s.email === email));
+      if (unknown.length) {
+        throw new Error(`${unknown.length} email(s) are not in the roster. Add students first.`);
+      }
+      const data = students.flatMap((s) => {
+        const scores = map.get(s.email);
+        return scores
+          ? scores.map((score, i) => ({ student_id: s.id, chapter: i + 1, score }))
+          : [];
+      });
+      if (!data.length) throw new Error("No student scores found");
+      const { error } = await supabase.from("chapter_scores").upsert(data);
+      if (error) throw error;
+      await refresh();
+      toast.success(`Saved scores for ${map.size} students`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Import failed");
+    }
+  };
+
+  return (
+    <AppShell>
+      <TeacherOnly>
+        <h1 className="text-3xl font-bold">Class Analytics</h1>
+        <SheetGradebook />
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {stats.map((st, k) => (
+            <div
+              key={st.set}
+              className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">{st.set}</h2>
+                <span className="text-sm font-bold text-muted-foreground">{st.n} students</span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div
+                  className={cn(
+                    "rounded-2xl p-3",
+                    k === 0
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-success text-primary-foreground",
+                  )}
+                >
+                  <p className="text-xs font-bold opacity-90">Average score</p>
+                  <p className="font-display text-3xl font-bold">{st.avg}%</p>
+                </div>
+                <div className="rounded-2xl bg-gold p-3 text-accent-foreground">
+                  <p className="text-xs font-bold">Completion</p>
+                  <p className="font-display text-3xl font-bold">{st.comp}%</p>
+                </div>
+              </div>
+              <div className="mt-4 flex h-28 items-end gap-2">
+                {st.chAvg.map((v, i) => (
+                  <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                    <span className="text-[10px] font-bold text-muted-foreground">{v ?? "—"}</span>
+                    <div
+                      className={cn(
+                        "w-full rounded-t-lg",
+                        v !== null && v < 70
+                          ? "bg-destructive/70"
+                          : k === 0
+                            ? "bg-primary"
+                            : "bg-success",
+                      )}
+                      style={{ height: `${(v ?? 0) * 0.8}px` }}
+                    />
+                    <span className="text-[10px] font-bold">Ch{i + 1}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Weaker topics:</span>
+                {st.weakest.map((w) => (
+                  <span
+                    key={w.c.id}
+                    className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-extrabold text-destructive"
+                  >
+                    Ch{w.c.id} {w.c.short} ({w.v}%)
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const f = e.dataTransfer.files[0];
+            if (f) void importCsv(f);
+          }}
+          onClick={() => fileRef.current?.click()}
+          className="mt-6 flex cursor-pointer flex-col items-center rounded-3xl border-2 border-dashed border-primary/40 bg-primary/5 p-6 text-center hover:bg-primary/10"
+        >
+          <FileUp className="h-8 w-8 text-primary" />
+          <p className="mt-2 font-display text-lg font-bold">
+            Drop a score CSV here or click to browse
+          </p>
+          <p className="text-sm font-semibold text-muted-foreground">
+            Format: email,ch1,ch2,ch3,ch4,ch5,ch6,ch7 · or click any score below to edit
+          </p>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void importCsv(f);
+            }}
+          />
+        </div>
+
+        <div className="mt-6 rounded-3xl border-2 border-border bg-card p-4 shadow-chunky">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="mr-auto text-xl font-bold">Student Master Score Table</h2>
+            {manualCount > 0 && (
+              <Button variant="outline" size="sm" onClick={() => void clearManual()}>
+                <Eraser /> Use Google Sheet scores ({manualCount} typed)
+              </Button>
+            )}
+            <div className="flex items-center gap-2 rounded-2xl border-2 border-input px-3 py-1.5">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search"
+                className="w-32 bg-transparent text-sm font-semibold outline-none"
+              />
+            </div>
+            <select
+              value={setF}
+              onChange={(e) => setSetF(e.target.value as "All" | MathSet)}
+              className="rounded-2xl border-2 border-input bg-card px-3 py-1.5 text-sm font-bold"
+            >
+              <option>All</option>
+              <option>S2M3</option>
+              <option>S2M5</option>
+            </select>
+          </div>
+          <p className="mt-2 text-xs font-semibold text-muted-foreground">
+            Dashed box = worked out from Google Sheet (average % of that chapter&apos;s SQ / CQ, or
+            homework if there is no quiz yet). Solid = typed here. Click a score to type over it;
+            clear it to go back to the Google Sheet score.
+          </p>
+          {unmatched.length > 0 && (
+            <p className="mt-2 rounded-md bg-gold/20 p-2 text-sm text-gold-deep">
+              These quiz columns don&apos;t say which chapter they belong to, so they are not
+              counted in Ch1–Ch7: {unmatched.slice(0, 20).join(", ")}
+              {unmatched.length > 20 ? " …" : ""}. Name them like SQ1.1, CQ1 or Ch1 Quiz in the
+              Google Sheet, then sync again.
+            </p>
+          )}
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[1000px] text-sm">
+              <thead>
+                <tr className="text-left text-xs font-extrabold uppercase text-muted-foreground">
+                  <th className="p-2">Rank</th>
+                  <th className="p-2">Student</th>
+                  <th className="p-2">Set</th>
+                  {CHAPTERS.map((c) => (
+                    <th key={c.id} className="p-2 text-center">
+                      Ch{c.id}
+                    </th>
+                  ))}
+                  <th className="p-2 text-center">Avg</th>
+                  <th className="p-2 text-center">Improve</th>
+                  <th className="p-2">Weaker topics</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((s) => {
+                  const imp = improvement(s);
+                  return (
+                    <tr key={s.id} className="border-t border-border">
+                      <td className="p-2 font-display font-bold">#{formRank(s, students)}</td>
+                      <td className="p-2">
+                        <p className="font-bold">{s.name}</p>
+                        <p className="text-xs text-muted-foreground">{s.email}</p>
+                      </td>
+                      <td className="p-2 font-bold">{s.set}</td>
+                      {s.scores.map((sc, i) => {
+                        const src = s.scoreSources?.[i] ?? null;
+                        return (
+                          <td key={i} className="p-1 text-center">
+                            {editing?.id === s.id && editing.ch === i ? (
+                              <input
+                                autoFocus
+                                type="number"
+                                defaultValue={src === "manual" ? (sc ?? "") : ""}
+                                placeholder={sc === null ? "" : String(sc)}
+                                onBlur={(e) => void updateScore(s.id, i, e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                                  if (e.key === "Escape") setEditing(null);
+                                }}
+                                className="w-14 rounded-lg border-2 border-primary px-1 text-center font-bold"
+                              />
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                title={
+                                  src === "sheet"
+                                    ? "From Google Sheet — click to type over it"
+                                    : src === "manual"
+                                      ? "Typed in the app"
+                                      : "No score yet"
+                                }
+                                onClick={() => setEditing({ id: s.id, ch: i })}
+                                className={cn(
+                                  "w-12 rounded-lg py-1 font-extrabold",
+                                  scoreTone(sc),
+                                  src === "sheet" && "border border-dashed border-current",
+                                )}
+                              >
+                                {sc ?? "—"}
+                              </Button>
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td className="p-2 text-center font-display font-bold">{average(s)}%</td>
+                      <td
+                        className={cn(
+                          "p-2 text-center font-extrabold",
+                          imp >= 0 ? "text-success" : "text-destructive",
+                        )}
+                      >
+                        {imp >= 0 ? "+" : ""}
+                        {imp}%
+                      </td>
+                      <td className="p-2">
+                        <div className="flex flex-wrap gap-1">
+                          {weakTopics(s).map((c) => (
+                            <span
+                              key={c.id}
+                              className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-extrabold text-destructive"
+                            >
+                              Ch{c.id} {c.short}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <AddStudentForm />
+      </TeacherOnly>
+    </AppShell>
+  );
+}
+
+function AddStudentForm() {
+  const { refresh } = useApp();
+  const [set, setSet] = useState<MathSet>("S2M3");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <form
+      className="mt-6 flex flex-wrap items-end gap-3 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        try {
+          const { error } = await supabase
+            .from("students")
+            .insert({ name: name.trim(), email: email.trim().toLowerCase(), math_set: set });
+          if (error) throw error;
+          await refresh();
+          setName("");
+          setEmail("");
+          toast.success("Student added");
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Could not add student");
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <p className="w-full text-sm font-bold">
+        Add a student by hand (most students come in automatically from the Google Sheet sync)
+      </p>
+      <label className="text-sm font-medium">
+        Class set
+        <select
+          aria-label="Class set"
+          value={set}
+          onChange={(e) => setSet(e.target.value as MathSet)}
+          className="mt-1 block rounded-md border border-input bg-card p-2"
+        >
+          <option>S2M3</option>
+          <option>S2M5</option>
+        </select>
+      </label>
+      <label className="text-sm font-medium">
+        Student name
+        <input
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="mt-1 block rounded-md border border-input bg-card p-2"
+        />
+      </label>
+      <label className="text-sm font-medium">
+        School email
+        <input
+          required
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 block rounded-md border border-input bg-card p-2"
+        />
+      </label>
+      <Button disabled={busy} type="submit">
+        <Plus />
+        Add student
+      </Button>
+    </form>
+  );
+}
+````
+
+## File: src/routes/_authenticated/upload.tsx
+````typescript
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, type ReactNode } from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ExternalLink,
+  Eye,
+  FileText,
+  ListChecks,
+  Plus,
+  Trash2,
+  Video,
+} from "lucide-react";
+import { toast } from "sonner";
+import { AppShell, TeacherOnly } from "@/components/AppShell";
+import { CHAPTERS } from "@/lib/data";
+import { useApp } from "@/lib/app-store";
+import { parseVideoSource } from "@/lib/video-watch";
+import { isStoragePath, isWebLink, notesPreviewUrl } from "@/lib/drive-link";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/upload")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Chapter Content — HLC Math" },
+      {
+        name: "description",
+        content: "Add named videos, notes and exercises for each Math chapter.",
+      },
+      { property: "og:title", content: "Chapter Content — HLC Math" },
+      { property: "og:description", content: "Prepare S2 chapter content for students." },
+    ],
+  }),
+  component: Upload,
+});
+
+interface DraftVideo {
+  id: string;
+  title: string;
+  url: string;
+}
+interface Draft {
+  notes: string;
+  quiz: string;
+  videos: DraftVideo[];
+}
+const input =
+  "w-full rounded-xl border-2 border-input bg-background px-3 py-2 font-semibold outline-none focus:border-primary";
+
+function Upload() {
+  const { content, videos, refresh } = useApp();
+  const [busy, setBusy] = useState(false);
+  const [ch, setCh] = useState(1);
+  const [drafts, setDrafts] = useState<Record<number, Draft>>({});
+  const saved = (chapter: number): Draft => {
+    const c = content.find((x) => x.chapter === chapter);
+    return {
+      notes: c?.notes ?? "",
+      quiz: c?.quiz ?? "",
+      videos: videos
+        .filter((v) => v.chapter === chapter)
+        .map((v) => ({ id: v.id, title: v.title, url: v.url })),
+    };
+  };
+  const cur = drafts[ch] ?? saved(ch);
+  const update = (patch: Partial<Draft>) => setDrafts({ ...drafts, [ch]: { ...cur, ...patch } });
+  const setVideo = (i: number, patch: Partial<DraftVideo>) =>
+    update({ videos: cur.videos.map((v, j) => (j === i ? { ...v, ...patch } : v)) });
+  const move = (i: number, d: number) => {
+    const list = [...cur.videos];
+    const [v] = list.splice(i, 1);
+    if (v) list.splice(i + d, 0, v);
+    update({ videos: list });
+  };
+
+  const notes = cur.notes.trim();
+  const oldPdf = isStoragePath(notes);
+  const notesInvalid = notes !== "" && !oldPdf && !isWebLink(notes);
+  const preview = isWebLink(notes) ? notesPreviewUrl(notes) : null;
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      if (notesInvalid)
+        throw new Error("Chapter notes: paste the full Google Drive link (starting with https://)");
+      cur.videos.forEach((v, i) => {
+        if (!v.title.trim()) throw new Error(`Give video ${i + 1} a name`);
+        if (!parseVideoSource(v.url)) {
+          throw new Error(
+            `Video ${i + 1} ("${v.title}") needs a YouTube link or an https link to an .mp4/.webm file`,
+          );
+        }
+      });
+      const { error } = await supabase
+        .from("chapter_content")
+        .upsert({ chapter: ch, notes, quiz: cur.quiz });
+      if (error) throw error;
+      const keep = new Set(cur.videos.map((v) => v.id));
+      const removed = videos.filter((v) => v.chapter === ch && !keep.has(v.id)).map((v) => v.id);
+      if (removed.length) {
+        const r = await supabase.from("chapter_videos").delete().in("id", removed);
+        if (r.error) throw r.error;
+      }
+      if (cur.videos.length) {
+        const r = await supabase.from("chapter_videos").upsert(
+          cur.videos.map((v, i) => ({
+            id: v.id,
+            chapter: ch,
+            title: v.title.trim(),
+            url: v.url.trim(),
+            position: i,
+          })),
+        );
+        if (r.error) throw r.error;
+      }
+      await refresh();
+      setDrafts((d) => {
+        const n = { ...d };
+        delete n[ch];
+        return n;
+      });
+      toast.success(`Chapter ${ch} content saved`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <AppShell>
+      <TeacherOnly>
+        <h1 className="text-3xl font-bold">Chapter content</h1>
+        <p className="font-semibold text-muted-foreground">
+          Add videos, notes and an exercise for each chapter. Students earn 1 Math Coin for each
+          video they watch to the end.
+        </p>
+        <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
+          <div className="flex gap-2 overflow-x-auto lg:flex-col">
+            {CHAPTERS.map((c) => {
+              const n = videos.filter((v) => v.chapter === c.id).length;
+              return (
+                <Button
+                  variant="ghost"
+                  key={c.id}
+                  onClick={() => setCh(c.id)}
+                  className={cn(
+                    "flex h-auto min-w-48 items-center gap-3 rounded-2xl border-2 p-3 text-left",
+                    ch === c.id ? "border-primary bg-primary/10" : "border-border bg-card",
+                  )}
+                >
+                  <span className="text-2xl">{c.emoji}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-extrabold text-primary">
+                      Chapter {c.id}
+                      {drafts[c.id] ? " · unsaved" : ""}
+                    </span>
+                    <span className="block truncate text-sm font-bold">{c.short}</span>
+                  </span>
+                  <span className="text-xs font-bold text-muted-foreground">
+                    {n} video{n === 1 ? "" : "s"}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+          <div className="space-y-5 rounded-3xl border-2 border-border bg-card p-6 shadow-chunky">
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="mr-auto text-xl font-bold">
+                Ch {ch}: {CHAPTERS[ch - 1]?.title}
+              </h2>
+              <Link
+                to="/courses/$chapter"
+                params={{ chapter: String(ch) }}
+                className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+              >
+                <Eye className="h-4 w-4" /> Preview chapter page
+              </Link>
+            </div>
+
+            <Field icon={<Video className="h-5 w-5 text-primary" />} label="Videos">
+              <div className="space-y-3">
+                {cur.videos.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No videos yet.</p>
+                )}
+                {cur.videos.map((v, i) => {
+                  const ok = !v.url || parseVideoSource(v.url);
+                  return (
+                    <div key={v.id} className="rounded-2xl border-2 border-border p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-muted-foreground">{i + 1}.</span>
+                        <input
+                          aria-label={`Video ${i + 1} name`}
+                          value={v.title}
+                          onChange={(e) => setVideo(i, { title: e.target.value })}
+                          placeholder="Video name, e.g. 5.1 Solving by substitution"
+                          className={input}
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Move up"
+                          disabled={i === 0}
+                          onClick={() => move(i, -1)}
+                        >
+                          <ArrowUp />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Move down"
+                          disabled={i === cur.videos.length - 1}
+                          onClick={() => move(i, 1)}
+                        >
+                          <ArrowDown />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Remove video ${i + 1}`}
+                          onClick={() => update({ videos: cur.videos.filter((_, j) => j !== i) })}
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                      <input
+                        aria-label={`Video ${i + 1} link`}
+                        value={v.url}
+                        onChange={(e) => setVideo(i, { url: e.target.value })}
+                        placeholder="https://www.youtube.com/watch?v=…"
+                        className={cn(input, "mt-2", !ok && "border-destructive")}
+                      />
+                      {!ok && (
+                        <p className="mt-1 text-xs text-destructive">
+                          Use a YouTube link or an https link to an .mp4/.webm file so it can play
+                          inside HLC Math.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    update({
+                      videos: [...cur.videos, { id: crypto.randomUUID(), title: "", url: "" }],
+                    })
+                  }
+                >
+                  <Plus /> Add video
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Removing a video keeps the coins students already earned from it.
+                </p>
+              </div>
+            </Field>
+
+            <Field
+              icon={<FileText className="h-5 w-5 text-success" />}
+              label="Chapter notes (Google Drive link)"
+            >
+              <input
+                aria-label="Google Drive link for chapter notes"
+                value={oldPdf ? "" : cur.notes}
+                onChange={(e) => update({ notes: e.target.value })}
+                placeholder="https://drive.google.com/file/d/…/view"
+                className={cn(input, notesInvalid && "border-destructive")}
+              />
+              {oldPdf && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  This chapter still uses a PDF uploaded to HLC Math. Paste a Google Drive link to
+                  replace it.
+                </p>
+              )}
+              {notesInvalid && (
+                <p className="mt-1 text-xs text-destructive">
+                  Paste the full link, starting with https://
+                </p>
+              )}
+              {isWebLink(notes) && (
+                <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-success">
+                  {preview
+                    ? "✓ Students will see this file inside the chapter page."
+                    : "✓ Students will get a button that opens this link."}
+                  <a
+                    href={notes}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary underline"
+                  >
+                    Test link <ExternalLink className="h-3 w-3" />
+                  </a>
+                </p>
+              )}
+              <p className="mt-1 text-xs text-muted-foreground">
+                In Google Drive: Share → General access → “HLC” (or “Anyone with the link”) → Viewer
+                → Copy link.
+              </p>
+            </Field>
+
+            <Field icon={<ListChecks className="h-5 w-5 text-gold-deep" />} label="Exercise">
+              <textarea
+                value={cur.quiz}
+                onChange={(e) => update({ quiz: e.target.value })}
+                rows={6}
+                placeholder={"Q1. Solve x + y = 5 and x − y = 1.\nQ2. …"}
+                className={input}
+              />
+            </Field>
+
+            <Button disabled={busy} onClick={() => void save()}>
+              {busy ? "Saving…" : "Save chapter content"}
+            </Button>
+          </div>
+        </div>
+      </TeacherOnly>
+    </AppShell>
+  );
+}
+
+function Field({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-2 flex items-center gap-2 text-sm font-extrabold">
+        {icon} {label}
+      </p>
+      {children}
+    </div>
+  );
+}
+````
+
 ## File: package.json
 ````json
 {
@@ -9453,6 +11857,7 @@ function RootComponent() {
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -9483,56 +11888,42 @@ function RootComponent() {
 }
 ````
 
-## File: drizzle/migrations/meta/_journal.json
-````json
-{
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1794207959028,
-      "tag": "0000_private_math_records",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1794207995286,
-      "tag": "0001_chapter_notes_access",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1794282352006,
-      "tag": "0002_restrict_math_function_grants",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1794364838779,
-      "tag": "0003_assessment_gradebook",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1794450463152,
-      "tag": "0004_chapter_videos",
-      "breakpoints": true
-    }
-  ]
-}
+## File: roadmap.md
+````markdown
+# Database update
+- [x] Add profiles, protected roles, private student records, chapter scores, daily marks, chapter content and video completions.
+- [x] Replace pretend sign-in and connect teacher edits/imports and student views to saved data.
+- [x] Add daily-mark controls and lesson student selection; save chapter content.
+- [x] Verify persistence and student privacy with temporary teacher and two student accounts.
+- [x] Assign the confirmed teacher account yhtang@hlc.edu.hk.
+- [x] Inspect spreadsheet columns (S2M3 / S2M5 tabs, HW/SQ/CQ/TT/Mock/Exam, full marks row).
+
+# Google Sheet sync + assessment gradebook
+- [ ] Store assessment items and term summaries per student (private, teacher writes).
+- [ ] Teacher "Sync from Google Sheet" button (roster + all assessments, last synced time).
+- [ ] Student dashboard: term summary + category breakdown.
+- [ ] Teacher gradebook filtered by set and category.
+- [ ] Tests for sheet parsing rules; verify sync end-to-end.
+
+# Chapter pages + tracked videos
+- [x] Confirm students sign in with Google as HLC number @hlc.edu.hk (all 40 roster emails match).
+- [ ] Multiple named videos per chapter (teacher editor).
+- [ ] Videos play inside the app; mark awarded only after watching to the end (no skipping).
+- [ ] Chapter detail page: videos, notes, exercise, progress.
 ````
 
 ## File: src/lib/data.ts
 ````typescript
+import type { Assessment } from "./assessments";
+
 export const CHAPTERS = [
   { id: 1, title: "Approximation and Errors", short: "Approx. & Errors", emoji: "🎯" },
-  { id: 2, title: "Operations and Factorization of Polynomials", short: "Polynomials", emoji: "🧩" },
+  {
+    id: 2,
+    title: "Operations and Factorization of Polynomials",
+    short: "Polynomials",
+    emoji: "🧩",
+  },
   { id: 3, title: "Identities", short: "Identities", emoji: "🟰" },
   { id: 4, title: "Algebraic Fractions and Formulae", short: "Algebraic Fractions", emoji: "➗" },
   { id: 5, title: "Linear Equations in Two Unknowns", short: "Linear Equations", emoji: "📈" },
@@ -9540,15 +11931,20 @@ export const CHAPTERS = [
   { id: 7, title: "Organization and Presentation of Data (II)", short: "Data (II)", emoji: "📊" },
 ] as const;
 
-import type { Assessment } from "./assessments";
-
 export type MathSet = "S2M3" | "S2M5";
+
+/** Where a chapter score came from: typed in the app, or worked out from the Google Sheet. */
+export type ScoreSource = "manual" | "sheet" | null;
 
 export interface Student {
   id: string;
   userId?: string | null;
+  /** Math Coins earned from lesson marks (can include deductions). */
   dailyMarks?: number;
+  /** Math Coins earned from watching chapter videos to the end. */
   videoMarks?: number;
+  /** Math Coins spent on rewards (rejected requests are not counted). */
+  coinsSpent?: number;
   /** Ids of chapter videos this student has watched to the end. */
   completedVideos?: string[];
   assessments?: Assessment[];
@@ -9559,6 +11955,7 @@ export interface Student {
   email: string;
   set: MathSet;
   scores: (number | null)[]; // 7 chapters, null = not yet attempted
+  scoreSources?: ScoreSource[];
   lastMonthAvg: number;
   lastMonthFormRank: number;
   xp: number;
@@ -9577,7 +11974,10 @@ export function completion(s: Student) {
 export function weakTopics(s: Student) {
   return s.scores
     .map((sc, i) => ({ sc, ch: CHAPTERS[i] }))
-    .filter((x): x is { sc: number; ch: (typeof CHAPTERS)[number] } => x.sc !== null && x.sc < 60 && Boolean(x.ch))
+    .filter(
+      (x): x is { sc: number; ch: (typeof CHAPTERS)[number] } =>
+        x.sc !== null && x.sc < 60 && Boolean(x.ch),
+    )
     .sort((a, b) => (a.sc as number) - (b.sc as number))
     .slice(0, 2)
     .map((x) => x.ch);
@@ -9608,16 +12008,26 @@ export function chapterStatus(score: number | null, idx: number, scores: (number
   const firstOpen = scores.findIndex((x) => x === null);
   return idx === firstOpen ? ("In Progress" as const) : ("Not Started" as const);
 }
+
+/** Sort by class, then class number, then name (e.g. 2A 1, 2A 2, 2B 1). */
+export function sortByClass<T extends Pick<Student, "className" | "classNo" | "name">>(
+  list: T[],
+): T[] {
+  const key = (s: T) => `${s.className ?? ""}${(s.classNo ?? "").padStart(3, "0")}${s.name}`;
+  return [...list].sort((a, b) => key(a).localeCompare(key(b)));
+}
 ````
 
 ## File: src/routes/_authenticated/dashboard.tsx
 ````typescript
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { AlertTriangle, Flame, Medal, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { AppShell, scoreTone } from "@/components/AppShell";
 import { AssessmentReport } from "@/components/AssessmentReport";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, average, completion, improvement, level, weakTopics } from "@/lib/data";
+import { COIN_EMOJI, COIN_NAME, coinBalance } from "@/lib/coins";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -9626,9 +12036,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "My Dashboard — HLC Math" },
-      { name: "description", content: "Your private Math scores, lesson marks and weaker topics." },
+      { name: "description", content: "Your private Math scores, Math Coins and weaker topics." },
       { property: "og:title", content: "My Dashboard — HLC Math" },
-      { property: "og:description", content: "Track private S2 chapter scores and activity marks." },
+      { property: "og:description", content: "Track private S2 chapter scores and Math Coins." },
     ],
   }),
   component: Dashboard,
@@ -9645,11 +12055,14 @@ function Dashboard() {
   return (
     <AppShell>
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Student card */}
         <section className="rounded-3xl border-2 border-border bg-card p-6 shadow-chunky lg:col-span-1">
           <div className="flex items-center gap-4">
             <div className="grid h-16 w-16 place-items-center rounded-full bg-primary font-display text-2xl font-bold text-primary-foreground">
-              {me.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}
+              {me.name
+                .split(" ")
+                .map((p) => p.charAt(0))
+                .join("")
+                .slice(0, 2)}
             </div>
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-bold">{me.name}</h1>
@@ -9660,14 +12073,28 @@ function Dashboard() {
             </div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-            <Stat icon={<Flame className="h-5 w-5 text-flame" />} value={me.streak} label="Day streak" />
-            <Stat icon={<Zap className="h-5 w-5 text-gold" />} value={me.xp.toLocaleString()} label="XP" />
-            <Stat icon={<Sparkles className="h-5 w-5 text-primary" />} value={`Lv ${lvl}`} label="Level" />
+            <Stat
+              icon={<Flame className="h-5 w-5 text-flame" />}
+              value={me.streak}
+              label="Day streak"
+            />
+            <Stat
+              icon={<Zap className="h-5 w-5 text-gold" />}
+              value={me.xp.toLocaleString()}
+              label="XP"
+            />
+            <Stat
+              icon={<Sparkles className="h-5 w-5 text-primary" />}
+              value={`Lv ${lvl}`}
+              label="Level"
+            />
           </div>
           <div className="mt-4">
             <div className="mb-1 flex justify-between text-xs font-bold text-muted-foreground">
               <span>Level {lvl}</span>
-              <span>{1000 - (me.xp % 1000)} XP to Lv {lvl + 1}</span>
+              <span>
+                {1000 - (me.xp % 1000)} XP to Lv {lvl + 1}
+              </span>
             </div>
             <div className="h-4 overflow-hidden rounded-full bg-muted">
               <div className="h-full rounded-full bg-gold" style={{ width: `${lvlPct}%` }} />
@@ -9678,14 +12105,19 @@ function Dashboard() {
               {me.set} · Private student record
             </Pill>
             <Pill
-              className={imp >= 0 ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}
+              className={
+                imp >= 0 ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
+              }
               icon={<TrendingUp className="h-4 w-4" />}
             >
               {imp >= 0 ? "+" : ""}
               {imp}% score this month
             </Pill>
             {weak.length > 0 && (
-              <Pill className="bg-destructive/10 text-destructive" icon={<AlertTriangle className="h-4 w-4" />}>
+              <Pill
+                className="bg-destructive/10 text-destructive"
+                icon={<AlertTriangle className="h-4 w-4" />}
+              >
                 Needs Practice: Ch {weak[0]?.id} {weak[0]?.short}
               </Pill>
             )}
@@ -9695,9 +12127,23 @@ function Dashboard() {
         <section className="space-y-6 lg:col-span-2">
           <AssessmentReport assessments={me.assessments ?? []} />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            <Big label="Overall average" value={`${avg}%`} tone="bg-primary text-primary-foreground shadow-chunky-primary" />
-            <Big label="Chapters done" value={`${completion(me)}%`} tone="bg-success text-primary-foreground shadow-chunky-success" />
-            <Big label="Activity marks" value={`${(me.dailyMarks ?? 0) + (me.videoMarks ?? 0)}`} tone="col-span-2 md:col-span-1 bg-gold text-accent-foreground shadow-chunky-gold" />
+            <Big
+              label="Overall average"
+              value={`${avg}%`}
+              tone="bg-primary text-primary-foreground shadow-chunky-primary"
+            />
+            <Big
+              label="Chapters done"
+              value={`${completion(me)}%`}
+              tone="bg-success text-primary-foreground shadow-chunky-success"
+            />
+            <Link to="/awards" className="col-span-2 md:col-span-1">
+              <Big
+                label={`${COIN_EMOJI} ${COIN_NAME} · tap to spend`}
+                value={`${coinBalance(me)}`}
+                tone="h-full bg-gold text-accent-foreground shadow-chunky-gold transition hover:-translate-y-0.5"
+              />
+            </Link>
           </div>
 
           {weak.length > 0 && (
@@ -9716,7 +12162,9 @@ function Dashboard() {
                     <div>
                       <p className="text-xs font-bold text-muted-foreground">Chapter {c.id}</p>
                       <p className="font-bold">{c.short}</p>
-                      <p className="text-sm font-extrabold text-destructive">{me.scores[c.id - 1]}%</p>
+                      <p className="text-sm font-extrabold text-destructive">
+                        {me.scores[c.id - 1]}%
+                      </p>
                     </div>
                     <span className="rounded-full bg-gold/25 px-3 py-1 text-xs font-extrabold text-gold-deep">
                       Recommended Review
@@ -9744,14 +12192,19 @@ function Dashboard() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex justify-between gap-2 text-sm font-bold">
-                        <span className="truncate">Ch {c.id} · {c.short}</span>
+                        <span className="truncate">
+                          Ch {c.id} · {c.short}
+                        </span>
                         <span className={cn("rounded-full px-2 text-xs leading-5", scoreTone(s))}>
                           {s === null ? "—" : `${s}%`}
                         </span>
                       </div>
                       <div className="mt-1 h-3 overflow-hidden rounded-full bg-muted">
                         <div
-                          className={cn("h-full rounded-full", s !== null && s < 60 ? "bg-destructive" : "bg-success")}
+                          className={cn(
+                            "h-full rounded-full",
+                            s !== null && s < 60 ? "bg-destructive" : "bg-success",
+                          )}
                           style={{ width: `${s ?? 0}%` }}
                         />
                       </div>
@@ -9767,7 +12220,7 @@ function Dashboard() {
   );
 }
 
-function Stat({ icon, value, label }: { icon: React.ReactNode; value: React.ReactNode; label: string }) {
+function Stat({ icon, value, label }: { icon: ReactNode; value: ReactNode; label: string }) {
   return (
     <div className="rounded-2xl bg-muted p-3">
       <div className="flex justify-center">{icon}</div>
@@ -9776,14 +12229,29 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: React.Reac
     </div>
   );
 }
-function Pill({ children, icon, className }: { children: React.ReactNode; icon: React.ReactNode; className: string }) {
+
+function Pill({
+  children,
+  icon,
+  className,
+}: {
+  children: ReactNode;
+  icon: ReactNode;
+  className: string;
+}) {
   return (
-    <div className={cn("flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-extrabold", className)}>
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-extrabold",
+        className,
+      )}
+    >
       {icon}
       {children}
     </div>
   );
 }
+
 function Big({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
     <div className={cn("rounded-3xl p-5", tone)}>
@@ -9810,6 +12278,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as AuthenticatedAwardsRouteImport } from './routes/_authenticated/awards'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
@@ -9830,6 +12300,16 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAwardsRoute = AuthenticatedAwardsRouteImport.update({
+  id: '/awards',
+  path: '/awards',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
@@ -9868,6 +12348,8 @@ const AuthenticatedCoursesChapterRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
+  '/awards': typeof AuthenticatedAwardsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
@@ -9878,6 +12360,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
+  '/awards': typeof AuthenticatedAwardsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/teacher': typeof AuthenticatedTeacherRoute
@@ -9890,6 +12374,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/awards': typeof AuthenticatedAwardsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
@@ -9902,6 +12388,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/reset-password'
+    | '/activity'
+    | '/awards'
     | '/dashboard'
     | '/leaderboard'
     | '/teacher'
@@ -9912,6 +12400,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/reset-password'
+    | '/activity'
+    | '/awards'
     | '/dashboard'
     | '/leaderboard'
     | '/teacher'
@@ -9923,6 +12413,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/reset-password'
+    | '/_authenticated/activity'
+    | '/_authenticated/awards'
     | '/_authenticated/dashboard'
     | '/_authenticated/leaderboard'
     | '/_authenticated/teacher'
@@ -9959,6 +12451,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/activity': {
+      id: '/_authenticated/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AuthenticatedActivityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/awards': {
+      id: '/_authenticated/awards'
+      path: '/awards'
+      fullPath: '/awards'
+      preLoaderRoute: typeof AuthenticatedAwardsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -10006,6 +12512,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedAwardsRoute: typeof AuthenticatedAwardsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
@@ -10015,6 +12523,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedAwardsRoute: AuthenticatedAwardsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
@@ -10044,129 +12554,6 @@ declare module '@tanstack/react-start' {
     config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }
-````
-
-## File: roadmap.md
-````markdown
-# Database update
-- [x] Add profiles, protected roles, private student records, chapter scores, daily marks, chapter content and video completions.
-- [x] Replace pretend sign-in and connect teacher edits/imports and student views to saved data.
-- [x] Add daily-mark controls and lesson student selection; save chapter content.
-- [x] Verify persistence and student privacy with temporary teacher and two student accounts.
-- [x] Assign the confirmed teacher account yhtang@hlc.edu.hk.
-- [x] Inspect spreadsheet columns (S2M3 / S2M5 tabs, HW/SQ/CQ/TT/Mock/Exam, full marks row).
-
-# Google Sheet sync + assessment gradebook
-- [ ] Store assessment items and term summaries per student (private, teacher writes).
-- [ ] Teacher "Sync from Google Sheet" button (roster + all assessments, last synced time).
-- [ ] Student dashboard: term summary + category breakdown.
-- [ ] Teacher gradebook filtered by set and category.
-- [ ] Tests for sheet parsing rules; verify sync end-to-end.
-
-# Chapter pages + tracked videos
-- [x] Confirm students sign in with Google as HLC number @hlc.edu.hk (all 40 roster emails match).
-- [ ] Multiple named videos per chapter (teacher editor).
-- [ ] Videos play inside the app; mark awarded only after watching to the end (no skipping).
-- [ ] Chapter detail page: videos, notes, exercise, progress.
-````
-
-## File: src/lib/app-store.tsx
-````typescript
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { User } from '@supabase/supabase-js';
-import type { Student } from './data';
-import type { Database } from '@/integrations/supabase/types';
-import type { Assessment } from './assessments';
-
-type AssessmentRow = Database['public']['Tables']['assessment_scores']['Row'];
-
-/** The database returns at most 1000 rows per request, so page through every assessment row. */
-async function fetchAllAssessments() {
-  const rows: AssessmentRow[] = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase.from('assessment_scores').select('*').order('student_id').order('position').range(from, from + 999);
-    if (error) throw error;
-    rows.push(...(data ?? []));
-    if (!data || data.length < 1000) return rows;
-  }
-}
-
-type Content = Database['public']['Tables']['chapter_content']['Row'];
-export type ChapterVideo = Database['public']['Tables']['chapter_videos']['Row'];
-
-interface Store {
-  session: { email: string; name: string } | null;
-  role: 'student' | 'teacher';
-  students: Student[];
-  me: Student;
-  ready: boolean;
-  error: string | null;
-  content: Content[];
-  videos: ChapterVideo[];
-  lastSync: string | null;
-  refresh: () => Promise<unknown>;
-  logout: () => Promise<void>;
-}
-
-const g = globalThis as unknown as { __hlcCloudCtx?: ReturnType<typeof createContext<Store | null>> };
-const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
-
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [hydrated, setHydrated] = useState(false);
-  const qc = useQueryClient();
-
-  useEffect(() => {
-    let active = true;
-    const verify = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (active) { setUser(data.user); setHydrated(true); }
-    };
-    const { data: listener } = supabase.auth.onAuthStateChange(event => {
-      if (!['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) return;
-      if (event === 'SIGNED_OUT') { setUser(null); qc.clear(); }
-      else { setHydrated(false); setTimeout(() => { void verify(); }, 0); }
-    });
-    void verify();
-    return () => { active = false; listener.subscription.unsubscribe(); };
-  }, [qc]);
-
-  const query = useQuery({
-    queryKey: ['math-records', user?.id], enabled: Boolean(user),
-    queryFn: async () => {
-      const claim = await supabase.rpc('claim_student');
-      if (claim.error) throw claim.error;
-      const [roles, roster, scores, marks, videos, content, assessments, syncs, chapterVideos] = await Promise.all([
-        supabase.from('user_roles').select('role'), supabase.from('students').select('*'),
-        supabase.from('chapter_scores').select('*'), supabase.from('daily_marks').select('*'),
-        supabase.from('chapter_video_completions').select('*'), supabase.from('chapter_content').select('*'),
-        fetchAllAssessments(), supabase.from('sheet_syncs').select('created_at').order('created_at', { ascending: false }).limit(1),
-        supabase.from('chapter_videos').select('*').order('chapter').order('position'),
-      ]);
-      for (const r of [roles, roster, scores, marks, videos, content, syncs, chapterVideos]) if (r.error) throw r.error;
-      const students: Student[] = (roster.data ?? []).map(s => ({
-        id: s.id, userId: s.user_id, name: s.name, email: s.email, set: s.math_set as Student['set'],
-        scores: Array.from({ length: 7 }, (_, i) => scores.data?.find(v => v.student_id === s.id && v.chapter === i + 1)?.score ?? null),
-        lastMonthAvg: s.last_month_avg, lastMonthFormRank: s.last_month_form_rank, xp: s.xp, streak: s.streak,
-        dailyMarks: marks.data?.filter(m => m.student_id === s.id).reduce((a, m) => a + m.marks, 0) ?? 0,
-        videoMarks: videos.data?.filter(v => v.student_id === s.id).length ?? 0,
-        completedVideos: videos.data?.filter(v => v.student_id === s.id && v.video_id).map(v => v.video_id as string) ?? [],
-        assessments: assessments.filter(a => a.student_id === s.id) as Assessment[],
-        hlcNo: s.hlc_no, className: s.class_name, classNo: s.class_no,
-      }));
-      return { lastSync: syncs.data?.[0]?.created_at ?? null, students, role: roles.data?.some(r => r.role === 'teacher') ? 'teacher' as const : 'student' as const, content: content.data ?? [], videos: chapterVideos.data ?? [] };
-    }, retry: false,
-  });
-
-  const students = user ? query.data?.students ?? [] : [];
-  const me = students.find(s => s.userId === user?.id) ?? { id: '', name: user?.user_metadata?.['full_name'] ?? 'Student', email: user?.email ?? '', set: 'S2M3' as const, scores: Array(7).fill(null), lastMonthAvg: 0, lastMonthFormRank: 0, xp: 0, streak: 0, dailyMarks: 0, videoMarks: 0, completedVideos: [] };
-
-  return <Ctx.Provider value={{ session: user ? { email: user.email ?? '', name: me.name } : null, role: query.data?.role ?? 'student', students, me, ready: hydrated && (!user || !query.isPending), error: query.error?.message ?? null, content: query.data?.content ?? [], videos: query.data?.videos ?? [], lastSync: query.data?.lastSync ?? null, refresh: () => query.refetch(), logout: async () => { await supabase.auth.signOut(); qc.clear(); setUser(null); } }}>{children}</Ctx.Provider>;
-}
-
-export function useApp() { const c = useContext(Ctx); if (!c) throw new Error('useApp outside provider'); return c; }
 ````
 
 ## File: src/routes/index.tsx
@@ -10298,5 +12685,357 @@ function Login() {
       </div>
     </main>
   );
+}
+````
+
+## File: src/lib/app-store.tsx
+````typescript
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+import type { ScoreSource, Student } from "./data";
+import { chapterScoresFromAssessments, type Assessment } from "./assessments";
+
+type PublicTables = Database["public"]["Tables"];
+type AssessmentRow = PublicTables["assessment_scores"]["Row"];
+type VideoCompletionRow = PublicTables["chapter_video_completions"]["Row"];
+type CoinTotalRow = Database["public"]["Views"]["student_coin_totals"]["Row"];
+type Content = PublicTables["chapter_content"]["Row"];
+export type ChapterVideo = PublicTables["chapter_videos"]["Row"];
+export type MarkRow = PublicTables["daily_marks"]["Row"];
+export type Reward = PublicTables["rewards"]["Row"];
+export type Redemption = PublicTables["reward_redemptions"]["Row"];
+
+const CHAPTER_COUNT = 7;
+const PAGE_SIZE = 1000;
+const MARK_LOG_LIMIT = 300;
+const REDEMPTION_LIMIT = 500;
+
+/** Supabase caps how many rows one request returns, so keep paging until a page comes back empty. */
+async function fetchAllAssessments(): Promise<AssessmentRow[]> {
+  const rows: AssessmentRow[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("assessment_scores")
+      .select("*")
+      .order("student_id")
+      .order("term")
+      .order("kind")
+      .order("label")
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+
+async function fetchAllVideoCompletions(): Promise<VideoCompletionRow[]> {
+  const rows: VideoCompletionRow[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("chapter_video_completions")
+      .select("*")
+      .order("id")
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+
+interface CoinData {
+  error: string | null;
+  totals: CoinTotalRow[];
+  rewards: Reward[];
+  redemptions: Redemption[];
+}
+
+/** Coins and awards are optional: if their tables are not set up yet, the rest of the app still works. */
+async function loadCoinData(): Promise<CoinData> {
+  const [totals, rewards, redemptions] = await Promise.all([
+    supabase.from("student_coin_totals").select("*"),
+    supabase.from("rewards").select("*").order("position").order("cost"),
+    supabase
+      .from("reward_redemptions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(REDEMPTION_LIMIT),
+  ]);
+  const error = totals.error ?? rewards.error ?? redemptions.error;
+  if (error) {
+    return {
+      error: `Math Coins / Awards 未設定好：${error.message}（請先喺 Supabase SQL Editor 執行 0005 SQL）`,
+      totals: [],
+      rewards: [],
+      redemptions: [],
+    };
+  }
+  return {
+    error: null,
+    totals: totals.data ?? [],
+    rewards: rewards.data ?? [],
+    redemptions: redemptions.data ?? [],
+  };
+}
+
+function toAssessment(row: AssessmentRow): Assessment {
+  return {
+    term: row.term,
+    kind: row.kind === "summary" ? "summary" : "item",
+    category: row.category as Assessment["category"],
+    label: row.label,
+    score: row.score,
+    absent: row.absent,
+    full_marks: row.full_marks,
+    position: row.position,
+  };
+}
+
+interface Store {
+  session: { email: string; name: string } | null;
+  role: "student" | "teacher";
+  students: Student[];
+  me: Student;
+  ready: boolean;
+  error: string | null;
+  content: Content[];
+  videos: ChapterVideo[];
+  lastSync: string | null;
+  /** Latest lesson-mark entries (teachers see everyone's, students only their own). */
+  markLog: MarkRow[];
+  rewards: Reward[];
+  redemptions: Redemption[];
+  coinsError: string | null;
+  refresh: () => Promise<unknown>;
+  logout: () => Promise<void>;
+}
+
+const g = globalThis as unknown as {
+  __hlcCloudCtx?: ReturnType<typeof createContext<Store | null>>;
+};
+const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    let active = true;
+    const verify = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (active) {
+        setUser(data.user);
+        setHydrated(true);
+      }
+    };
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        qc.clear();
+      } else {
+        setHydrated(false);
+        setTimeout(() => {
+          void verify();
+        }, 0);
+      }
+    });
+    void verify();
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [qc]);
+
+  const query = useQuery({
+    queryKey: ["math-records", user?.id],
+    enabled: Boolean(user),
+    retry: false,
+    queryFn: async () => {
+      const claim = await supabase.rpc("claim_student");
+      if (claim.error) throw claim.error;
+      const [
+        roles,
+        roster,
+        scores,
+        markLog,
+        videoRows,
+        content,
+        assessmentRows,
+        syncs,
+        chapterVideos,
+        coins,
+      ] = await Promise.all([
+        supabase.from("user_roles").select("role"),
+        supabase.from("students").select("*"),
+        supabase.from("chapter_scores").select("*"),
+        supabase
+          .from("daily_marks")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(MARK_LOG_LIMIT),
+        fetchAllVideoCompletions(),
+        supabase.from("chapter_content").select("*"),
+        fetchAllAssessments(),
+        supabase
+          .from("sheet_syncs")
+          .select("created_at")
+          .order("created_at", { ascending: false })
+          .limit(1),
+        supabase.from("chapter_videos").select("*").order("chapter").order("position"),
+        loadCoinData(),
+      ]);
+      for (const r of [roles, roster, scores, markLog, content, syncs, chapterVideos]) {
+        if (r.error) throw r.error;
+      }
+
+      const assessmentsByStudent = new Map<string, Assessment[]>();
+      for (const row of assessmentRows) {
+        const item = toAssessment(row);
+        const existing = assessmentsByStudent.get(row.student_id);
+        if (existing) existing.push(item);
+        else assessmentsByStudent.set(row.student_id, [item]);
+      }
+
+      const videosByStudent = new Map<string, VideoCompletionRow[]>();
+      for (const row of videoRows) {
+        const existing = videosByStudent.get(row.student_id);
+        if (existing) existing.push(row);
+        else videosByStudent.set(row.student_id, [row]);
+      }
+
+      const savedScores = new Map<string, number | null>();
+      for (const row of scores.data ?? [])
+        savedScores.set(`${row.student_id}|${row.chapter}`, row.score);
+
+      const totals = new Map<string, CoinTotalRow>();
+      for (const t of coins.totals) if (t.student_id) totals.set(t.student_id, t);
+
+      // Only used if the coin totals view is not set up yet.
+      const dailyFromLog = new Map<string, number>();
+      for (const m of markLog.data ?? []) {
+        dailyFromLog.set(m.student_id, (dailyFromLog.get(m.student_id) ?? 0) + m.marks);
+      }
+
+      const students: Student[] = (roster.data ?? []).map((s) => {
+        const own = assessmentsByStudent.get(s.id) ?? [];
+        const fromSheet = chapterScoresFromAssessments(own, CHAPTER_COUNT);
+        const ownVideos = videosByStudent.get(s.id) ?? [];
+        const total = totals.get(s.id);
+
+        // A score the teacher typed in the app wins; otherwise use the Google Sheet's score.
+        const chapterScores: (number | null)[] = [];
+        const scoreSources: ScoreSource[] = [];
+        for (let ch = 1; ch <= CHAPTER_COUNT; ch++) {
+          const saved = savedScores.get(`${s.id}|${ch}`);
+          if (saved !== undefined && saved !== null) {
+            chapterScores.push(saved);
+            scoreSources.push("manual");
+          } else {
+            const sheet = fromSheet[ch - 1] ?? null;
+            chapterScores.push(sheet);
+            scoreSources.push(sheet === null ? null : "sheet");
+          }
+        }
+
+        return {
+          id: s.id,
+          userId: s.user_id,
+          name: s.name,
+          email: s.email,
+          set: s.math_set as Student["set"],
+          scores: chapterScores,
+          scoreSources,
+          lastMonthAvg: s.last_month_avg,
+          lastMonthFormRank: s.last_month_form_rank,
+          xp: s.xp,
+          streak: s.streak,
+          dailyMarks: total?.daily_earned ?? dailyFromLog.get(s.id) ?? 0,
+          videoMarks: ownVideos.length,
+          coinsSpent: total?.spent ?? 0,
+          completedVideos: ownVideos.flatMap((v) => (v.video_id ? [v.video_id] : [])),
+          assessments: own,
+          hlcNo: s.hlc_no,
+          className: s.class_name,
+          classNo: s.class_no,
+        };
+      });
+
+      return {
+        lastSync: syncs.data?.[0]?.created_at ?? null,
+        students,
+        role: roles.data?.some((r) => r.role === "teacher")
+          ? ("teacher" as const)
+          : ("student" as const),
+        content: content.data ?? [],
+        videos: chapterVideos.data ?? [],
+        markLog: markLog.data ?? [],
+        rewards: coins.rewards,
+        redemptions: coins.redemptions,
+        coinsError: coins.error,
+      };
+    },
+  });
+
+  const students = user ? (query.data?.students ?? []) : [];
+  const metaName: unknown = user?.user_metadata?.["full_name"];
+  const fallbackMe: Student = {
+    id: "",
+    name: typeof metaName === "string" && metaName ? metaName : "Student",
+    email: user?.email ?? "",
+    set: "S2M3",
+    scores: Array.from({ length: CHAPTER_COUNT }, () => null),
+    scoreSources: [],
+    lastMonthAvg: 0,
+    lastMonthFormRank: 0,
+    xp: 0,
+    streak: 0,
+    dailyMarks: 0,
+    videoMarks: 0,
+    coinsSpent: 0,
+    completedVideos: [],
+  };
+  const me = students.find((s) => s.userId === user?.id) ?? fallbackMe;
+
+  return (
+    <Ctx.Provider
+      value={{
+        session: user ? { email: user.email ?? "", name: me.name } : null,
+        role: query.data?.role ?? "student",
+        students,
+        me,
+        ready: hydrated && (!user || !query.isPending),
+        error: query.error?.message ?? null,
+        content: query.data?.content ?? [],
+        videos: query.data?.videos ?? [],
+        lastSync: query.data?.lastSync ?? null,
+        markLog: query.data?.markLog ?? [],
+        rewards: query.data?.rewards ?? [],
+        redemptions: query.data?.redemptions ?? [],
+        coinsError: query.data?.coinsError ?? null,
+        refresh: () => query.refetch(),
+        logout: async () => {
+          await supabase.auth.signOut();
+          qc.clear();
+          setUser(null);
+        },
+      }}
+    >
+      {children}
+    </Ctx.Provider>
+  );
+}
+
+export function useApp() {
+  const c = useContext(Ctx);
+  if (!c) throw new Error("useApp outside provider");
+  return c;
 }
 ````
