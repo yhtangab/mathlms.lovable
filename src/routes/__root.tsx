@@ -83,8 +83,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "HLC Math — S2 Mathematics" },
-      { name: "description", content: "S2 Mathematics learning and progress for HLC." },
+      { title: "HLC Math — Mathematics" },
+      { name: "description", content: "Mathematics learning and progress for HLC." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

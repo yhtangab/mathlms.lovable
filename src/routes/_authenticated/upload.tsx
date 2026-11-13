@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/upload")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Chapter Content — HLC Math" },
-      { name: "description", content: "Add named videos, notes and exercises for each S2 Math chapter." },
+      { name: "description", content: "Add named videos, notes and exercises for each Math chapter." },
       { property: "og:title", content: "Chapter Content — HLC Math" },
       { property: "og:description", content: "Prepare S2 chapter content for students." },
     ],

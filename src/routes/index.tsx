@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,11 +22,6 @@ export const Route = createFileRoute('/')({
 function Login() {
   const { session, ready, role } = useApp();
   const navigate = useNavigate();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [signup, setSignup] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -36,21 +31,34 @@ function Login() {
 
   const social = async (provider: 'google') => {
     setMessage('');
-    
-    // 💡 Why we do this: This routes the Google Sign-In pop-up directly 
-    // to your private Supabase database instead of Lovable's servers.
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-        queryParams: {
-          hd: 'hlc.edu.hk', // Keeps logins restricted to your school domain!
-          prompt: 'select_account'
+    setBusy(true);
+    try {
+      const url = import.meta.env['VITE_SUPABASE_URL'] as string;
+      const key = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] as string;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+          // Don't let supabase-js navigate by itself: a plain browser
+          // navigation carries no `apikey` header, which is what causes
+          // {"message":"No API key found in request"}.
+          skipBrowserRedirect: true,
+          queryParams: {
+            hd: 'hlc.edu.hk',
+            prompt: 'select_account'
+          }
         }
+      });
+      if (error || !data?.url) {
+        setMessage(error?.message ?? 'Could not start Google sign-in');
+        return;
       }
-    });
-
-    if (error) setMessage(error.message);
+      const target = new URL(data.url);
+      if (key && !target.searchParams.has('apikey')) target.searchParams.set('apikey', key);
+      window.location.assign(target.toString());
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -58,101 +66,8 @@ function Login() {
       <div className="w-full max-w-sm py-12">
         <GraduationCap className="mb-4 h-10 w-10 text-primary" />
         <h1 className="text-3xl font-semibold">HLC Math</h1>
-        <p className="mb-8 mt-2 text-muted-foreground">S2 Mathematics</p>
-        
-        <form
-          className="space-y-4"
-          onSubmit={async e => {
-            e.preventDefault();
-            setBusy(true);
-            setMessage('');
-            try {
-              const normalized = email.trim().toLowerCase();
-              if (signup && !normalized.endsWith('@hlc.edu.hk')) {
-                throw new Error('Use your @hlc.edu.hk school email.');
-              }
-              
-              const r = signup
-                ? await supabase.auth.signUp({
-                    email: normalized,
-                    password,
-                    options: {
-                      emailRedirectTo: window.location.origin,
-                      data: { full_name: name }
-                    }
-                  })
-                : await supabase.auth.signInWithPassword({
-                    email: normalized,
-                    password
-                  });
+        <p className="mb-8 mt-2 text-muted-foreground">Mathematics</p>
 
-              if (r.error) throw r.error;
-              if (signup && !r.data.session) {
-                setMessage('Check your email to confirm your account before signing in.');
-              }
-            } catch (err) {
-              setMessage(err instanceof Error ? err.message : 'Sign-in failed');
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {signup && (
-            <label className="block text-sm font-medium">
-              Name
-              <input
-                required
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="mt-1 w-full rounded-md border border-input bg-card p-3"
-              />
-            </label>
-          )}
-          
-          <label className="block text-sm font-medium">
-            School email
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-md border border-input bg-card p-3"
-            />
-          </label>
-          
-          <label className="block text-sm font-medium">
-            Password
-            <input
-              type="password"
-              required
-              minLength={8}
-              autoComplete={signup ? 'new-password' : 'current-password'}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-md border border-input bg-card p-3"
-            />
-          </label>
-          
-          <Button className="w-full" disabled={busy} type="submit">
-            {busy ? 'Please wait…' : signup ? 'Create account' : 'Sign in'}
-          </Button>
-        </form>
-
-        <Button
-          variant="link"
-          onClick={() => {
-            setSignup(!signup);
-            setMessage('');
-          }}
-        >
-          {signup ? 'Already have an account? Sign in' : 'Create a school account'}
-        </Button>
-        
-        <Link to="/reset-password" className="block text-sm text-primary">
-          Forgot password?
-        </Link>
-        
         <div className="mt-6 space-y-3">
           <Button
             className="google-auth w-full"
@@ -198,7 +113,7 @@ function Login() {
             Try demo student (no login)
           </Button>
         </div>
-        
+
         {message && (
           <p role="status" className="mt-5 text-sm">
             {message}

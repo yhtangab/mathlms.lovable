@@ -5,7 +5,9 @@ import type { User } from '@supabase/supabase-js';
 import type { Student } from './data';
 import type { Database } from '@/integrations/supabase/types';
 import type { Assessment } from './assessments';
+
 type AssessmentRow = Database['public']['Tables']['assessment_scores']['Row'];
+
 /** The database returns at most 1000 rows per request, so page through every assessment row. */
 async function fetchAllAssessments() {
   const rows: AssessmentRow[] = [];
@@ -16,8 +18,10 @@ async function fetchAllAssessments() {
     if (!data || data.length < 1000) return rows;
   }
 }
+
 type Content = Database['public']['Tables']['chapter_content']['Row'];
 export type ChapterVideo = Database['public']['Tables']['chapter_videos']['Row'];
+
 interface Store {
   session: { email: string; name: string } | null;
   role: 'student' | 'teacher';
@@ -31,12 +35,15 @@ interface Store {
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
 }
+
 const g = globalThis as unknown as { __hlcCloudCtx?: ReturnType<typeof createContext<Store | null>> };
 const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const qc = useQueryClient();
+
   useEffect(() => {
     let active = true;
     const verify = async () => {
@@ -51,6 +58,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void verify();
     return () => { active = false; listener.subscription.unsubscribe(); };
   }, [qc]);
+
   const query = useQuery({
     queryKey: ['math-records', user?.id], enabled: Boolean(user),
     queryFn: async () => {
@@ -77,8 +85,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return { lastSync: syncs.data?.[0]?.created_at ?? null, students, role: roles.data?.some(r => r.role === 'teacher') ? 'teacher' as const : 'student' as const, content: content.data ?? [], videos: chapterVideos.data ?? [] };
     }, retry: false,
   });
+
   const students = user ? query.data?.students ?? [] : [];
   const me = students.find(s => s.userId === user?.id) ?? { id: '', name: user?.user_metadata?.['full_name'] ?? 'Student', email: user?.email ?? '', set: 'S2M3' as const, scores: Array(7).fill(null), lastMonthAvg: 0, lastMonthFormRank: 0, xp: 0, streak: 0, dailyMarks: 0, videoMarks: 0, completedVideos: [] };
+
   return <Ctx.Provider value={{ session: user ? { email: user.email ?? '', name: me.name } : null, role: query.data?.role ?? 'student', students, me, ready: hydrated && (!user || !query.isPending), error: query.error?.message ?? null, content: query.data?.content ?? [], videos: query.data?.videos ?? [], lastSync: query.data?.lastSync ?? null, refresh: () => query.refetch(), logout: async () => { await supabase.auth.signOut(); qc.clear(); setUser(null); } }}>{children}</Ctx.Provider>;
 }
+
 export function useApp() { const c = useContext(Ctx); if (!c) throw new Error('useApp outside provider'); return c; }

@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "My Dashboard — HLC Math" },
-      { name: "description", content: "Your private S2 Math scores, lesson marks and weaker topics." },
+      { name: "description", content: "Your private Math scores, lesson marks and weaker topics." },
       { property: "og:title", content: "My Dashboard — HLC Math" },
       { property: "og:description", content: "Track private S2 chapter scores and activity marks." },
     ],

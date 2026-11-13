@@ -11,9 +11,9 @@ export const Route = createFileRoute("/_authenticated/courses/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Chapters — HLC Math" },
-      { name: "description", content: "S2 Mathematics chapters 1–7 with videos, notes and exercises." },
+      { name: "description", content: "Mathematics chapters 1–7 with videos, notes and exercises." },
       { property: "og:title", content: "Chapters — HLC Math" },
-      { property: "og:description", content: "Seven S2 Math chapters to master." },
+      { property: "og:description", content: "Seven Math chapters to master." },
     ],
   }),
   component: Courses,
@@ -24,7 +24,7 @@ function Courses() {
   return (
     <AppShell>
       <h1 className="text-3xl font-bold">Chapter</h1>
-      <p className="font-semibold text-muted-foreground">S2 Mathematics · choose a chapter to open its videos, notes and exercise</p>
+      <p className="font-semibold text-muted-foreground">Mathematics · choose a chapter to open its videos, notes and exercise</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CHAPTERS.map((c, i) => {
           const list = videos.filter(v => v.chapter === c.id);

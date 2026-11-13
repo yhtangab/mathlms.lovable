@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/courses/$chapter")({
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
         { title },
-        { name: "description", content: c ? `Videos, notes, exercise and progress for ${c.title}.` : "S2 Math chapter." },
+        { name: "description", content: c ? `Videos, notes, exercise and progress for ${c.title}.` : "Math chapter." },
         { property: "og:title", content: title },
         { property: "og:description", content: "Watch the lessons, read the notes and practise." },
       ],

@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/teacher")({
       { title: "Teacher Analytics — HLC Math" },
       { name: "description", content: "Compare S2M3 and S2M5 scores, completion and weaker topics." },
       { property: "og:title", content: "Teacher Analytics — HLC Math" },
-      { property: "og:description", content: "S2 Math class analytics and master score table." },
+      { property: "og:description", content: "Math class analytics and master score table." },
     ],
   }),
   component: Teacher,
