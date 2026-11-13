@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, RefreshCw, Sheet } from "lucide-react";
+import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { scoreTone } from "@/components/AppShell";
+import { Panel } from "@/components/PageParts";
 import { useApp } from "@/lib/app-store";
 import { syncGoogleSheet, type SheetSource, type SyncReport } from "@/lib/sheets.functions";
 import { ITEM_CATEGORIES, percent, termSummary, termsOf, WEIGHTS } from "@/lib/assessments";
@@ -14,10 +15,12 @@ const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
 const TERM_OPTIONS = [1, 2] as const;
 const SOURCE_LABEL: Record<SheetSource, string> = {
-  service_account: "Google Service Account",
+  service_account: "Google service account",
   api_key: "Google Sheets API key",
-  public_xlsx: "公開連結（完整試算表）",
+  public_xlsx: "public link (full workbook)",
 };
+const control =
+  "rounded-md border border-input bg-card px-3 py-1.5 text-sm font-medium outline-none focus:border-primary";
 
 export function SheetGradebook() {
   const { students, refresh, lastSync } = useApp();
@@ -109,9 +112,9 @@ export function SheetGradebook() {
       const result = await serverSync();
       setReport(result);
       await refresh();
-      toast.success(`成功同步 ${result.students} 位學生、${result.scores} 項分數紀錄！`);
+      toast.success(`Synced ${result.students} students and ${result.scores} marks`);
     } catch (e) {
-      const message = e instanceof Error ? e.message : "同步失敗";
+      const message = e instanceof Error ? e.message : "Sync failed";
       setSyncError(message);
       toast.error(message);
     } finally {
@@ -120,37 +123,35 @@ export function SheetGradebook() {
   };
 
   return (
-    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="mr-auto">
-          <h2 className="flex items-center gap-2 text-xl font-bold">
-            <Sheet className="h-5 w-5 text-success" />
-            Assessment gradebook
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            From{" "}
-            <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">
-              2627 Name list (For LMS)
-            </a>{" "}
-            ·{" "}
-            {lastSync
-              ? `last synced ${new Date(lastSync).toLocaleString("en-HK", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}`
-              : "not synced yet"}
-          </p>
-        </div>
-        <Button onClick={runSync} disabled={busy}>
+    <Panel
+      className="mt-6"
+      title="Assessment gradebook"
+      description={
+        <>
+          From{" "}
+          <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">
+            2627 Name list (For LMS)
+          </a>
+          {", "}
+          {lastSync
+            ? `last synced ${new Date(lastSync).toLocaleString("en-HK", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}`
+            : "not synced yet"}
+        </>
+      }
+      actions={
+        <Button onClick={() => void runSync()} disabled={busy}>
           <RefreshCw className={cn(busy && "animate-spin")} />
           {busy ? "Syncing…" : "Sync from Google Sheet"}
         </Button>
-      </div>
-
+      }
+    >
       {syncError && (
         <div
           role="alert"
-          className="mt-3 flex gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
+          className="mb-3 flex gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <p className="whitespace-pre-wrap">{syncError}</p>
@@ -158,41 +159,41 @@ export function SheetGradebook() {
       )}
 
       {report && !syncError && (
-        <div className="mt-3 rounded-xl bg-success/10 p-3 text-sm">
+        <div className="mb-3 rounded-md border border-success/30 bg-success/5 p-3 text-sm">
           <p className="flex items-center gap-2 font-semibold text-success">
             <CheckCircle2 className="h-4 w-4" />
-            同步完成：{SOURCE_LABEL[report.source]} · {report.students} 位學生 · {report.scores}{" "}
-            項分數
+            Synced from the {SOURCE_LABEL[report.source]}: {report.students} students,{" "}
+            {report.scores} marks
           </p>
           <ul className="mt-1 space-y-0.5 text-muted-foreground">
             {report.tabs.map((t) => (
               <li key={t.set}>
-                {t.set}：{t.students} 位學生 · Term 1 {t.term1Items} 個評估項目 · Term 2{" "}
-                {t.term2Items} 個評估項目 · 已填 {t.scores} 個分數
+                {t.set}: {t.students} students, {t.term1Items} Term 1 items, {t.term2Items} Term 2
+                items, {t.scores} marks filled in
               </li>
             ))}
           </ul>
           {report.duplicates.length > 0 && (
             <p className="mt-1 text-gold-deep">
-              重複出現嘅學生（只保留第一次出現）：{report.duplicates.join(", ")}
+              Listed more than once (only the first row was kept): {report.duplicates.join(", ")}
             </p>
           )}
         </div>
       )}
 
       {missingFull.length > 0 && (
-        <p className="mt-3 rounded-md bg-gold/20 p-2 text-sm text-gold-deep">
-          Full marks missing in the sheet for: {missingFull.join(", ")}. Percentages for these
-          can&apos;t be worked out until the &quot;Full marks&quot; row is filled in.
+        <p className="mb-3 rounded-md border border-gold/50 bg-gold/10 p-2 text-sm">
+          Full marks are missing in the sheet for: {missingFull.join(", ")}. Percentages for these
+          items will appear once the &quot;Full marks&quot; row is filled in.
         </p>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <select
           aria-label="Set"
           value={set}
           onChange={(e) => setSet(e.target.value as MathSet)}
-          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
+          className={control}
         >
           <option>S2M3</option>
           <option>S2M5</option>
@@ -201,23 +202,23 @@ export function SheetGradebook() {
           aria-label="Term"
           value={activeTerm}
           onChange={(e) => setTerm(Number(e.target.value))}
-          className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold"
+          className={control}
         >
           {TERM_OPTIONS.map((t) => (
             <option key={t} value={t}>
               Term {t}
-              {termsWithScores.includes(t) ? "" : "（未有分數）"}
+              {termsWithScores.includes(t) ? "" : " (no marks yet)"}
             </option>
           ))}
         </select>
-        <div className="flex flex-wrap gap-1 rounded-xl bg-muted p-1">
+        <div className="flex flex-wrap gap-0.5 rounded-md border border-border p-0.5">
           <button
             type="button"
             onClick={() => setView("summary")}
             className={cn(
-              "rounded-lg px-3 py-1 text-xs font-bold transition",
+              "rounded px-3 py-1 text-xs font-semibold transition-colors",
               view === "summary"
-                ? "bg-primary text-primary-foreground shadow-sm"
+                ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -231,13 +232,14 @@ export function SheetGradebook() {
                 key={c.id}
                 onClick={() => setView(c.id)}
                 className={cn(
-                  "rounded-lg px-3 py-1 text-xs font-bold transition",
+                  "rounded px-3 py-1 text-xs font-semibold transition-colors",
                   view === c.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
+                    ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {c.label} {count > 0 ? `(${count})` : ""}
+                {c.label}
+                {count > 0 ? ` (${count})` : ""}
               </button>
             );
           })}
@@ -247,17 +249,18 @@ export function SheetGradebook() {
       <div className="mt-4 overflow-x-auto">
         {list.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {set} 暫時未有學生 — 請按「Sync from Google Sheet」匯入名單同分數。
+            No students in {set} yet. Press Sync from Google Sheet to import the class list and
+            marks.
           </p>
         ) : view !== "summary" && columns.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">
-            Term {activeTerm} 暫時沒有 {ITEM_CATEGORIES.find((c) => c.id === view)?.label}{" "}
-            的分數紀錄。
+            No {ITEM_CATEGORIES.find((c) => c.id === view)?.label ?? ""} marks for Term {activeTerm}{" "}
+            yet.
           </p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs font-bold uppercase text-muted-foreground">
+              <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
                 <th className="p-2">Class</th>
                 <th className="p-2">Student</th>
                 {view === "summary" ? (
@@ -283,12 +286,12 @@ export function SheetGradebook() {
               {list.map((s) => {
                 const sum = termSummary(s.assessments ?? [], activeTerm);
                 return (
-                  <tr key={s.id} className="border-t border-border">
+                  <tr key={s.id} className="border-b border-border last:border-0">
                     <td className="whitespace-nowrap p-2 text-muted-foreground">
                       {s.className} {s.classNo}
                     </td>
                     <td className="p-2">
-                      <p className="font-semibold">{s.name}</p>
+                      <p className="font-medium">{s.name}</p>
                       <p className="text-xs text-muted-foreground">{s.hlcNo ?? s.email}</p>
                     </td>
                     {view === "summary" ? (
@@ -298,7 +301,7 @@ export function SheetGradebook() {
                             {p.value ?? "—"}
                           </td>
                         ))}
-                        <td className="p-2 text-center font-display font-bold tabular-nums">
+                        <td className="p-2 text-center font-semibold tabular-nums">
                           {sum.coursework200}
                         </td>
                       </>
@@ -313,7 +316,7 @@ export function SheetGradebook() {
                             <span
                               title={pct === null ? "" : `${pct}%`}
                               className={cn(
-                                "inline-block min-w-12 rounded-md px-1 py-0.5 text-xs font-bold tabular-nums",
+                                "inline-block min-w-12 rounded px-1 py-0.5 text-xs font-semibold tabular-nums",
                                 a?.absent ? "bg-muted text-muted-foreground" : scoreTone(pct),
                               )}
                             >
@@ -334,6 +337,6 @@ export function SheetGradebook() {
           </table>
         )}
       </div>
-    </section>
+    </Panel>
   );
 }

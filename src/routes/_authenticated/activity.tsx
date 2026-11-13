@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { Check, RotateCcw, Search, Sparkles, Undo2, Volume2, VolumeX, X } from "lucide-react";
+import { Check, RotateCcw, Search, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, TeacherOnly } from "@/components/AppShell";
+import { Notice, PageHeader, Panel } from "@/components/PageParts";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/lib/app-store";
 import {
-  COIN_EMOJI,
   COIN_NAME,
   QUICK_AMOUNTS,
   QUICK_REASONS,
@@ -25,9 +25,9 @@ export const Route = createFileRoute("/_authenticated/activity")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Class activity — HLC Math" },
-      { name: "description", content: "Lucky draw and quick Math Coins for the class." },
+      { name: "description", content: "Pick a student at random and record Math Coins." },
       { property: "og:title", content: "Class activity — HLC Math" },
-      { property: "og:description", content: "Pick a student and reward great answers." },
+      { property: "og:description", content: "Random student picker and quick Math Coins." },
     ],
   }),
   component: ActivityPage,
@@ -40,22 +40,21 @@ const BALL_COLORS = [
   "var(--gold-deep)",
   "var(--flame)",
   "var(--destructive)",
-  "oklch(0.6 0.15 300)",
+  "oklch(0.55 0.13 300)",
 ];
 const PILE_ROWS = [5, 4, 3, 2];
 const BALL_SIZE = 30;
 const BALL_COUNT = 14;
 
 const ANIMATION_CSS = `
-.hlc-ball { position: absolute; left: 50%; top: 50%; width: ${BALL_SIZE}px; height: ${BALL_SIZE}px; margin: -${BALL_SIZE / 2}px 0 0 -${BALL_SIZE / 2}px; border-radius: 9999px; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: white; box-shadow: inset -4px -4px 6px rgb(0 0 0 / 0.25), inset 3px 3px 5px rgb(255 255 255 / 0.45); transition: transform 0.4s ease; }
+.hlc-ball { position: absolute; left: 50%; top: 50%; width: ${BALL_SIZE}px; height: ${BALL_SIZE}px; margin: -${BALL_SIZE / 2}px 0 0 -${BALL_SIZE / 2}px; border-radius: 9999px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: white; box-shadow: inset -4px -4px 6px rgb(0 0 0 / 0.25), inset 3px 3px 5px rgb(255 255 255 / 0.45); transition: transform 0.4s ease; }
 .hlc-ball[data-spin="true"] { animation: hlc-orbit var(--d) linear infinite; animation-delay: var(--delay); }
 @keyframes hlc-orbit { from { transform: rotate(0deg) translateX(var(--r)) rotate(0deg); } to { transform: rotate(360deg) translateX(var(--r)) rotate(-360deg); } }
 .hlc-machine[data-spin="true"] { animation: hlc-shake 0.25s ease-in-out infinite; }
 @keyframes hlc-shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
-.hlc-winner { animation: hlc-pop 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both, hlc-glow 1.6s ease-in-out 0.7s infinite; }
-@keyframes hlc-pop { 0% { transform: translateY(-90px) scale(0.2); opacity: 0; } 70% { transform: translateY(6px) scale(1.08); opacity: 1; } 100% { transform: translateY(0) scale(1); } }
-@keyframes hlc-glow { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--gold) 70%, transparent); } 50% { box-shadow: 0 0 48px 12px color-mix(in oklab, var(--gold) 70%, transparent); } }
-.hlc-confetti { position: absolute; left: 50%; top: 45%; width: 10px; height: 14px; border-radius: 2px; opacity: 0; animation: hlc-burst 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) forwards; animation-delay: var(--delay); }
+.hlc-winner { animation: hlc-pop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+@keyframes hlc-pop { 0% { transform: translateY(-60px) scale(0.4); opacity: 0; } 70% { transform: translateY(4px) scale(1.04); opacity: 1; } 100% { transform: translateY(0) scale(1); } }
+.hlc-confetti { position: absolute; left: 50%; top: 45%; width: 8px; height: 12px; border-radius: 2px; opacity: 0; animation: hlc-burst 1.3s cubic-bezier(0.15, 0.7, 0.3, 1) forwards; animation-delay: var(--delay); }
 @keyframes hlc-burst { 0% { transform: translate(-50%, -50%) rotate(0deg); opacity: 1; } 100% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--rot)); opacity: 0; } }
 .hlc-ticker { animation: hlc-flick 0.12s linear infinite alternate; }
 @keyframes hlc-flick { from { opacity: 0.6; } to { opacity: 1; } }
@@ -90,38 +89,33 @@ function ActivityPage() {
     <AppShell>
       <TeacherOnly>
         <style>{ANIMATION_CSS}</style>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="mr-auto">
-            <h1 className="text-3xl font-bold">Class activity</h1>
-            <p className="font-semibold text-muted-foreground">
-              Lucky draw and quick {COIN_NAME} for {set}
-            </p>
-          </div>
-          <div className="flex rounded-2xl bg-muted p-1">
-            {SETS.map((x) => (
-              <Button
-                key={x}
-                variant="ghost"
-                onClick={() => setSet(x)}
-                className={cn(
-                  "rounded-xl px-4 font-extrabold",
-                  set === x
-                    ? "bg-primary text-primary-foreground shadow-chunky-primary hover:bg-primary hover:text-primary-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
-                {x}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <PageHeader
+          title="Class activity"
+          description={`Random student picker and quick ${COIN_NAME} for ${set}`}
+          actions={
+            <div className="flex rounded-md border border-border bg-card p-0.5">
+              {SETS.map((x) => (
+                <button
+                  type="button"
+                  key={x}
+                  onClick={() => setSet(x)}
+                  className={cn(
+                    "rounded px-4 py-1.5 text-sm font-semibold",
+                    set === x
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {x}
+                </button>
+              ))}
+            </div>
+          }
+        />
         {coinsError && (
-          <p
-            role="alert"
-            className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
-          >
-            {coinsError}
-          </p>
+          <div className="mt-4">
+            <Notice tone="error">{coinsError}</Notice>
+          </div>
         )}
         <LuckyDraw key={`draw-${set}`} list={list} />
         <QuickPoints key={`points-${set}`} list={list} />
@@ -177,9 +171,9 @@ function LuckyDraw({ list }: { list: Student[] }) {
 
   const confetti = useMemo(
     () =>
-      Array.from({ length: burst ? 42 : 0 }, (_, i) => {
+      Array.from({ length: burst ? 32 : 0 }, (_, i) => {
         const angle = Math.random() * Math.PI * 2;
-        const distance = 120 + Math.random() * 180;
+        const distance = 120 + Math.random() * 160;
         return {
           x: Math.cos(angle) * distance,
           y: Math.sin(angle) * distance - 60,
@@ -222,8 +216,8 @@ function LuckyDraw({ list }: { list: Student[] }) {
     if (!pool.length) {
       toast.info(
         list.length
-          ? "Everyone has had a turn — press Reset to start again."
-          : "No students in this set yet.",
+          ? "Everyone has had a turn. Press Reset to start again."
+          : "There are no students in this set yet.",
       );
       return;
     }
@@ -295,40 +289,40 @@ function LuckyDraw({ list }: { list: Student[] }) {
   };
 
   return (
-    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 className="mr-auto flex items-center gap-2 text-xl font-bold">
-          <Sparkles className="h-5 w-5 text-gold-deep" /> Lucky draw
-        </h2>
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-          <input
-            type="checkbox"
-            checked={noRepeat}
-            onChange={(e) => setNoRepeat(e.target.checked)}
-            className="h-4 w-4 accent-[var(--primary)]"
-          />
-          No repeats
-        </label>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={sound ? "Turn sound off" : "Turn sound on"}
-          onClick={() => setSound(!sound)}
-        >
-          {sound ? <Volume2 /> : <VolumeX />}
-        </Button>
-        <Button variant="outline" size="sm" onClick={reset} disabled={spinning || !drawn.length}>
-          <RotateCcw /> Reset
-        </Button>
-      </div>
-
-      <div className="mt-5 grid items-center gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+    <Panel
+      className="mt-6"
+      title="Lucky draw"
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={noRepeat}
+              onChange={(e) => setNoRepeat(e.target.checked)}
+              className="h-4 w-4 accent-[var(--primary)]"
+            />
+            No repeats
+          </label>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={sound ? "Turn sound off" : "Turn sound on"}
+            onClick={() => setSound(!sound)}
+          >
+            {sound ? <Volume2 /> : <VolumeX />}
+          </Button>
+          <Button variant="outline" size="sm" onClick={reset} disabled={spinning || !drawn.length}>
+            <RotateCcw /> Reset
+          </Button>
+        </div>
+      }
+    >
+      <div className="grid items-center gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <div className="flex flex-col items-center">
           <div
-            className="hlc-machine relative h-60 w-60 rounded-full border-4 border-primary/40 bg-gradient-to-b from-primary/5 to-primary/20"
+            className="hlc-machine relative h-60 w-60 rounded-full border-4 border-primary/30 bg-gradient-to-b from-primary/5 to-primary/15"
             data-spin={spinning}
           >
-            <div className="absolute left-8 top-6 h-10 w-16 -rotate-12 rounded-full bg-white/50 blur-sm" />
             {balls.map((b, i) => (
               <span
                 key={i}
@@ -348,31 +342,27 @@ function LuckyDraw({ list }: { list: Student[] }) {
               </span>
             ))}
           </div>
-          <div className="h-4 w-20 rounded-b-xl bg-primary/40" />
+          <div className="h-4 w-20 rounded-b-md bg-primary/30" />
           <Button
             size="lg"
             onClick={draw}
             disabled={spinning || !list.length}
-            className="mt-4 h-14 w-full rounded-2xl text-lg font-extrabold shadow-chunky-primary"
+            className="mt-4 h-12 w-full text-base font-semibold"
           >
             {spinning ? "Drawing…" : winner ? "Draw again" : "Draw a student"}
           </Button>
-          <p className="mt-2 text-xs font-semibold text-muted-foreground">
+          <p className="mt-2 text-xs text-muted-foreground">
             {noRepeat
               ? `${pool.length} of ${list.length} students left`
               : `${list.length} students in the draw`}
           </p>
         </div>
 
-        <div className="relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-3xl bg-muted/60 p-6 text-center">
+        <div className="relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-md border border-border bg-muted/40 p-6 text-center">
           {phase === "idle" && (
-            <p className="font-display text-2xl font-bold text-muted-foreground">
-              Press “Draw a student” 🎱
-            </p>
+            <p className="text-lg text-muted-foreground">Press Draw a student to begin.</p>
           )}
-          {spinning && (
-            <p className="hlc-ticker font-display text-4xl font-bold md:text-6xl">{ticker}</p>
-          )}
+          {spinning && <p className="hlc-ticker text-4xl font-semibold md:text-6xl">{ticker}</p>}
           {phase === "revealed" && live && (
             <>
               <div key={burst} className="pointer-events-none absolute inset-0">
@@ -392,29 +382,27 @@ function LuckyDraw({ list }: { list: Student[] }) {
                   />
                 ))}
               </div>
-              <p className="text-sm font-extrabold uppercase tracking-widest text-gold-deep">
-                🎉 Lucky winner 🎉
-              </p>
-              <div className="hlc-winner mt-3 rounded-3xl bg-gold px-8 py-5">
-                <p className="font-display text-4xl font-bold text-accent-foreground md:text-6xl">
-                  {live.name}
-                </p>
-                <p className="mt-1 text-sm font-bold text-accent-foreground/80">
-                  {live.className} {live.classNo} · {COIN_EMOJI} {coinBalance(live)}
+              <p className="text-sm text-muted-foreground">Selected student</p>
+              <div className="hlc-winner mt-3 rounded-md border-2 border-gold bg-card px-8 py-5 shadow-chunky">
+                <p className="text-4xl font-semibold md:text-6xl">{live.name}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {live.className} {live.classNo}, {coinBalance(live)} coins
                 </p>
               </div>
               {saved ? (
-                <p className="mt-5 font-bold text-success">✓ {saved}</p>
+                <p className="mt-5 flex items-center gap-1 font-semibold text-success">
+                  <Check className="h-4 w-4" /> {saved}
+                </p>
               ) : (
                 <div className="relative mt-5 flex flex-wrap items-center justify-center gap-2">
-                  <div className="flex rounded-xl bg-card p-1">
+                  <div className="flex rounded-md border border-border bg-card p-0.5">
                     {[1, 2, 3].map((n) => (
                       <button
                         type="button"
                         key={n}
                         onClick={() => setReward(n)}
                         className={cn(
-                          "rounded-lg px-3 py-1 text-sm font-extrabold",
+                          "rounded px-3 py-1 text-sm font-semibold",
                           reward === n
                             ? "bg-success text-primary-foreground"
                             : "text-muted-foreground",
@@ -443,15 +431,15 @@ function LuckyDraw({ list }: { list: Student[] }) {
 
       {noRepeat && drawn.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="font-bold text-muted-foreground">Already drawn:</span>
+          <span className="font-semibold text-muted-foreground">Already drawn:</span>
           {drawn.map((id) => (
-            <span key={id} className="rounded-full bg-muted px-2 py-0.5 font-semibold">
+            <span key={id} className="rounded bg-muted px-2 py-0.5">
               {list.find((s) => s.id === id)?.name ?? "?"}
             </span>
           ))}
         </div>
       )}
-    </section>
+    </Panel>
   );
 }
 
@@ -523,66 +511,68 @@ function QuickPoints({ list }: { list: Student[] }) {
   };
 
   return (
-    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 className="mr-auto text-xl font-bold">
-          {COIN_EMOJI} Quick {COIN_NAME} · tick and save
-        </h2>
-        <div className="flex items-center gap-2 rounded-2xl border-2 border-input px-3 py-1.5">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search"
-            aria-label="Search students"
-            className="w-32 bg-transparent text-sm font-semibold outline-none"
-          />
+    <Panel
+      className="mt-6"
+      title={`Quick ${COIN_NAME}`}
+      description="Tick students, choose an amount and a reason, then save."
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search"
+              aria-label="Search students"
+              className="w-32 bg-transparent text-sm outline-none"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelected([...new Set([...selected, ...shown.map((s) => s.id)])])}
+          >
+            Select all
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelected([])}
+            disabled={!selected.length}
+          >
+            Clear
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSelected([...new Set([...selected, ...shown.map((s) => s.id)])])}
-        >
-          Select all
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelected([])}
-          disabled={!selected.length}
-        >
-          Clear
-        </Button>
-      </div>
-
+      }
+    >
       {list.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">No students in this set yet.</p>
+        <p className="text-sm text-muted-foreground">There are no students in this set yet.</p>
       ) : (
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {shown.map((s) => {
             const on = selected.includes(s.id);
             return (
               <label
                 key={s.id}
                 className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-3 transition",
-                  on ? "border-primary bg-primary/10" : "border-border hover:border-primary/50",
+                  "flex cursor-pointer items-center gap-3 rounded-md border p-2.5 transition-colors",
+                  on ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
                 )}
               >
                 <input
                   type="checkbox"
                   checked={on}
                   onChange={() => toggle(s.id)}
-                  className="h-5 w-5 shrink-0 accent-[var(--primary)]"
+                  className="h-4 w-4 shrink-0 accent-[var(--primary)]"
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">{s.name}</span>
+                  <span className="block truncate text-sm font-medium">{s.name}</span>
                   <span className="block text-xs text-muted-foreground">
                     {s.className} {s.classNo}
                   </span>
                 </span>
-                <span className="text-sm font-extrabold tabular-nums">
-                  {COIN_EMOJI} {coinBalance(s)}
+                <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+                  {coinBalance(s)}
                 </span>
               </label>
             );
@@ -590,9 +580,9 @@ function QuickPoints({ list }: { list: Student[] }) {
         </div>
       )}
 
-      <div className="sticky bottom-3 mt-4 flex flex-wrap items-end gap-3 rounded-2xl border-2 border-border bg-card p-3 shadow-lg">
+      <div className="sticky bottom-3 mt-4 flex flex-wrap items-end gap-3 rounded-md border border-border bg-card p-3 shadow-lg">
         <div>
-          <p className="mb-1 text-xs font-bold text-muted-foreground">Amount</p>
+          <p className="mb-1 text-xs font-semibold text-muted-foreground">Amount</p>
           <div className="flex flex-wrap items-center gap-1">
             {QUICK_AMOUNTS.map((n) => (
               <button
@@ -600,7 +590,7 @@ function QuickPoints({ list }: { list: Student[] }) {
                 key={n}
                 onClick={() => chooseAmount(n)}
                 className={cn(
-                  "min-w-10 rounded-lg px-2 py-1.5 text-sm font-extrabold",
+                  "min-w-10 rounded px-2 py-1.5 text-sm font-semibold",
                   amount === n
                     ? n < 0
                       ? "bg-destructive text-destructive-foreground"
@@ -618,32 +608,32 @@ function QuickPoints({ list }: { list: Student[] }) {
               value={amount}
               aria-label="Custom amount"
               onChange={(e) => chooseAmount(Number(e.target.value))}
-              className="w-16 rounded-lg border border-input bg-card px-2 py-1.5 text-sm font-bold"
+              className="w-16 rounded-md border border-input bg-card px-2 py-1.5 text-sm"
             />
           </div>
         </div>
-        <label className="text-xs font-bold text-muted-foreground">
+        <label className="text-xs font-semibold text-muted-foreground">
           Reason
           <select
             value={reason}
             onChange={(e) => chooseReason(e.target.value as MarkReason)}
-            className="mt-1 block rounded-lg border border-input bg-card p-2 text-sm font-semibold text-foreground"
+            className="mt-1 block rounded-md border border-input bg-card p-2 text-sm font-normal text-foreground"
           >
             {QUICK_REASONS.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.label} · {r.zh}
+                {r.label}
               </option>
             ))}
           </select>
         </label>
-        <label className="min-w-40 flex-1 text-xs font-bold text-muted-foreground">
+        <label className="min-w-40 flex-1 text-xs font-semibold text-muted-foreground">
           Note (optional)
           <input
             value={note}
             maxLength={200}
             onChange={(e) => setNote(e.target.value)}
             placeholder="e.g. Ex 5B Q1–6"
-            className="mt-1 block w-full rounded-lg border border-input bg-card p-2 text-sm font-semibold text-foreground"
+            className="mt-1 block w-full rounded-md border border-input bg-card p-2 text-sm font-normal text-foreground"
           />
         </label>
         <Button
@@ -659,7 +649,7 @@ function QuickPoints({ list }: { list: Student[] }) {
             : `Give ${amount > 0 ? "+" : ""}${amount} to ${selected.length} student${selected.length === 1 ? "" : "s"}`}
         </Button>
       </div>
-    </section>
+    </Panel>
   );
 }
 
@@ -724,12 +714,11 @@ function RecentActivity() {
   };
 
   return (
-    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-      <h2 className="text-xl font-bold">Recent activity</h2>
+    <Panel className="mt-6" title="Recent activity" bodyClassName="px-5 py-2">
       {groups.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">No {COIN_NAME} given yet.</p>
+        <p className="py-2 text-sm text-muted-foreground">No {COIN_NAME} given yet.</p>
       ) : (
-        <ul className="mt-3 divide-y divide-border">
+        <ul className="divide-y divide-border">
           {groups.map((g) => {
             const who = g.studentIds.map((id) => names.get(id) ?? "?");
             return (
@@ -743,7 +732,7 @@ function RecentActivity() {
                 </span>
                 <span
                   className={cn(
-                    "w-12 rounded-md text-center font-extrabold",
+                    "w-12 rounded text-center font-semibold tabular-nums",
                     g.marks > 0
                       ? "bg-success/15 text-success"
                       : g.marks < 0
@@ -754,11 +743,11 @@ function RecentActivity() {
                   {g.marks > 0 ? `+${g.marks}` : g.marks}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="font-semibold">{reasonLabel(g.reason)}</span>
-                  {g.note && <span className="text-muted-foreground"> · {g.note}</span>}
+                  <span className="font-medium">{reasonLabel(g.reason)}</span>
+                  {g.note && <span className="text-muted-foreground">, {g.note}</span>}
                   <span className="block truncate text-xs text-muted-foreground">
                     {who.slice(0, 5).join(", ")}
-                    {who.length > 5 ? ` +${who.length - 5} more` : ""}
+                    {who.length > 5 ? ` and ${who.length - 5} more` : ""}
                   </span>
                 </span>
                 <Button
@@ -774,6 +763,6 @@ function RecentActivity() {
           })}
         </ul>
       )}
-    </section>
+    </Panel>
   );
 }

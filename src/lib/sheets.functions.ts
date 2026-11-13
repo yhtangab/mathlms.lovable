@@ -152,7 +152,7 @@ async function getServiceAccountAccessToken(
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(
-      `Service Account (${cleanEmail}) 驗證失敗 [${res.status}]: ${errText.slice(0, 200)}`,
+      `Service account (${cleanEmail}) could not sign in [${res.status}]: ${errText.slice(0, 200)}`,
     );
   }
 
@@ -176,7 +176,7 @@ async function readTabsViaApi(
   const res = await fetch(url, { headers });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Google Sheets API 讀取失敗 [${res.status}]: ${body.slice(0, 300)}`);
+    throw new Error(`Google Sheets API read failed [${res.status}]: ${body.slice(0, 300)}`);
   }
   const json = (await res.json()) as { valueRanges?: { values?: Grid }[] };
   return TABS.map((_, i) => json.valueRanges?.[i]?.values ?? []);
@@ -186,7 +186,7 @@ async function loadXlsx(): Promise<XlsxModule> {
   const mod = (await import("xlsx")) as unknown as Partial<XlsxModule> & { default?: XlsxModule };
   if (typeof mod.read === "function" && mod.utils) return mod as XlsxModule;
   if (mod.default && typeof mod.default.read === "function") return mod.default;
-  throw new Error("無法載入 xlsx 解析器，請確認已經執行安裝指令");
+  throw new Error("The xlsx reader could not be loaded. Run npm install and try again.");
 }
 
 function cellValue(cell: XlsxCell | undefined): Cell {
@@ -225,13 +225,13 @@ function sheetToGrids(XLSX: XlsxModule, sheet: XlsxSheet): { formulas: Grid; val
 async function readPublicWorkbook(): Promise<{ formulas: Grid[]; values: Grid[] }> {
   const res = await fetch(PUBLIC_XLSX_URL, { redirect: "follow" });
   if (!res.ok) {
-    throw new Error(`下載試算表失敗 (HTTP ${res.status})`);
+    throw new Error(`Could not download the spreadsheet (HTTP ${res.status})`);
   }
   const bytes = new Uint8Array(await res.arrayBuffer());
   // A real .xlsx file is a zip archive and starts with "PK"; a Google login page is HTML.
   if (bytes.length < 4 || bytes[0] !== 0x50 || bytes[1] !== 0x4b) {
     throw new Error(
-      "Google 冇俾下載試算表（請確認已開放「知道連結的任何人 → 檢視者」，以及冇關閉檢視者的下載權限）",
+      'Google did not allow the spreadsheet to be downloaded. Set sharing to "Anyone with the link: Viewer" and make sure viewers are allowed to download.',
     );
   }
   const XLSX = await loadXlsx();
@@ -246,7 +246,7 @@ async function readPublicWorkbook(): Promise<{ formulas: Grid[]; values: Grid[] 
   for (const tab of TABS) {
     const sheetName = workbook.SheetNames.find((n) => n.trim().toUpperCase() === tab.toUpperCase());
     const sheet = sheetName === undefined ? undefined : workbook.Sheets[sheetName];
-    if (!sheet) throw new Error(`試算表入面搵唔到分頁「${tab}」`);
+    if (!sheet) throw new Error(`The spreadsheet has no tab called "${tab}"`);
     const grids = sheetToGrids(XLSX, sheet);
     formulas.push(grids.formulas);
     values.push(grids.values);
@@ -273,7 +273,7 @@ async function loadAllSheetGrids(): Promise<SheetGrids> {
       ]);
       return { formulas, values, source: "service_account" };
     } catch (err) {
-      failures.push(`Service Account：${errorMessage(err)}`);
+      failures.push(`Service account: ${errorMessage(err)}`);
     }
   }
 
@@ -286,7 +286,7 @@ async function loadAllSheetGrids(): Promise<SheetGrids> {
       ]);
       return { formulas, values, source: "api_key" };
     } catch (err) {
-      failures.push(`API key：${errorMessage(err)}`);
+      failures.push(`API key: ${errorMessage(err)}`);
     }
   }
 
@@ -294,10 +294,10 @@ async function loadAllSheetGrids(): Promise<SheetGrids> {
     const grids = await readPublicWorkbook();
     return { ...grids, source: "public_xlsx" };
   } catch (err) {
-    failures.push(`公開連結：${errorMessage(err)}`);
+    failures.push(`Public link: ${errorMessage(err)}`);
   }
 
-  throw new Error(`無法讀取 Google Sheet。${failures.join("；")}`);
+  throw new Error(`Could not read the Google Sheet. ${failures.join("; ")}`);
 }
 
 export const syncGoogleSheet = createServerFn({ method: "POST" })
@@ -308,8 +308,8 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
       _user_id: userId,
       _role: "teacher",
     });
-    if (roleError) throw new Error(`檢查老師權限失敗：${roleError.message}`);
-    if (!allowed) throw new Error("只有老師帳號 (Teacher) 可以同步成績");
+    if (roleError) throw new Error(`Could not check teacher access: ${roleError.message}`);
+    if (!allowed) throw new Error("Only teacher accounts can sync marks");
 
     const { formulas, values, source } = await loadAllSheetGrids();
     const perTab = TABS.map((set, i) => ({
@@ -328,7 +328,7 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
     }
     const parsed = [...byEmail.values()];
     if (!parsed.length) {
-      throw new Error("S2M3 / S2M5 分頁入面搵唔到任何有 HLC no. 嘅學生");
+      throw new Error("No students with an HLC no. were found in the S2M3 or S2M5 tabs");
     }
 
     const tabs: TabReport[] = perTab.map(({ set, students }) => {
@@ -353,7 +353,7 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
     // Never wipe the saved marks because of a sheet that could not be read properly.
     if (tabs.every((t) => t.scores === 0)) {
       throw new Error(
-        "讀到學生名單，但一個分數都讀唔到，為免清走舊分數，今次同步已停止。請檢查分頁有冇「HLC no.」標題列，以及分數係咪由 G 欄開始。",
+        'The class list was read but no marks were found, so the sync stopped to keep the saved marks. Check that each tab has an "HLC no." heading row and that marks start in column G.',
       );
     }
 
@@ -371,7 +371,7 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
         { onConflict: "email" },
       )
       .select("id, email");
-    if (rosterError) throw new Error(`儲存學生名單失敗：${rosterError.message}`);
+    if (rosterError) throw new Error(`Could not save the class list: ${rosterError.message}`);
     const idByEmail = new Map((roster ?? []).map((r) => [r.email, r.id]));
 
     const syncedAt = new Date().toISOString();
@@ -385,7 +385,7 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
       const { error } = await supabase
         .from("assessment_scores")
         .upsert(part, { onConflict: "student_id,term,kind,label" });
-      if (error) throw new Error(`儲存分數失敗：${error.message}`);
+      if (error) throw new Error(`Could not save marks: ${error.message}`);
     }
 
     for (const ids of chunk([...idByEmail.values()], DELETE_CHUNK)) {
@@ -394,7 +394,7 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
         .delete()
         .in("student_id", ids)
         .lt("synced_at", syncedAt);
-      if (error) throw new Error(`清理舊分數失敗：${error.message}`);
+      if (error) throw new Error(`Could not remove old marks: ${error.message}`);
     }
 
     const { error: logError } = await supabase.from("sheet_syncs").insert({

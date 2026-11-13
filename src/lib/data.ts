@@ -17,6 +17,9 @@ export const CHAPTERS = [
 
 export type MathSet = "S2M3" | "S2M5";
 
+/** The shared demo login. Teachers never see this account in class lists or rankings. */
+export const DEMO_EMAIL = "demo.student@hlc.edu.hk";
+
 /** Where a chapter score came from: typed in the app, or worked out from the Google Sheet. */
 export type ScoreSource = "manual" | "sheet" | null;
 

@@ -3,8 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import type { ScoreSource, Student } from "./data";
+import { DEMO_EMAIL, type ScoreSource, type Student } from "./data";
 import { chapterScoresFromAssessments, type Assessment } from "./assessments";
+import type { Homework } from "./homework";
 
 type PublicTables = Database["public"]["Tables"];
 type AssessmentRow = PublicTables["assessment_scores"]["Row"];
@@ -78,7 +79,7 @@ async function loadCoinData(): Promise<CoinData> {
   const error = totals.error ?? rewards.error ?? redemptions.error;
   if (error) {
     return {
-      error: `Math Coins / Awards 未設定好：${error.message}（請先喺 Supabase SQL Editor 執行 0005 SQL）`,
+      error: `Math Coins and Awards are not set up yet (${error.message}). Run supabase/sql/0005_coins_activity_awards.sql in the Supabase SQL Editor.`,
       totals: [],
       rewards: [],
       redemptions: [],
@@ -90,6 +91,26 @@ async function loadCoinData(): Promise<CoinData> {
     rewards: rewards.data ?? [],
     redemptions: redemptions.data ?? [],
   };
+}
+
+interface HomeworkData {
+  error: string | null;
+  rows: Homework[];
+}
+
+/** Homework is optional too: before 0007 is run, every other page keeps working. */
+async function loadHomework(): Promise<HomeworkData> {
+  const { data, error } = await supabase
+    .from("homework")
+    .select("*")
+    .order("due_at", { ascending: true });
+  if (error) {
+    return {
+      error: `Homework is not set up yet (${error.message}). Run supabase/sql/0007_homework.sql in the Supabase SQL Editor.`,
+      rows: [],
+    };
+  }
+  return { error: null, rows: data ?? [] };
 }
 
 function toAssessment(row: AssessmentRow): Assessment {
@@ -120,6 +141,8 @@ interface Store {
   rewards: Reward[];
   redemptions: Redemption[];
   coinsError: string | null;
+  homework: Homework[];
+  homeworkError: string | null;
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
 }
@@ -180,6 +203,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         syncs,
         chapterVideos,
         coins,
+        homeworkData,
       ] = await Promise.all([
         supabase.from("user_roles").select("role"),
         supabase.from("students").select("*"),
@@ -199,6 +223,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .limit(1),
         supabase.from("chapter_videos").select("*").order("chapter").order("position"),
         loadCoinData(),
+        loadHomework(),
       ]);
       for (const r of [roles, roster, scores, markLog, content, syncs, chapterVideos]) {
         if (r.error) throw r.error;
@@ -276,18 +301,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         };
       });
 
+      const role: Store["role"] = roles.data?.some((r) => r.role === "teacher")
+        ? "teacher"
+        : "student";
+
+      // The demo login is for trying the student view only; keep it out of every teacher list.
+      const demoIds = new Set(students.filter((s) => s.email === DEMO_EMAIL).map((s) => s.id));
+      const hideDemo = role === "teacher" && demoIds.size > 0;
+      const allMarks = markLog.data ?? [];
+
       return {
         lastSync: syncs.data?.[0]?.created_at ?? null,
-        students,
-        role: roles.data?.some((r) => r.role === "teacher")
-          ? ("teacher" as const)
-          : ("student" as const),
+        students: hideDemo ? students.filter((s) => !demoIds.has(s.id)) : students,
+        role,
         content: content.data ?? [],
         videos: chapterVideos.data ?? [],
-        markLog: markLog.data ?? [],
+        markLog: hideDemo ? allMarks.filter((m) => !demoIds.has(m.student_id)) : allMarks,
         rewards: coins.rewards,
-        redemptions: coins.redemptions,
+        redemptions: hideDemo
+          ? coins.redemptions.filter((r) => !demoIds.has(r.student_id))
+          : coins.redemptions,
         coinsError: coins.error,
+        homework: homeworkData.rows,
+        homeworkError: homeworkData.error,
       };
     },
   });
@@ -328,6 +364,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         rewards: query.data?.rewards ?? [],
         redemptions: query.data?.redemptions ?? [],
         coinsError: query.data?.coinsError ?? null,
+        homework: query.data?.homework ?? [],
+        homeworkError: query.data?.homeworkError ?? null,
         refresh: () => query.refetch(),
         logout: async () => {
           await supabase.auth.signOut();

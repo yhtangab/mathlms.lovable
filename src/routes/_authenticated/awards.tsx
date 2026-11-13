@@ -1,15 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Check, Gift, History, Plus, Save, X } from "lucide-react";
+import { Check, Plus, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { Notice, PageHeader, Panel } from "@/components/PageParts";
 import { Button } from "@/components/ui/button";
 import { useApp, type Redemption, type Reward } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  COIN_EMOJI,
   COIN_NAME,
-  COIN_NAME_ZH,
   REASONS,
   VIDEO_COINS,
   coinBalance,
@@ -25,11 +24,11 @@ export const Route = createFileRoute("/_authenticated/awards")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Awards — HLC Math" },
-      { name: "description", content: "Spend Math Coins on class rewards." },
+      { name: "description", content: "Exchange Math Coins for class rewards." },
       { property: "og:title", content: "Awards — HLC Math" },
       {
         property: "og:description",
-        content: "Earn Math Coins in lessons and swap them for rewards.",
+        content: "Earn Math Coins in lessons and exchange them for rewards.",
       },
     ],
   }),
@@ -43,16 +42,12 @@ function AwardsPage() {
   return <AppShell>{role === "teacher" ? <TeacherAwards /> : <StudentAwards />}</AppShell>;
 }
 
-function SetupNotice({ message }: { message: string }) {
-  return (
-    <p role="alert" className="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-      {message}
-    </p>
-  );
-}
-
 function formatDate(value: string | Date) {
   return new Date(value).toLocaleDateString("en-HK", { day: "numeric", month: "short" });
+}
+
+function coins(n: number) {
+  return `${n} coin${n === 1 ? "" : "s"}`;
 }
 
 function StudentAwards() {
@@ -79,9 +74,9 @@ function StudentAwards() {
       if (error) throw new Error(error.message);
       await refresh();
       setConfirming(null);
-      toast.success(`${reward.emoji} ${reward.name} requested! Your teacher will confirm it.`);
+      toast.success(`${reward.name} requested. Your teacher will confirm it.`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not redeem");
+      toast.error(e instanceof Error ? e.message : "Could not request the reward");
     } finally {
       setBusy(false);
     }
@@ -89,45 +84,40 @@ function StudentAwards() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">Awards</h1>
-      <p className="font-semibold text-muted-foreground">
-        Earn {COIN_NAME} in lessons and swap them for rewards.
-      </p>
-      {coinsError && <SetupNotice message={coinsError} />}
+      <PageHeader
+        title="Awards"
+        description={`Earn ${COIN_NAME} in lessons and exchange them for class rewards.`}
+      />
+      {coinsError && (
+        <div className="mt-4">
+          <Notice tone="error">{coinsError}</Notice>
+        </div>
+      )}
 
-      <div className="mt-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <section className="rounded-3xl bg-gold p-6 text-accent-foreground shadow-chunky-gold">
-          <p className="text-sm font-bold">
-            My {COIN_NAME} · {COIN_NAME_ZH}
-          </p>
-          <p className="font-display text-5xl font-bold">
-            {COIN_EMOJI} {balance}
-          </p>
-          <p className="mt-1 text-sm font-semibold">
-            Earned {coinsEarned(me)} · Spent {me.coinsSpent ?? 0}
+      <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+        <section className="rounded-lg border border-border border-l-4 border-l-gold bg-card p-5 shadow-chunky">
+          <p className="text-sm text-muted-foreground">Your balance</p>
+          <p className="mt-1 text-4xl font-semibold tabular-nums">{balance}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {coins(coinsEarned(me))} earned, {coins(me.coinsSpent ?? 0)} spent
           </p>
         </section>
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="font-bold">How to earn {COIN_NAME}</h2>
-          <ul className="mt-2 grid gap-1 text-sm sm:grid-cols-2">
+        <Panel title={`How to earn ${COIN_NAME}`}>
+          <ul className="grid list-disc gap-1 pl-5 text-sm sm:grid-cols-2">
             {REASONS.filter((r) => r.id !== "deduction" && r.id !== "incorrect_answer").map((r) => (
-              <li key={r.id}>✅ {r.label}</li>
+              <li key={r.id}>{r.label}</li>
             ))}
-            <li>🎬 Watch a chapter video to the end (+{VIDEO_COINS})</li>
+            <li>Watching a chapter video to the end (+{VIDEO_COINS})</li>
           </ul>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Missing homework or breaking class rules can take coins away.
+          <p className="mt-3 text-xs text-muted-foreground">
+            Missing homework or breaking class rules can lose coins.
           </p>
-        </section>
+        </Panel>
       </div>
 
-      <h2 className="mt-8 flex items-center gap-2 text-xl font-bold">
-        <Gift className="h-5 w-5 text-primary" /> Rewards
-      </h2>
+      <h2 className="mt-8 text-lg font-semibold">Rewards</h2>
       {shop.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your teacher has not added rewards yet.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">No rewards have been added yet.</p>
       ) : (
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shop.map((r) => {
@@ -136,18 +126,20 @@ function StudentAwards() {
             return (
               <div
                 key={r.id}
-                className="flex flex-col rounded-3xl border-2 border-border bg-card p-5 shadow-chunky"
+                className="flex flex-col rounded-lg border border-border bg-card p-4 shadow-chunky"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <span className="text-4xl">{r.emoji}</span>
-                  <span className="rounded-full bg-gold/25 px-3 py-1 text-sm font-extrabold text-gold-deep">
-                    {COIN_EMOJI} {r.cost}
+                <div className="flex items-start gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-muted text-xl">
+                    {r.emoji}
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold leading-tight">{r.name}</h3>
+                    <p className="text-sm text-muted-foreground">{coins(r.cost)}</p>
+                  </div>
                 </div>
-                <h3 className="mt-3 text-lg font-bold leading-tight">{r.name}</h3>
-                <p className="mt-1 flex-1 text-sm text-muted-foreground">{r.description}</p>
+                <p className="mt-3 flex-1 text-sm">{r.description}</p>
                 {r.cooldown_days && (
-                  <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Once every {r.cooldown_days} days
                   </p>
                 )}
@@ -158,7 +150,7 @@ function StudentAwards() {
                     </Button>
                   ) : short > 0 ? (
                     <Button disabled variant="outline" className="w-full">
-                      Need {short} more
+                      {short} more needed
                     </Button>
                   ) : confirming === r.id ? (
                     <div className="flex gap-2">
@@ -171,7 +163,7 @@ function StudentAwards() {
                     </div>
                   ) : (
                     <Button className="w-full" onClick={() => setConfirming(r.id)}>
-                      Redeem
+                      Request
                     </Button>
                   )}
                 </div>
@@ -182,23 +174,22 @@ function StudentAwards() {
       )}
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="font-bold">My rewards</h2>
+        <Panel title="My requests">
           {mine.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">Nothing redeemed yet.</p>
+            <p className="text-sm text-muted-foreground">No rewards requested yet.</p>
           ) : (
-            <ul className="mt-2 divide-y divide-border">
+            <ul className="divide-y divide-border">
               {mine.map((r) => {
                 const st = redemptionStatus(r.status);
                 return (
                   <li key={r.id} className="flex items-center gap-3 py-2 text-sm">
                     <span className="min-w-0 flex-1">
-                      <span className="block font-semibold">{r.reward_name}</span>
+                      <span className="block font-medium">{r.reward_name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {formatDate(r.created_at)} · {COIN_EMOJI} {r.cost}
+                        {formatDate(r.created_at)}, {coins(r.cost)}
                       </span>
                     </span>
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", st.cls)}>
+                    <span className={cn("rounded px-2 py-0.5 text-xs font-semibold", st.cls)}>
                       {st.label}
                     </span>
                   </li>
@@ -206,15 +197,12 @@ function StudentAwards() {
               })}
             </ul>
           )}
-        </section>
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="flex items-center gap-2 font-bold">
-            <History className="h-4 w-4" /> Coin history
-          </h2>
+        </Panel>
+        <Panel title="Coin history">
           {history.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">No lesson coins yet.</p>
+            <p className="text-sm text-muted-foreground">No lesson coins yet.</p>
           ) : (
-            <ul className="mt-2 divide-y divide-border">
+            <ul className="divide-y divide-border">
               {history.map((m) => (
                 <li key={m.id} className="flex items-center gap-3 py-2 text-sm">
                   <span className="w-16 shrink-0 text-xs text-muted-foreground">
@@ -222,11 +210,11 @@ function StudentAwards() {
                   </span>
                   <span className="min-w-0 flex-1 truncate">
                     {reasonLabel(m.reason)}
-                    {m.note ? ` · ${m.note}` : ""}
+                    {m.note ? <span className="text-muted-foreground">, {m.note}</span> : null}
                   </span>
                   <span
                     className={cn(
-                      "font-extrabold tabular-nums",
+                      "font-semibold tabular-nums",
                       m.marks > 0
                         ? "text-success"
                         : m.marks < 0
@@ -240,7 +228,7 @@ function StudentAwards() {
               ))}
             </ul>
           )}
-        </section>
+        </Panel>
       </div>
     </>
   );
@@ -254,7 +242,7 @@ function TeacherAwards() {
       new Map(
         students.map((s) => [
           s.id,
-          `${s.name} · ${s.set}${s.classNo ? ` · ${s.className ?? ""} ${s.classNo}` : ""}`,
+          `${s.name}, ${s.set}${s.classNo ? `, ${s.className ?? ""} ${s.classNo}` : ""}`,
         ]),
       ),
     [students],
@@ -277,13 +265,13 @@ function TeacherAwards() {
       await refresh();
       toast.success(
         status === "rejected"
-          ? "Rejected — coins returned"
+          ? "Rejected and coins returned"
           : status === "used"
             ? "Marked as used"
             : "Approved",
       );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update");
+      toast.error(e instanceof Error ? e.message : "Could not update the request");
     } finally {
       setBusyId(null);
     }
@@ -294,10 +282,10 @@ function TeacherAwards() {
     return (
       <li key={r.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
         <span className="min-w-0 flex-1">
-          <span className="block font-semibold">{r.reward_name}</span>
+          <span className="block font-medium">{r.reward_name}</span>
           <span className="text-xs text-muted-foreground">
-            {names.get(r.student_id) ?? "Unknown student"} · {formatDate(r.created_at)} ·{" "}
-            {COIN_EMOJI} {r.cost}
+            {names.get(r.student_id) ?? "Unknown student"}, {formatDate(r.created_at)},{" "}
+            {coins(r.cost)}
           </span>
         </span>
         {actions === "pending" && (
@@ -326,12 +314,12 @@ function TeacherAwards() {
               disabled={busyId === r.id}
               onClick={() => void decide(r, "rejected")}
             >
-              Cancel & refund
+              Cancel and refund
             </Button>
           </>
         )}
         {actions === "none" && (
-          <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", st.cls)}>
+          <span className={cn("rounded px-2 py-0.5 text-xs font-semibold", st.cls)}>
             {st.label}
           </span>
         )}
@@ -341,38 +329,37 @@ function TeacherAwards() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">Awards</h1>
-      <p className="font-semibold text-muted-foreground">
-        Students spend {COIN_NAME} here. Approve requests, mark them used, or reject to refund.
-      </p>
-      {coinsError && <SetupNotice message={coinsError} />}
+      <PageHeader
+        title="Awards"
+        description={`Students spend ${COIN_NAME} here. Approve a request, mark it used, or reject it to return the coins.`}
+      />
+      {coinsError && (
+        <div className="mt-4">
+          <Notice tone="error">{coinsError}</Notice>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="font-bold">Waiting for approval ({pending.length})</h2>
+        <Panel title={`Waiting for approval (${pending.length})`}>
           {pending.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">No new requests.</p>
+            <p className="text-sm text-muted-foreground">No new requests.</p>
           ) : (
-            <ul className="mt-2 divide-y divide-border">{pending.map((r) => row(r, "pending"))}</ul>
+            <ul className="divide-y divide-border">{pending.map((r) => row(r, "pending"))}</ul>
           )}
-        </section>
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="font-bold">Approved · not used yet ({approved.length})</h2>
+        </Panel>
+        <Panel title={`Approved, not used yet (${approved.length})`}>
           {approved.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">Nothing waiting to be used.</p>
+            <p className="text-sm text-muted-foreground">Nothing waiting to be used.</p>
           ) : (
-            <ul className="mt-2 divide-y divide-border">
-              {approved.map((r) => row(r, "approved"))}
-            </ul>
+            <ul className="divide-y divide-border">{approved.map((r) => row(r, "approved"))}</ul>
           )}
-        </section>
+        </Panel>
       </div>
 
       {done.length > 0 && (
-        <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="font-bold">Recently finished</h2>
-          <ul className="mt-2 divide-y divide-border">{done.map((r) => row(r, "none"))}</ul>
-        </section>
+        <Panel className="mt-6" title="Recently finished">
+          <ul className="divide-y divide-border">{done.map((r) => row(r, "none"))}</ul>
+        </Panel>
       )}
 
       <RewardEditor />
@@ -405,7 +392,7 @@ function toDraft(r: Reward): Draft {
 }
 
 const field =
-  "w-full rounded-lg border border-input bg-background px-2 py-1.5 text-sm font-semibold";
+  "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-primary";
 
 function RewardEditor() {
   const { rewards, refresh } = useApp();
@@ -446,7 +433,7 @@ function RewardEditor() {
       return;
     }
     if (cooldown !== null && (!Number.isInteger(cooldown) || cooldown < 1 || cooldown > 365)) {
-      toast.error("Limit must be 1–365 days, or leave it blank for no limit");
+      toast.error("Limit must be 1 to 365 days, or blank for no limit");
       return;
     }
     setBusyId(d.id);
@@ -466,25 +453,24 @@ function RewardEditor() {
       setEdits(({ [d.id]: _saved, ...rest }) => rest);
       toast.success(`${d.name.trim()} saved`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not save");
+      toast.error(e instanceof Error ? e.message : "Could not save the reward");
     } finally {
       setBusyId(null);
     }
   };
 
   return (
-    <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 className="mr-auto font-bold">Reward list</h2>
+    <Panel
+      className="mt-6"
+      title="Reward list"
+      description="Untick Shown to hide a reward. Limit means once every N days for each student; leave it blank for no limit."
+      actions={
         <Button variant="outline" size="sm" onClick={add}>
           <Plus /> Add reward
         </Button>
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Untick “Shown” to hide a reward from students. “Limit” = once every N days per student
-        (blank = no limit).
-      </p>
-      <div className="mt-3 hidden grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] gap-2 px-1 text-xs font-bold uppercase text-muted-foreground md:grid">
+      }
+    >
+      <div className="hidden grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] gap-2 px-1 text-xs font-semibold text-muted-foreground md:grid">
         <span>Icon</span>
         <span>Name</span>
         <span>Description</span>
@@ -500,7 +486,7 @@ function RewardEditor() {
             <div
               key={d.id}
               className={cn(
-                "grid gap-2 rounded-2xl border-2 p-2 md:grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] md:items-center",
+                "grid gap-2 rounded-md border p-2 md:grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] md:items-center",
                 dirty ? "border-primary/60 bg-primary/5" : "border-border",
               )}
             >
@@ -543,7 +529,7 @@ function RewardEditor() {
                 onChange={(e) => change(d, { cooldown: e.target.value })}
                 className={field}
               />
-              <label className="flex items-center gap-2 text-sm font-semibold md:justify-center">
+              <label className="flex items-center gap-2 text-sm md:justify-center">
                 <input
                   type="checkbox"
                   checked={d.active}
@@ -559,6 +545,6 @@ function RewardEditor() {
           );
         })}
       </div>
-    </section>
+    </Panel>
   );
 }

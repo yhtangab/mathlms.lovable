@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, TeacherOnly } from "@/components/AppShell";
+import { PageHeader } from "@/components/PageParts";
 import { CHAPTERS } from "@/lib/data";
 import { useApp } from "@/lib/app-store";
 import { parseVideoSource } from "@/lib/video-watch";
@@ -26,12 +27,12 @@ export const Route = createFileRoute("/_authenticated/upload")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Chapter Content — HLC Math" },
+      { title: "Chapter content — HLC Math" },
       {
         name: "description",
-        content: "Add named videos, notes and exercises for each Math chapter.",
+        content: "Add videos, notes and exercises for each Mathematics chapter.",
       },
-      { property: "og:title", content: "Chapter Content — HLC Math" },
+      { property: "og:title", content: "Chapter content — HLC Math" },
       { property: "og:description", content: "Prepare S2 chapter content for students." },
     ],
   }),
@@ -49,7 +50,7 @@ interface Draft {
   videos: DraftVideo[];
 }
 const input =
-  "w-full rounded-xl border-2 border-input bg-background px-3 py-2 font-semibold outline-none focus:border-primary";
+  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 function Upload() {
   const { content, videos, refresh } = useApp();
@@ -86,12 +87,12 @@ function Upload() {
     setBusy(true);
     try {
       if (notesInvalid)
-        throw new Error("Chapter notes: paste the full Google Drive link (starting with https://)");
+        throw new Error("Chapter notes: paste the full Google Drive link, starting with https://");
       cur.videos.forEach((v, i) => {
         if (!v.title.trim()) throw new Error(`Give video ${i + 1} a name`);
         if (!parseVideoSource(v.url)) {
           throw new Error(
-            `Video ${i + 1} ("${v.title}") needs a YouTube link or an https link to an .mp4/.webm file`,
+            `Video ${i + 1} ("${v.title}") needs a YouTube link or an https link to an .mp4 or .webm file`,
           );
         }
       });
@@ -123,7 +124,7 @@ function Upload() {
         delete n[ch];
         return n;
       });
-      toast.success(`Chapter ${ch} content saved`);
+      toast.success(`Chapter ${ch} saved`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save");
     } finally {
@@ -134,55 +135,58 @@ function Upload() {
   return (
     <AppShell>
       <TeacherOnly>
-        <h1 className="text-3xl font-bold">Chapter content</h1>
-        <p className="font-semibold text-muted-foreground">
-          Add videos, notes and an exercise for each chapter. Students earn 1 Math Coin for each
-          video they watch to the end.
-        </p>
-        <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
-          <div className="flex gap-2 overflow-x-auto lg:flex-col">
+        <PageHeader
+          title="Chapter content"
+          description="Videos, notes and an exercise for each chapter. Students earn 1 Math Coin for each video they watch to the end."
+        />
+        <div className="mt-6 grid gap-6 lg:grid-cols-[260px_1fr]">
+          <nav
+            aria-label="Chapters"
+            className="flex gap-2 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-hidden lg:rounded-lg lg:border lg:border-border lg:bg-card"
+          >
             {CHAPTERS.map((c) => {
               const n = videos.filter((v) => v.chapter === c.id).length;
               return (
-                <Button
-                  variant="ghost"
+                <button
+                  type="button"
                   key={c.id}
                   onClick={() => setCh(c.id)}
                   className={cn(
-                    "flex h-auto min-w-48 items-center gap-3 rounded-2xl border-2 p-3 text-left",
-                    ch === c.id ? "border-primary bg-primary/10" : "border-border bg-card",
+                    "flex min-w-48 items-center gap-3 rounded-md border px-3 py-2.5 text-left lg:min-w-0 lg:rounded-none lg:border-0 lg:border-b lg:last:border-b-0",
+                    ch === c.id
+                      ? "border-primary bg-primary/5 lg:border-l-4 lg:border-l-primary"
+                      : "border-border bg-card hover:bg-muted/50",
                   )}
                 >
-                  <span className="text-2xl">{c.emoji}</span>
+                  <span className="w-5 shrink-0 text-sm font-semibold tabular-nums text-muted-foreground">
+                    {c.id}
+                  </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-xs font-extrabold text-primary">
-                      Chapter {c.id}
-                      {drafts[c.id] ? " · unsaved" : ""}
+                    <span className="block truncate text-sm font-medium">{c.short}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {n} video{n === 1 ? "" : "s"}
+                      {drafts[c.id] ? ", unsaved changes" : ""}
                     </span>
-                    <span className="block truncate text-sm font-bold">{c.short}</span>
                   </span>
-                  <span className="text-xs font-bold text-muted-foreground">
-                    {n} video{n === 1 ? "" : "s"}
-                  </span>
-                </Button>
+                </button>
               );
             })}
-          </div>
-          <div className="space-y-5 rounded-3xl border-2 border-border bg-card p-6 shadow-chunky">
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="mr-auto text-xl font-bold">
-                Ch {ch}: {CHAPTERS[ch - 1]?.title}
+          </nav>
+          <div className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-chunky">
+            <div className="flex flex-wrap items-center gap-3 border-b border-border pb-4">
+              <h2 className="mr-auto text-lg font-semibold">
+                Chapter {ch}: {CHAPTERS[ch - 1]?.title}
               </h2>
               <Link
                 to="/courses/$chapter"
                 params={{ chapter: String(ch) }}
-                className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
               >
-                <Eye className="h-4 w-4" /> Preview chapter page
+                <Eye className="h-4 w-4" /> Preview as student
               </Link>
             </div>
 
-            <Field icon={<Video className="h-5 w-5 text-primary" />} label="Videos">
+            <Field icon={<Video className="h-4 w-4 text-primary" />} label="Videos">
               <div className="space-y-3">
                 {cur.videos.length === 0 && (
                   <p className="text-sm text-muted-foreground">No videos yet.</p>
@@ -190,9 +194,11 @@ function Upload() {
                 {cur.videos.map((v, i) => {
                   const ok = !v.url || parseVideoSource(v.url);
                   return (
-                    <div key={v.id} className="rounded-2xl border-2 border-border p-3">
+                    <div key={v.id} className="rounded-md border border-border p-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-muted-foreground">{i + 1}.</span>
+                        <span className="text-sm font-semibold text-muted-foreground">
+                          {i + 1}.
+                        </span>
                         <input
                           aria-label={`Video ${i + 1} name`}
                           value={v.title}
@@ -236,8 +242,8 @@ function Upload() {
                       />
                       {!ok && (
                         <p className="mt-1 text-xs text-destructive">
-                          Use a YouTube link or an https link to an .mp4/.webm file so it can play
-                          inside HLC Math.
+                          Use a YouTube link or an https link to an .mp4 or .webm file so it can
+                          play inside HLC Math.
                         </p>
                       )}
                     </div>
@@ -260,7 +266,7 @@ function Upload() {
             </Field>
 
             <Field
-              icon={<FileText className="h-5 w-5 text-success" />}
+              icon={<FileText className="h-4 w-4 text-success" />}
               label="Chapter notes (Google Drive link)"
             >
               <input
@@ -282,10 +288,10 @@ function Upload() {
                 </p>
               )}
               {isWebLink(notes) && (
-                <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-success">
+                <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-success">
                   {preview
-                    ? "✓ Students will see this file inside the chapter page."
-                    : "✓ Students will get a button that opens this link."}
+                    ? "Students will see this file inside the chapter page."
+                    : "Students will get a button that opens this link."}
                   <a
                     href={notes}
                     target="_blank"
@@ -297,12 +303,12 @@ function Upload() {
                 </p>
               )}
               <p className="mt-1 text-xs text-muted-foreground">
-                In Google Drive: Share → General access → “HLC” (or “Anyone with the link”) → Viewer
-                → Copy link.
+                In Google Drive: Share, then General access, then HLC (or Anyone with the link) as
+                Viewer, then Copy link.
               </p>
             </Field>
 
-            <Field icon={<ListChecks className="h-5 w-5 text-gold-deep" />} label="Exercise">
+            <Field icon={<ListChecks className="h-4 w-4 text-gold-deep" />} label="Exercise">
               <textarea
                 value={cur.quiz}
                 onChange={(e) => update({ quiz: e.target.value })}
@@ -313,7 +319,7 @@ function Upload() {
             </Field>
 
             <Button disabled={busy} onClick={() => void save()}>
-              {busy ? "Saving…" : "Save chapter content"}
+              {busy ? "Saving…" : "Save chapter"}
             </Button>
           </div>
         </div>
@@ -325,7 +331,7 @@ function Upload() {
 function Field({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
     <div>
-      <p className="mb-2 flex items-center gap-2 text-sm font-extrabold">
+      <p className="mb-2 flex items-center gap-2 text-sm font-semibold">
         {icon} {label}
       </p>
       {children}

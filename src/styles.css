@@ -12,31 +12,21 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The design lives in this file: oklch color tokens on the shadcn variables
- * (--background, --foreground, --primary, --secondary, --muted, --accent, ...) plus
- * new tokens as needed, font tokens, and custom styles and animations.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Design system.
+ * A quiet, course-site look: a dark slate navigation rail, white working surfaces on a light
+ * grey page, one school blue for actions and links, and gold kept for Math Coins only.
+ * Corners are small and shadows are hairline so tables and lists read as documents, not cards.
+ * All colours use oklch. To add a colour: define it in :root, then register it in @theme inline.
  */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 2px);
+  --radius-3xl: calc(var(--radius) + 4px);
+  --radius-4xl: calc(var(--radius) + 6px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -68,8 +58,10 @@
   --color-silver: var(--silver);
   --color-bronze: var(--bronze);
   --color-flame: var(--flame);
-  --font-display: "Source Sans 3", ui-sans-serif, sans-serif;
-  --font-sans: "Source Sans 3", ui-sans-serif, sans-serif;
+  --color-nav: var(--nav);
+  --color-nav-foreground: var(--nav-foreground);
+  --font-display: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -81,47 +73,49 @@
 }
 
 :root {
-  --radius: 1rem;
-  --background: oklch(0.98 0.01 240);
-  --foreground: oklch(0.25 0.04 255);
+  --radius: 0.5rem;
+  --background: oklch(0.972 0.004 250);
+  --foreground: oklch(0.24 0.02 255);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.04 255);
+  --card-foreground: oklch(0.24 0.02 255);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.04 255);
-  --primary: oklch(0.62 0.19 250);
-  --primary-deep: oklch(0.5 0.18 252);
+  --popover-foreground: oklch(0.24 0.02 255);
+  --primary: oklch(0.5 0.15 254);
+  --primary-deep: oklch(0.42 0.14 256);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.03 240);
-  --secondary-foreground: oklch(0.3 0.08 255);
-  --muted: oklch(0.95 0.012 245);
-  --muted-foreground: oklch(0.52 0.03 255);
-  --accent: oklch(0.82 0.16 82);
+  --secondary: oklch(0.95 0.012 250);
+  --secondary-foreground: oklch(0.3 0.05 255);
+  --muted: oklch(0.955 0.005 250);
+  --muted-foreground: oklch(0.5 0.018 255);
+  --accent: oklch(0.83 0.13 82);
   --accent-foreground: oklch(0.3 0.06 60);
-  --success: oklch(0.7 0.17 152);
-  --success-deep: oklch(0.58 0.15 152);
-  --gold: oklch(0.82 0.16 82);
-  --gold-deep: oklch(0.68 0.15 70);
-  --silver: oklch(0.8 0.01 250);
-  --bronze: oklch(0.66 0.11 55);
-  --flame: oklch(0.7 0.2 40);
-  --destructive: oklch(0.64 0.22 25);
+  --success: oklch(0.56 0.13 152);
+  --success-deep: oklch(0.47 0.12 152);
+  --gold: oklch(0.83 0.13 82);
+  --gold-deep: oklch(0.55 0.12 65);
+  --silver: oklch(0.78 0.01 250);
+  --bronze: oklch(0.62 0.1 55);
+  --flame: oklch(0.66 0.18 40);
+  --destructive: oklch(0.56 0.19 27);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.91 0.015 245);
-  --input: oklch(0.91 0.015 245);
-  --ring: oklch(0.62 0.19 250);
-  --chart-1: oklch(0.62 0.19 250);
-  --chart-2: oklch(0.7 0.17 152);
-  --chart-3: oklch(0.82 0.16 82);
-  --chart-4: oklch(0.64 0.22 25);
-  --chart-5: oklch(0.6 0.15 300);
+  --border: oklch(0.905 0.006 250);
+  --input: oklch(0.87 0.008 250);
+  --ring: oklch(0.5 0.15 254);
+  --nav: oklch(0.31 0.03 245);
+  --nav-foreground: oklch(0.97 0.004 250);
+  --chart-1: oklch(0.5 0.15 254);
+  --chart-2: oklch(0.56 0.13 152);
+  --chart-3: oklch(0.83 0.13 82);
+  --chart-4: oklch(0.56 0.19 27);
+  --chart-5: oklch(0.55 0.13 300);
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.25 0.04 255);
-  --sidebar-primary: oklch(0.62 0.19 250);
+  --sidebar-foreground: oklch(0.24 0.02 255);
+  --sidebar-primary: oklch(0.5 0.15 254);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.95 0.03 240);
-  --sidebar-accent-foreground: oklch(0.3 0.08 255);
-  --sidebar-border: oklch(0.91 0.015 245);
-  --sidebar-ring: oklch(0.62 0.19 250);
+  --sidebar-accent: oklch(0.95 0.012 250);
+  --sidebar-accent-foreground: oklch(0.3 0.05 255);
+  --sidebar-border: oklch(0.905 0.006 250);
+  --sidebar-ring: oklch(0.5 0.15 254);
 }
 
 @layer base {
@@ -132,16 +126,42 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
   }
 }
 
-@layer base {
-  h1, h2, h3 { font-family: var(--font-display); }
+/* The old "chunky" names are kept so every page still compiles; they are now hairline shadows. */
+@utility shadow-chunky-primary {
+  box-shadow: 0 1px 2px oklch(0.3 0.08 255 / 0.2);
 }
-@utility shadow-chunky-primary { box-shadow: 0 4px 0 var(--primary-deep); }
-@utility shadow-chunky-success { box-shadow: 0 4px 0 var(--success-deep); }
-@utility shadow-chunky-gold { box-shadow: 0 4px 0 var(--gold-deep); }
-@utility shadow-chunky { box-shadow: 0 4px 0 var(--border); }
-@utility bg-hero { background: radial-gradient(circle at 20% 20%, color-mix(in oklab, var(--primary) 25%, transparent), transparent 50%), radial-gradient(circle at 80% 70%, color-mix(in oklab, var(--success) 22%, transparent), transparent 50%), var(--background); }
+@utility shadow-chunky-success {
+  box-shadow: 0 1px 2px oklch(0.3 0.08 152 / 0.2);
+}
+@utility shadow-chunky-gold {
+  box-shadow: 0 1px 2px oklch(0.4 0.08 70 / 0.2);
+}
+@utility shadow-chunky {
+  box-shadow: 0 1px 2px oklch(0.2 0.02 255 / 0.05);
+}
+@utility bg-hero {
+  background: var(--background);
+}
 
-.google-auth { background: #FFFFFF; border: 1px solid #747775; color: #1F1F1F; font-weight: 500; }
+.google-auth {
+  background: #ffffff;
+  border: 1px solid #747775;
+  color: #1f1f1f;
+  font-weight: 500;
+}

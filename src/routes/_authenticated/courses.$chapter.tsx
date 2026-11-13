@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft,
+  CalendarClock,
   CheckCircle2,
   ExternalLink,
   FileText,
@@ -12,10 +13,19 @@ import {
 import { toast } from "sonner";
 import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
 import { ChapterVideoPlayer } from "@/components/ChapterVideoPlayer";
+import { Panel } from "@/components/PageParts";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, chapterStatus } from "@/lib/data";
 import { percent } from "@/lib/assessments";
 import { isWebLink, notesPreviewUrl } from "@/lib/drive-link";
+import {
+  DUE_LABEL,
+  DUE_TONE,
+  dueStatus,
+  formatDue,
+  homeworkForSet,
+  splitByDue,
+} from "@/lib/homework";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,10 +41,12 @@ export const Route = createFileRoute("/_authenticated/courses/$chapter")({
         { title },
         {
           name: "description",
-          content: c ? `Videos, notes, exercise and progress for ${c.title}.` : "Math chapter.",
+          content: c
+            ? `Videos, notes, exercise and progress for ${c.title}.`
+            : "Mathematics chapter.",
         },
         { property: "og:title", content: title },
-        { property: "og:description", content: "Watch the lessons, read the notes and practise." },
+        { property: "og:description", content: "Lesson videos, notes and practice." },
       ],
     };
   },
@@ -43,7 +55,7 @@ export const Route = createFileRoute("/_authenticated/courses/$chapter")({
 
 function ChapterPage() {
   const { chapter } = Route.useParams();
-  const { me, role, videos, content, refresh } = useApp();
+  const { me, role, videos, content, homework, refresh } = useApp();
   const c = CHAPTERS.find((x) => String(x.id) === chapter);
   const list = videos.filter((v) => v.chapter === c?.id);
   const done = (id: string) => Boolean(me.completedVideos?.includes(id));
@@ -73,12 +85,17 @@ function ChapterPage() {
     (a) =>
       a.kind === "item" && new RegExp(`^(SQ|CQ)\\s*${c.id}(\\.\\d+)?$`, "i").test(a.label.trim()),
   );
+  const { upcoming: dueHomework } = splitByDue(
+    (role === "teacher" ? homework : homeworkForSet(homework, me.set)).filter(
+      (h) => h.chapter === c.id,
+    ),
+  );
 
   const complete = async (videoId: string) => {
     const { data, error } = await supabase.rpc("complete_chapter_video", { _video_id: videoId });
     if (error) throw error;
     await refresh();
-    if (data) toast.success("Video completed — 1 Math Coin earned");
+    if (data) toast.success("Video completed. 1 Math Coin added.");
   };
 
   const openOldPdf = async (path: string) => {
@@ -91,72 +108,107 @@ function ChapterPage() {
     <AppShell>
       <Link
         to="/courses"
-        className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-primary"
+        className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" /> All chapters
       </Link>
-      <div className="mt-3 flex flex-wrap items-start gap-4">
-        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-3xl">
-          {c.emoji}
+      <div className="mt-3 flex flex-wrap items-start gap-4 border-b border-border pb-4">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-primary text-lg font-semibold text-primary-foreground">
+          {c.id}
         </span>
         <div className="mr-auto min-w-0">
-          <p className="text-xs font-extrabold uppercase tracking-wide text-primary">
-            Chapter {c.id}
-          </p>
-          <h1 className="text-2xl font-bold leading-tight md:text-3xl">{c.title}</h1>
+          <p className="text-sm text-muted-foreground">Chapter {c.id}</p>
+          <h1 className="text-2xl font-semibold leading-tight">{c.title}</h1>
         </div>
         <span
-          className={cn(
-            "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold",
-            S.cls,
-          )}
+          className={cn("flex items-center gap-1 rounded px-2 py-0.5 text-xs font-semibold", S.cls)}
         >
           <S.icon className="h-3.5 w-3.5" /> {st}
         </span>
       </div>
 
       <section aria-label="Progress" className="mt-6 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border-2 border-border bg-card p-4">
-          <p className="text-sm font-semibold text-muted-foreground">Videos watched</p>
-          <p className="font-display text-3xl font-bold">
+        <div className="rounded-lg border border-border bg-card p-4 shadow-chunky">
+          <p className="text-sm text-muted-foreground">Videos watched</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">
             {watched}
-            <span className="text-lg text-muted-foreground"> / {list.length}</span>
+            <span className="text-base font-normal text-muted-foreground"> / {list.length}</span>
           </p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-success"
               style={{ width: `${list.length ? (watched / list.length) * 100 : 0}%` }}
             />
           </div>
         </div>
-        <div className="rounded-2xl border-2 border-border bg-card p-4">
-          <p className="text-sm font-semibold text-muted-foreground">Math Coins from videos</p>
-          <p className="font-display text-3xl font-bold">🪙 {watched}</p>
-          <p className="text-xs text-muted-foreground">1 coin for each video watched to the end</p>
+        <div className="rounded-lg border border-border bg-card p-4 shadow-chunky">
+          <p className="text-sm text-muted-foreground">Math Coins from videos</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">{watched}</p>
+          <p className="text-xs text-muted-foreground">One for each video watched to the end</p>
         </div>
-        <div className="rounded-2xl border-2 border-border bg-card p-4">
-          <p className="text-sm font-semibold text-muted-foreground">Chapter score</p>
+        <div className="rounded-lg border border-border bg-card p-4 shadow-chunky">
+          <p className="text-sm text-muted-foreground">Chapter score</p>
           <p
             className={cn(
-              "mt-1 inline-block rounded-full px-3 py-1 text-lg font-extrabold",
+              "mt-2 inline-block rounded px-2 py-0.5 text-lg font-semibold tabular-nums",
               scoreTone(score),
             )}
           >
-            {score === null ? "No score yet" : `${score}%`}
+            {score === null ? "No mark yet" : `${score}%`}
           </p>
         </div>
       </section>
 
-      <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-        <h2 className="flex items-center gap-2 text-lg font-bold">
-          <Video className="h-5 w-5 text-primary" /> Videos
-        </h2>
+      {dueHomework.length > 0 && (
+        <Panel
+          className="mt-6"
+          title="Homework for this chapter"
+          actions={
+            <Link to="/homework" className="text-sm font-medium text-primary hover:underline">
+              All homework
+            </Link>
+          }
+          bodyClassName="px-5 py-1"
+        >
+          <ul className="divide-y divide-border">
+            {dueHomework.map((h) => {
+              const status = dueStatus(h.due_at);
+              return (
+                <li key={h.id} className="flex items-start gap-3 py-3">
+                  <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">{h.title}</p>
+                    <p className="text-xs text-muted-foreground">Due {formatDue(h.due_at)}</p>
+                  </div>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded px-2 py-0.5 text-xs font-semibold",
+                      DUE_TONE[status],
+                    )}
+                  >
+                    {DUE_LABEL[status]}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      )}
+
+      <Panel
+        className="mt-6"
+        title={
+          <span className="flex items-center gap-2">
+            <Video className="h-4 w-4 text-primary" /> Videos
+          </span>
+        }
+      >
         {!active ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Your teacher has not added videos for this chapter yet.
+          <p className="text-sm text-muted-foreground">
+            No videos have been added for this chapter yet.
           </p>
         ) : (
-          <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
             <ChapterVideoPlayer
               key={active.id}
               video={active}
@@ -164,13 +216,14 @@ function ChapterPage() {
               canEarn={canEarn}
               onComplete={complete}
             />
-            <ol className="space-y-2">
+            <ol className="space-y-1.5">
               {list.map((v, i) => (
                 <li key={v.id}>
                   <button
+                    type="button"
                     onClick={() => setActiveId(v.id)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left text-sm",
+                      "flex w-full items-center gap-3 rounded-md border p-3 text-left text-sm transition-colors",
                       v.id === active.id
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-primary/50",
@@ -183,7 +236,7 @@ function ChapterPage() {
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="block text-xs text-muted-foreground">Video {i + 1}</span>
-                      <span className="block font-semibold">{v.title}</span>
+                      <span className="block font-medium">{v.title}</span>
                     </span>
                   </button>
                 </li>
@@ -191,18 +244,17 @@ function ChapterPage() {
             </ol>
           </div>
         )}
-      </section>
+      </Panel>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <section
-          className={cn(
-            "rounded-3xl border-2 border-border bg-card p-5 shadow-chunky",
-            preview && "md:col-span-2",
-          )}
+        <Panel
+          className={cn(preview && "md:col-span-2")}
+          title={
+            <span className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-success" /> Notes
+            </span>
+          }
         >
-          <h2 className="flex items-center gap-2 text-lg font-bold">
-            <FileText className="h-5 w-5 text-success" /> Notes
-          </h2>
           {isWebLink(notes) ? (
             <>
               {preview && (
@@ -211,47 +263,49 @@ function ChapterPage() {
                   title={`Chapter ${c.id} notes`}
                   loading="lazy"
                   allow="autoplay"
-                  className="mt-3 h-[70vh] w-full rounded-xl border-2 border-border bg-muted"
+                  className="h-[70vh] w-full rounded-md border border-border bg-muted"
                 />
               )}
               <a
                 href={notes}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary underline"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline"
               >
                 Open notes in Google Drive <ExternalLink className="h-4 w-4" />
               </a>
               {preview && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  If the notes don&apos;t show, sign in to Google with your school account.
+                  If the notes do not appear, sign in to Google with your school account.
                 </p>
               )}
             </>
           ) : notes ? (
-            <Button className="mt-3" variant="outline" onClick={() => void openOldPdf(notes)}>
+            <Button variant="outline" onClick={() => void openOldPdf(notes)}>
               Open chapter notes (PDF)
             </Button>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">No notes uploaded yet.</p>
+            <p className="text-sm text-muted-foreground">No notes have been added yet.</p>
           )}
-        </section>
-        <section className="rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="flex items-center gap-2 text-lg font-bold">
-            <ListChecks className="h-5 w-5 text-gold-deep" /> Exercise
-          </h2>
+        </Panel>
+        <Panel
+          title={
+            <span className="flex items-center gap-2">
+              <ListChecks className="h-4 w-4 text-gold-deep" /> Exercise
+            </span>
+          }
+        >
           {materials?.quiz ? (
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{materials.quiz}</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">{materials.quiz}</p>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">No exercise added yet.</p>
+            <p className="text-sm text-muted-foreground">No exercise has been added yet.</p>
           )}
-        </section>
+        </Panel>
       </div>
 
       {quizzes.length > 0 && (
-        <section className="mt-6 rounded-3xl border-2 border-border bg-card p-5 shadow-chunky">
-          <h2 className="text-lg font-bold">My quiz results for this chapter</h2>
-          <ul className="mt-3 divide-y divide-border">
+        <Panel className="mt-6" title="My quiz results for this chapter">
+          <ul className="divide-y divide-border">
             {quizzes.map((q) => {
               const p = percent(q);
               return (
@@ -259,11 +313,13 @@ function ChapterPage() {
                   key={`${q.term}-${q.label}`}
                   className="flex items-center justify-between py-2 text-sm"
                 >
-                  <span className="font-semibold">
+                  <span className="font-medium">
                     {q.label.toUpperCase().startsWith("CQ") ? "Chapter quiz" : "Short quiz"}{" "}
                     {q.label}
                   </span>
-                  <span className={cn("rounded-full px-3 py-0.5 font-bold", scoreTone(p))}>
+                  <span
+                    className={cn("rounded px-2 py-0.5 font-semibold tabular-nums", scoreTone(p))}
+                  >
                     {q.absent
                       ? "Absent"
                       : q.score === null
@@ -274,7 +330,7 @@ function ChapterPage() {
               );
             })}
           </ul>
-        </section>
+        </Panel>
       )}
     </AppShell>
   );
