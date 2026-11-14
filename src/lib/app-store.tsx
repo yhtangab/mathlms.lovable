@@ -1,4 +1,13 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +15,15 @@ import type { Database } from "@/integrations/supabase/types";
 import { DEMO_EMAIL, type ScoreSource, type Student } from "./data";
 import { chapterScoresFromAssessments, type Assessment } from "./assessments";
 import type { Homework } from "./homework";
+import {
+  MOCK_COSMETICS,
+  MOCK_STUDENTS,
+  MOCK_VOICE_COUNTS,
+  isMockStudentId,
+  mockSeedLedger,
+} from "./gamification/mock-data";
+import { attachGame, buildGameProfiles, countVoiceMarks, ledgerKey } from "./gamification/rules";
+import { DEFAULT_SYSTEM_CONFIG, type LedgerEntry, type SystemConfig } from "./gamification/types";
 
 type PublicTables = Database["public"]["Tables"];
 type AssessmentRow = PublicTables["assessment_scores"]["Row"];
@@ -21,6 +39,8 @@ const CHAPTER_COUNT = 7;
 const PAGE_SIZE = 1000;
 const MARK_LOG_LIMIT = 300;
 const REDEMPTION_LIMIT = 500;
+/** Keeps the previewed student while the teacher moves between pages or refreshes the tab. */
+const PREVIEW_STORAGE_KEY = "hlc-preview-student";
 
 /** Supabase caps how many rows one request returns, so keep paging until a page comes back empty. */
 async function fetchAllAssessments(): Promise<AssessmentRow[]> {
@@ -113,6 +133,27 @@ async function loadHomework(): Promise<HomeworkData> {
   return { error: null, rows: data ?? [] };
 }
 
+interface ConfigData {
+  config: SystemConfig;
+  error: string | null;
+}
+
+/** The 2x event switch is optional too: before 0009 is run, the event simply stays off. */
+async function loadSystemConfig(): Promise<ConfigData> {
+  const { data, error } = await supabase
+    .from("system_config")
+    .select("double_mc_event_active")
+    .eq("id", true)
+    .maybeSingle();
+  if (error) {
+    return {
+      config: DEFAULT_SYSTEM_CONFIG,
+      error: `The 2x Math Coins event switch is not set up yet (${error.message}). Run supabase/sql/0009_system_config.sql in the Supabase SQL Editor.`,
+    };
+  }
+  return { config: { isDoubleMCEventActive: data?.double_mc_event_active === true }, error: null };
+}
+
 function toAssessment(row: AssessmentRow): Assessment {
   return {
     term: row.term,
@@ -128,7 +169,10 @@ function toAssessment(row: AssessmentRow): Assessment {
 
 interface Store {
   session: { email: string; name: string } | null;
+  /** The role the pages should render for. While a teacher previews, this is "student". */
   role: "student" | "teacher";
+  /** The signed-in account's own role, which does not change during a preview. */
+  actualRole: "student" | "teacher";
   students: Student[];
   me: Student;
   ready: boolean;
@@ -143,6 +187,19 @@ interface Store {
   coinsError: string | null;
   homework: Homework[];
   homeworkError: string | null;
+  /** True while a teacher is viewing the site as a student. */
+  isPreview: boolean;
+  /** True while previewing: student pages must not save anything. */
+  readOnly: boolean;
+  /** Whether the previewed student is from the class list or the sandbox. */
+  previewSource: "live" | "mock" | null;
+  startPreview: (studentId: string) => void;
+  exitPreview: () => void;
+  /** Sandbox students for previews (teachers only; never saved). */
+  mockStudents: Student[];
+  systemConfig: SystemConfig;
+  configError: string | null;
+  setDoubleMcEvent: (active: boolean) => Promise<void>;
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
 }
@@ -155,7 +212,30 @@ const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const qc = useQueryClient();
+  // Rewards worked out in this tab so far. They keep the 2x setting they were given with,
+  // so switching the event on later does not double rewards that were already shown.
+  const liveLedger = useRef(new Map<string, LedgerEntry>());
+  const liveLedgerSeeded = useRef(false);
+
+  const rememberPreview = useCallback((id: string | null) => {
+    setPreviewId(id);
+    try {
+      if (id === null) window.sessionStorage.removeItem(PREVIEW_STORAGE_KEY);
+      else window.sessionStorage.setItem(PREVIEW_STORAGE_KEY, id);
+    } catch {
+      // Storage can be blocked; the preview then only lasts until the tab is refreshed.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      setPreviewId(window.sessionStorage.getItem(PREVIEW_STORAGE_KEY));
+    } catch {
+      // Storage can be blocked; start without a preview.
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -170,6 +250,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
       if (event === "SIGNED_OUT") {
         setUser(null);
+        liveLedger.current.clear();
+        liveLedgerSeeded.current = false;
         qc.clear();
       } else {
         setHydrated(false);
@@ -204,6 +286,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         chapterVideos,
         coins,
         homeworkData,
+        configData,
       ] = await Promise.all([
         supabase.from("user_roles").select("role"),
         supabase.from("students").select("*"),
@@ -224,6 +307,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         supabase.from("chapter_videos").select("*").order("chapter").order("position"),
         loadCoinData(),
         loadHomework(),
+        loadSystemConfig(),
       ]);
       for (const r of [roles, roster, scores, markLog, content, syncs, chapterVideos]) {
         if (r.error) throw r.error;
@@ -324,11 +408,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
         coinsError: coins.error,
         homework: homeworkData.rows,
         homeworkError: homeworkData.error,
+        systemConfig: configData.config,
+        configError: configData.error,
       };
     },
   });
 
-  const students = user ? (query.data?.students ?? []) : [];
+  const data = query.data;
+  const actualRole: Store["role"] = data?.role ?? "student";
+  const doubleEvent = data?.systemConfig.isDoubleMCEventActive ?? false;
+  const systemConfig = useMemo<SystemConfig>(
+    () => ({ isDoubleMCEventActive: doubleEvent }),
+    [doubleEvent],
+  );
+
+  // Ranks need the whole set, which only a teacher's account can read, so game profiles for
+  // real students are only worked out on teacher accounts. Rewards are not saved yet, so they
+  // are shown but not added to the spendable balance.
+  const liveStudents = useMemo(() => {
+    if (!data || data.role !== "teacher" || data.students.length === 0) {
+      return data?.students ?? [];
+    }
+    // The first run treats everything already in the sheet as history, given at 1x.
+    const firstRun = !liveLedgerSeeded.current;
+    const { profiles, added } = buildGameProfiles({
+      students: data.students,
+      config: firstRun ? DEFAULT_SYSTEM_CONFIG : systemConfig,
+      ledger: [...liveLedger.current.values()],
+      voiceCounts: countVoiceMarks(data.markLog),
+      rewardsSpendable: false,
+    });
+    for (const e of added) liveLedger.current.set(ledgerKey(e), e);
+    liveLedgerSeeded.current = true;
+    return data.students.map((s) => attachGame(s, profiles));
+  }, [data, systemConfig]);
+
+  const mockStudents = useMemo(() => {
+    if (actualRole !== "teacher") return [];
+    const { profiles } = buildGameProfiles({
+      students: MOCK_STUDENTS,
+      config: systemConfig,
+      ledger: mockSeedLedger(),
+      cosmetics: MOCK_COSMETICS,
+      voiceCounts: MOCK_VOICE_COUNTS,
+      // Kept out of the balance like real rewards, so the coin chip and the pages agree.
+      rewardsSpendable: false,
+    });
+    return MOCK_STUDENTS.map((s) => attachGame(s, profiles));
+  }, [actualRole, systemConfig]);
+
+  const previewStudent =
+    actualRole === "teacher" && previewId !== null
+      ? (liveStudents.find((s) => s.id === previewId) ??
+        mockStudents.find((s) => s.id === previewId) ??
+        null)
+      : null;
+
+  // Forget a preview that no longer matches anyone (for example after signing in as a student).
+  useEffect(() => {
+    if (data && previewId !== null && previewStudent === null) rememberPreview(null);
+  }, [data, previewId, previewStudent, rememberPreview]);
+
+  const students = user ? liveStudents : [];
   const metaName: unknown = user?.user_metadata?.["full_name"];
   const fallbackMe: Student = {
     id: "",
@@ -346,29 +487,71 @@ export function AppProvider({ children }: { children: ReactNode }) {
     coinsSpent: 0,
     completedVideos: [],
   };
-  const me = students.find((s) => s.userId === user?.id) ?? fallbackMe;
+  const me = previewStudent ?? students.find((s) => s.userId === user?.id) ?? fallbackMe;
+  const isPreview = previewStudent !== null;
+
+  const setDoubleMcEvent = async (active: boolean) => {
+    if (actualRole !== "teacher") {
+      throw new Error("Only teacher accounts can change the 2x Math Coins event");
+    }
+    const { data: rows, error } = await supabase
+      .from("system_config")
+      .update({
+        double_mc_event_active: active,
+        updated_at: new Date().toISOString(),
+        updated_by: user?.id ?? null,
+      })
+      .eq("id", true)
+      .select("id");
+    if (error) throw new Error(error.message);
+    if (!rows || rows.length === 0) {
+      throw new Error(
+        "The 2x Math Coins event switch was not found. Run supabase/sql/0009_system_config.sql in the Supabase SQL Editor.",
+      );
+    }
+    await query.refetch();
+  };
 
   return (
     <Ctx.Provider
       value={{
         session: user ? { email: user.email ?? "", name: me.name } : null,
-        role: query.data?.role ?? "student",
+        role: isPreview ? "student" : actualRole,
+        actualRole,
         students,
         me,
         ready: hydrated && (!user || !query.isPending),
         error: query.error?.message ?? null,
-        content: query.data?.content ?? [],
-        videos: query.data?.videos ?? [],
-        lastSync: query.data?.lastSync ?? null,
-        markLog: query.data?.markLog ?? [],
-        rewards: query.data?.rewards ?? [],
-        redemptions: query.data?.redemptions ?? [],
-        coinsError: query.data?.coinsError ?? null,
-        homework: query.data?.homework ?? [],
-        homeworkError: query.data?.homeworkError ?? null,
+        content: data?.content ?? [],
+        videos: data?.videos ?? [],
+        lastSync: data?.lastSync ?? null,
+        markLog: data?.markLog ?? [],
+        rewards: data?.rewards ?? [],
+        redemptions: data?.redemptions ?? [],
+        coinsError: data?.coinsError ?? null,
+        homework: data?.homework ?? [],
+        homeworkError: data?.homeworkError ?? null,
+        isPreview,
+        readOnly: isPreview,
+        previewSource: previewStudent
+          ? isMockStudentId(previewStudent.id)
+            ? "mock"
+            : "live"
+          : null,
+        startPreview: (studentId) => {
+          if (actualRole === "teacher") rememberPreview(studentId);
+        },
+        exitPreview: () => rememberPreview(null),
+        mockStudents,
+        systemConfig,
+        configError: data?.configError ?? null,
+        setDoubleMcEvent,
         refresh: () => query.refetch(),
         logout: async () => {
+          rememberPreview(null);
           await supabase.auth.signOut();
+          liveLedger.current.clear();
+          liveLedgerSeeded.current = false;
           qc.clear();
           setUser(null);
         },

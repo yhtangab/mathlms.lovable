@@ -56,7 +56,7 @@ export const Route = createFileRoute("/_authenticated/courses/$chapter")({
 
 function ChapterPage() {
   const { chapter } = Route.useParams();
-  const { me, role, videos, content, homework, refresh } = useApp();
+  const { me, role, videos, content, homework, refresh, readOnly } = useApp();
   const c = CHAPTERS.find((x) => String(x.id) === chapter);
   const list = videos.filter((v) => v.chapter === c?.id);
   const done = (id: string) => Boolean(me.completedVideos?.includes(id));
@@ -82,7 +82,8 @@ function ChapterPage() {
   const st = chapterStatus(score, idx, me.scores);
   const S = STATUS[st];
   const watched = list.filter((v) => done(v.id)).length;
-  const canEarn = role === "student" && Boolean(me.id);
+  // A teacher previewing the student site watches without earning or saving anything.
+  const canEarn = role === "student" && Boolean(me.id) && !readOnly;
   const quizzes = (me.assessments ?? []).filter(
     (a) =>
       a.kind === "item" && new RegExp(`^(SQ|CQ)\\s*${c.id}(\\.\\d+)?$`, "i").test(a.label.trim()),

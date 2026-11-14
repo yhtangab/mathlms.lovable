@@ -442,6 +442,27 @@ export type Database = {
           },
         ];
       };
+      system_config: {
+        Row: {
+          double_mc_event_active: boolean;
+          id: boolean;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          double_mc_event_active?: boolean;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          double_mc_event_active?: boolean;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       user_roles: {
         Row: {
           id: string;

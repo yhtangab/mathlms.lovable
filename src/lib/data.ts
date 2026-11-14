@@ -1,4 +1,5 @@
 import type { Assessment } from "./assessments";
+import type { GameProfile } from "./gamification/types";
 
 export const CHAPTERS = [
   { id: 1, title: "Approximation and Errors", short: "Approx. & Errors", emoji: "🎯" },
@@ -47,6 +48,11 @@ export interface Student {
   lastMonthFormRank: number;
   xp: number;
   streak: number;
+  /**
+   * Game layer: term totals, rewards, EXP, ranks and cosmetics, worked out by
+   * src/lib/gamification/rules.ts. Only filled in where the whole set can be read.
+   */
+  game?: GameProfile;
 }
 
 export function average(s: Student) {

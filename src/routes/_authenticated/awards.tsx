@@ -51,7 +51,7 @@ function coins(n: number) {
 }
 
 function StudentAwards() {
-  const { me, rewards, redemptions, markLog, refresh, coinsError } = useApp();
+  const { me, rewards, redemptions, markLog, refresh, coinsError, readOnly } = useApp();
   const [confirming, setConfirming] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const balance = coinBalance(me);
@@ -144,7 +144,11 @@ function StudentAwards() {
                   </p>
                 )}
                 <div className="mt-4">
-                  {next ? (
+                  {readOnly ? (
+                    <Button disabled variant="outline" className="w-full">
+                      Preview only
+                    </Button>
+                  ) : next ? (
                     <Button disabled variant="outline" className="w-full">
                       Available again {formatDate(next)}
                     </Button>

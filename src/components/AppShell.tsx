@@ -1,55 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import {
-  BookOpen,
-  CheckCircle2,
-  Circle,
-  ClipboardList,
-  Dices,
-  Gift,
-  GraduationCap,
-  LayoutDashboard,
-  LogOut,
-  PlayCircle,
-  Trophy,
-  Upload,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { CheckCircle2, Circle, GraduationCap, LogOut, PlayCircle } from "lucide-react";
+import { GlobalBars } from "@/components/GlobalBars";
 import { useApp } from "@/lib/app-store";
 import { coinBalance } from "@/lib/coins";
+import { STUDENT_NAV, TEACHER_NAV, navKey, visibleNav, type NavItem } from "@/lib/nav";
 import { TONES, toneForPath } from "@/lib/tones";
 import { cn } from "@/lib/utils";
-
-interface NavLink {
-  to:
-    | "/dashboard"
-    | "/courses"
-    | "/homework"
-    | "/awards"
-    | "/teacher"
-    | "/activity"
-    | "/upload"
-    | "/leaderboard";
-  label: string;
-  icon: LucideIcon;
-}
-
-const STUDENT_LINKS: NavLink[] = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/courses", label: "Chapters", icon: BookOpen },
-  { to: "/homework", label: "Homework", icon: ClipboardList },
-  { to: "/awards", label: "Awards", icon: Gift },
-];
-
-const TEACHER_LINKS: NavLink[] = [
-  { to: "/teacher", label: "Analytics", icon: Users },
-  { to: "/homework", label: "Homework", icon: ClipboardList },
-  { to: "/activity", label: "Class activity", icon: Dices },
-  { to: "/upload", label: "Content", icon: Upload },
-  { to: "/awards", label: "Awards", icon: Gift },
-  { to: "/leaderboard", label: "Rankings", icon: Trophy },
-];
 
 /** The student's Math Coins balance, shown in the top bar. */
 function CoinChip({ amount }: { amount: number }) {
@@ -71,12 +28,100 @@ function CoinChip({ amount }: { amount: number }) {
   );
 }
 
+/** One entry in the desktop navigation rail. */
+function RailItem({ item }: { item: NavItem }) {
+  if (item.status === "soon") {
+    return (
+      <span
+        aria-disabled="true"
+        title={`${item.label} is coming soon`}
+        className="flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-bold leading-tight text-nav-foreground/45"
+      >
+        <span className="grid h-10 w-10 place-items-center rounded-xl border-2 border-dashed border-nav-foreground/25">
+          <item.icon className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <span>{item.label}</span>
+        <span className="rounded-full bg-nav-foreground/10 px-1.5 text-[10px] font-semibold">
+          Soon
+        </span>
+      </span>
+    );
+  }
+  const tone = TONES[toneForPath(item.to)];
+  return (
+    <Link
+      to={item.to}
+      className="group flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-bold leading-tight"
+    >
+      {({ isActive }) => (
+        <>
+          <span
+            className={cn(
+              "grid h-10 w-10 place-items-center rounded-xl transition-transform group-hover:-translate-y-0.5",
+              isActive ? tone.solid : cn(tone.dim, "text-nav-foreground"),
+            )}
+          >
+            <item.icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span
+            className={
+              isActive
+                ? "text-nav-foreground"
+                : "text-nav-foreground/70 group-hover:text-nav-foreground"
+            }
+          >
+            {item.label}
+          </span>
+        </>
+      )}
+    </Link>
+  );
+}
+
+/** One pill in the mobile navigation strip. */
+function PillItem({ item }: { item: NavItem }) {
+  if (item.status === "soon") {
+    return (
+      <span
+        aria-disabled="true"
+        title={`${item.label} is coming soon`}
+        className="flex shrink-0 items-center gap-1.5 rounded-full border border-dashed border-nav-foreground/30 px-3.5 py-1.5 text-sm font-bold text-nav-foreground/45"
+      >
+        <item.icon className="h-4 w-4" aria-hidden="true" />
+        {item.label}
+      </span>
+    );
+  }
+  const tone = TONES[toneForPath(item.to)];
+  return (
+    <Link to={item.to} className="shrink-0">
+      {({ isActive }) => (
+        <span
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-bold",
+            isActive ? tone.flat : "bg-white/10 text-nav-foreground/85",
+          )}
+        >
+          <item.icon className="h-4 w-4" aria-hidden="true" />
+          {item.label}
+        </span>
+      )}
+    </Link>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
-  const { session, role, logout, ready, error, me } = useApp();
+  const { session, role, logout, ready, error, me, isPreview } = useApp();
   const navigate = useNavigate();
-  const links = role === "student" ? STUDENT_LINKS : TEACHER_LINKS;
+  const items = visibleNav(role === "student" ? STUDENT_NAV : TEACHER_NAV, isPreview);
   const home = role === "teacher" ? "/teacher" : "/dashboard";
-  const context = role === "teacher" ? "Teacher" : me.id ? `${me.set}` : "Student";
+  const context = isPreview
+    ? `${me.set} student preview`
+    : role === "teacher"
+      ? "Teacher"
+      : me.id
+        ? me.set
+        : "Student";
   const showCoins = role === "student" && Boolean(me.id);
   const coins = coinBalance(me);
 
@@ -98,38 +143,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
         </Link>
         <nav aria-label="Main" className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-1">
-          {links.map((l) => {
-            const tone = TONES[toneForPath(l.to)];
-            return (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="group flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-bold leading-tight"
-              >
-                {({ isActive }) => (
-                  <>
-                    <span
-                      className={cn(
-                        "grid h-10 w-10 place-items-center rounded-xl transition-transform group-hover:-translate-y-0.5",
-                        isActive ? tone.solid : cn(tone.dim, "text-nav-foreground"),
-                      )}
-                    >
-                      <l.icon className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <span
-                      className={
-                        isActive
-                          ? "text-nav-foreground"
-                          : "text-nav-foreground/70 group-hover:text-nav-foreground"
-                      }
-                    >
-                      {l.label}
-                    </span>
-                  </>
-                )}
-              </Link>
-            );
-          })}
+          {items.map((item) => (
+            <RailItem key={navKey(item)} item={item} />
+          ))}
         </nav>
         <button
           type="button"
@@ -142,6 +158,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           Sign out
         </button>
       </aside>
+
+      <GlobalBars />
 
       <header className="sticky top-0 z-30 bg-nav text-nav-foreground md:hidden">
         <div className="flex items-center gap-3 px-4 py-2.5">
@@ -164,24 +182,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
         <nav aria-label="Main" className="flex gap-1.5 overflow-x-auto px-3 pb-3">
-          {links.map((l) => {
-            const tone = TONES[toneForPath(l.to)];
-            return (
-              <Link key={l.to} to={l.to} className="shrink-0">
-                {({ isActive }) => (
-                  <span
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-bold",
-                      isActive ? tone.flat : "bg-white/10 text-nav-foreground/85",
-                    )}
-                  >
-                    <l.icon className="h-4 w-4" aria-hidden="true" />
-                    {l.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+          {items.map((item) => (
+            <PillItem key={navKey(item)} item={item} />
+          ))}
         </nav>
       </header>
 
