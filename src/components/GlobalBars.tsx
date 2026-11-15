@@ -1,11 +1,13 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Eye, X } from "lucide-react";
+import { Eye, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useApp } from "@/lib/app-store";
 import { sortByClass, type MathSet, type Student } from "@/lib/data";
+import { publishGameData } from "@/lib/game.functions";
 import { cn } from "@/lib/utils";
 
 const SETS: MathSet[] = ["S2M3", "S2M5"];
@@ -102,6 +104,7 @@ export function TeacherPreviewBar() {
         ))}
       </select>
       <DoubleMcSwitch />
+      {isPreview ? null : <PublishButton />}
       {isPreview ? (
         <Button size="sm" variant="secondary" onClick={exit}>
           <X /> Exit preview
@@ -150,6 +153,50 @@ function PreviewStats({ student }: { student: Student }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+/** Publishes ranks, charts and leaderboards for students (also done after every sheet sync). */
+function PublishButton() {
+  const { gamePublishedAt, gameError, refresh } = useApp();
+  const publish = useServerFn(publishGameData);
+  const [busy, setBusy] = useState(false);
+
+  const run = async () => {
+    setBusy(true);
+    try {
+      const report = await publish();
+      await refresh();
+      toast.success(
+        `Published for ${report.students} students${report.newRewards ? `, ${report.newRewards} new rewards` : ""}`,
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not publish game data");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (gameError) {
+    return (
+      <p className="text-xs font-semibold text-destructive" title={gameError}>
+        Game data: run 0010_game_data.sql first
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button size="sm" variant="outline" disabled={busy} onClick={() => void run()}>
+        <RefreshCw className={cn(busy && "animate-spin")} />{" "}
+        {busy ? "Publishing…" : "Publish game data"}
+      </Button>
+      <span className="text-xs text-muted-foreground">
+        {gamePublishedAt
+          ? `Last published ${new Date(gamePublishedAt).toLocaleString("en-HK", { dateStyle: "medium", timeStyle: "short" })}`
+          : "Not published yet"}
+      </span>
+    </div>
   );
 }
 

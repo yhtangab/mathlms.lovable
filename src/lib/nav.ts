@@ -23,7 +23,8 @@ export type LiveRoute =
   | "/teacher"
   | "/activity"
   | "/upload"
-  | "/leaderboard";
+  | "/leaderboard"
+  | "/profile";
 
 /**
  * A navigation entry. "soon" entries are pages planned for the next steps: real students
@@ -37,7 +38,7 @@ export const STUDENT_NAV: NavItem[] = [
   { status: "live", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { status: "live", to: "/courses", label: "Chapters", icon: BookOpen },
   { status: "live", to: "/homework", label: "Homework", icon: ClipboardList },
-  { status: "soon", path: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { status: "live", to: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { status: "soon", path: "/mistake-vault", label: "Mistake Vault", icon: Archive },
   { status: "soon", path: "/badges", label: "Badges", icon: Medal },
   { status: "soon", path: "/shop", label: "Shop", icon: Store },

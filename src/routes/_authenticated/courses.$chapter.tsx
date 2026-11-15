@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
 import { ChapterVideoPlayer } from "@/components/ChapterVideoPlayer";
+import { SelfCheckPanel } from "@/components/game/SelfCheckPanel";
 import { PageHeader, Panel, StatCard } from "@/components/PageParts";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, chapterStatus } from "@/lib/data";
@@ -311,6 +312,8 @@ function ChapterPage() {
           )}
         </Panel>
       </div>
+
+      <SelfCheckPanel chapter={c.id} />
 
       {quizzes.length > 0 && (
         <Panel tone="grape" className="mt-6" title="My quiz results for this chapter">

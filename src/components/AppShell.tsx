@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { CheckCircle2, Circle, GraduationCap, LogOut, PlayCircle } from "lucide-react";
 import { GlobalBars } from "@/components/GlobalBars";
+import { AvatarBadge, FrameStyles, TitleTag } from "@/components/game/AvatarBadge";
 import { useApp } from "@/lib/app-store";
 import { coinBalance } from "@/lib/coins";
 import { STUDENT_NAV, TEACHER_NAV, navKey, visibleNav, type NavItem } from "@/lib/nav";
@@ -24,6 +25,28 @@ function CoinChip({ amount }: { amount: number }) {
       </span>
       <span className="tabular-nums">{amount}</span>
       <span className="sr-only">Math Coins</span>
+    </Link>
+  );
+}
+
+/** The student's avatar, name and title in the top bar; opens the profile page. */
+function ProfileChip({ compact = false }: { compact?: boolean }) {
+  const { me, cosmeticsOf } = useApp();
+  const c = cosmeticsOf(me.id);
+  const firstName = me.name.split(" ")[0] ?? me.name;
+  return (
+    <Link
+      to="/profile"
+      title="My profile"
+      className="flex items-center gap-2 rounded-full py-0.5 pl-0.5 pr-2 transition-transform hover:-translate-y-0.5"
+    >
+      <AvatarBadge avatarId={c.avatarId} frameId={c.equippedFrameId} size="sm" />
+      {compact ? null : (
+        <span className="hidden flex-col leading-tight sm:flex">
+          <span className="text-sm font-bold">{firstName}</span>
+          <TitleTag titleId={c.equippedTitle} className="px-1.5 py-0 text-[10px]" />
+        </span>
+      )}
     </Link>
   );
 }
@@ -132,6 +155,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background md:pl-[88px]">
+      <FrameStyles />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[88px] flex-col bg-nav text-nav-foreground md:flex">
         <Link
           to={home}
@@ -170,6 +194,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             HLC Mathematics
           </Link>
           <div className="ml-auto flex items-center gap-2">
+            {showCoins ? <ProfileChip compact /> : null}
             {showCoins ? <CoinChip amount={coins} /> : null}
             <button
               type="button"
@@ -197,6 +222,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </p>
         <div className="ml-auto flex items-center gap-3">
           {showCoins ? <CoinChip amount={coins} /> : null}
+          {showCoins ? <ProfileChip /> : null}
           <p className="truncate text-sm text-muted-foreground">{session?.email}</p>
         </div>
       </div>

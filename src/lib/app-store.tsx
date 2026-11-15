@@ -4,7 +4,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -22,8 +21,19 @@ import {
   isMockStudentId,
   mockSeedLedger,
 } from "./gamification/mock-data";
-import { attachGame, buildGameProfiles, countVoiceMarks, ledgerKey } from "./gamification/rules";
-import { DEFAULT_SYSTEM_CONFIG, type LedgerEntry, type SystemConfig } from "./gamification/types";
+import { mockSelfChecks } from "./gamification/mock-activity";
+import { cosmeticsFromRow, ledgerFromRow } from "./gamification/publish";
+import { attachGame, countVoiceMarks } from "./gamification/rules";
+import {
+  DEFAULT_COSMETICS,
+  DEFAULT_SYSTEM_CONFIG,
+  type Cosmetics,
+  type LedgerEntry,
+  type Leaderboard,
+  type StudentSnapshot,
+  type SystemConfig,
+} from "./gamification/types";
+import { buildGameWorld, parseLeaderboard, parseSnapshot } from "./gamification/world";
 
 type PublicTables = Database["public"]["Tables"];
 type AssessmentRow = PublicTables["assessment_scores"]["Row"];
@@ -34,6 +44,11 @@ export type ChapterVideo = PublicTables["chapter_videos"]["Row"];
 export type MarkRow = PublicTables["daily_marks"]["Row"];
 export type Reward = PublicTables["rewards"]["Row"];
 export type Redemption = PublicTables["reward_redemptions"]["Row"];
+type RewardRow = PublicTables["game_rewards"]["Row"];
+type CosmeticsRow = PublicTables["student_cosmetics"]["Row"];
+type SnapshotRow = PublicTables["game_snapshots"]["Row"];
+type BoardRow = PublicTables["game_leaderboards"]["Row"];
+type SelfCheckRow = Pick<PublicTables["chapter_self_checks"]["Row"], "student_id" | "objective_id">;
 
 const CHAPTER_COUNT = 7;
 const PAGE_SIZE = 1000;
@@ -154,6 +169,105 @@ async function loadSystemConfig(): Promise<ConfigData> {
   return { config: { isDoubleMCEventActive: data?.double_mc_event_active === true }, error: null };
 }
 
+interface GameData {
+  error: string | null;
+  ledger: LedgerEntry[];
+  cosmetics: CosmeticsRow[];
+  /** Students: their own published snapshot. Teachers work everything out locally. */
+  snapshots: SnapshotRow[];
+  /** Students: the published leaderboards. */
+  boards: BoardRow[];
+  selfChecks: SelfCheckRow[];
+  publishedAt: string | null;
+}
+
+const EMPTY_GAME: Omit<GameData, "error"> = {
+  ledger: [],
+  cosmetics: [],
+  snapshots: [],
+  boards: [],
+  selfChecks: [],
+  publishedAt: null,
+};
+
+async function fetchAllRewards(): Promise<RewardRow[]> {
+  const rows: RewardRow[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("game_rewards")
+      .select("*")
+      .order("student_id")
+      .order("source_key")
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+
+async function fetchAllSelfChecks(): Promise<SelfCheckRow[]> {
+  const rows: SelfCheckRow[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("chapter_self_checks")
+      .select("student_id, objective_id")
+      .order("student_id")
+      .order("objective_id")
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+
+/** Game data is optional too: before 0010 is run, every other page keeps working. */
+async function loadGameData(role: "student" | "teacher"): Promise<GameData> {
+  try {
+    const [ledger, cosmetics, selfChecks, snapshots, boards] = await Promise.all([
+      fetchAllRewards(),
+      supabase.from("student_cosmetics").select("*"),
+      fetchAllSelfChecks(),
+      role === "student"
+        ? supabase.from("game_snapshots").select("*")
+        : Promise.resolve({ data: [] as SnapshotRow[], error: null }),
+      role === "student"
+        ? supabase.from("game_leaderboards").select("*")
+        : supabase
+            .from("game_leaderboards")
+            .select("*")
+            .order("generated_at", { ascending: false })
+            .limit(1),
+    ]);
+    const error = cosmetics.error ?? snapshots.error ?? boards.error;
+    if (error) throw error;
+    const boardRows = boards.data ?? [];
+    const snapshotRows = snapshots.data ?? [];
+    return {
+      error: null,
+      ledger: ledger.flatMap((r) => {
+        const e = ledgerFromRow(r);
+        return e ? [e] : [];
+      }),
+      cosmetics: cosmetics.data ?? [],
+      snapshots: snapshotRows,
+      boards: role === "student" ? boardRows : [],
+      selfChecks,
+      publishedAt: snapshotRows[0]?.generated_at ?? boardRows[0]?.generated_at ?? null,
+    };
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : String((e as { message?: unknown })?.message ?? e);
+    return {
+      ...EMPTY_GAME,
+      error: `Game features are not set up yet (${message}). Run supabase/sql/0010_game_data.sql in the Supabase SQL Editor.`,
+    };
+  }
+}
+
 function toAssessment(row: AssessmentRow): Assessment {
   return {
     term: row.term,
@@ -199,6 +313,18 @@ interface Store {
   mockStudents: Student[];
   systemConfig: SystemConfig;
   configError: string | null;
+  /** The game data the current view should show for `me` (own, previewed or sandbox). */
+  gameSnapshot: StudentSnapshot | null;
+  /** Leaderboards for the current view. Teachers (not previewing) get full rankings. */
+  boards: Leaderboard[];
+  gameError: string | null;
+  /** When game data was last published for students. */
+  gamePublishedAt: string | null;
+  cosmeticsOf: (studentId: string) => Cosmetics;
+  /** Self-check statements ticked by `me`. */
+  selfChecks: string[];
+  /** True for the public demo login, which only ever sees sandbox classmates. */
+  isDemo: boolean;
   setDoubleMcEvent: (active: boolean) => Promise<void>;
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
@@ -214,10 +340,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const qc = useQueryClient();
-  // Rewards worked out in this tab so far. They keep the 2x setting they were given with,
-  // so switching the event on later does not double rewards that were already shown.
-  const liveLedger = useRef(new Map<string, LedgerEntry>());
-  const liveLedgerSeeded = useRef(false);
 
   const rememberPreview = useCallback((id: string | null) => {
     setPreviewId(id);
@@ -250,8 +372,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
       if (event === "SIGNED_OUT") {
         setUser(null);
-        liveLedger.current.clear();
-        liveLedgerSeeded.current = false;
         qc.clear();
       } else {
         setHydrated(false);
@@ -393,6 +513,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const demoIds = new Set(students.filter((s) => s.email === DEMO_EMAIL).map((s) => s.id));
       const hideDemo = role === "teacher" && demoIds.size > 0;
       const allMarks = markLog.data ?? [];
+      const game = await loadGameData(role);
 
       return {
         lastSync: syncs.data?.[0]?.created_at ?? null,
@@ -410,6 +531,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         homeworkError: homeworkData.error,
         systemConfig: configData.config,
         configError: configData.error,
+        game,
       };
     },
   });
@@ -422,40 +544,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [doubleEvent],
   );
 
-  // Ranks need the whole set, which only a teacher's account can read, so game profiles for
-  // real students are only worked out on teacher accounts. Rewards are not saved yet, so they
-  // are shown but not added to the spendable balance.
-  const liveStudents = useMemo(() => {
-    if (!data || data.role !== "teacher" || data.students.length === 0) {
-      return data?.students ?? [];
-    }
-    // The first run treats everything already in the sheet as history, given at 1x.
-    const firstRun = !liveLedgerSeeded.current;
-    const { profiles, added } = buildGameProfiles({
+  const game = data?.game;
+  // Without a saved ledger every reward would be new, so keep everything at 1x until 0010 is run.
+  const gameConfig = game && game.error === null ? systemConfig : DEFAULT_SYSTEM_CONFIG;
+
+  const liveCosmetics = useMemo(
+    () =>
+      new Map<string, Cosmetics>(
+        (game?.cosmetics ?? []).map((r) => [r.student_id, cosmeticsFromRow(r)]),
+      ),
+    [game],
+  );
+  const cosmeticsOf = useCallback(
+    (studentId: string): Cosmetics =>
+      liveCosmetics.get(studentId) ?? MOCK_COSMETICS.get(studentId) ?? DEFAULT_COSMETICS,
+    [liveCosmetics],
+  );
+
+  const ownRecord = data?.students.find((s) => s.userId === user?.id) ?? null;
+  const isDemo = actualRole === "student" && ownRecord?.email === DEMO_EMAIL;
+
+  // Ranks need the whole set, which only a teacher's account can read. Teachers work the game
+  // out in the browser; students read what the teacher last published.
+  const teacherWorld = useMemo(() => {
+    if (!data || data.role !== "teacher" || data.students.length === 0) return null;
+    return buildGameWorld({
       students: data.students,
-      config: firstRun ? DEFAULT_SYSTEM_CONFIG : systemConfig,
-      ledger: [...liveLedger.current.values()],
+      config: gameConfig,
+      ledger: data.game.ledger,
+      cosmetics: liveCosmetics,
       voiceCounts: countVoiceMarks(data.markLog),
       rewardsSpendable: false,
     });
-    for (const e of added) liveLedger.current.set(ledgerKey(e), e);
-    liveLedgerSeeded.current = true;
-    return data.students.map((s) => attachGame(s, profiles));
-  }, [data, systemConfig]);
+  }, [data, gameConfig, liveCosmetics]);
 
-  const mockStudents = useMemo(() => {
-    if (actualRole !== "teacher") return [];
-    const { profiles } = buildGameProfiles({
-      students: MOCK_STUDENTS,
-      config: systemConfig,
-      ledger: mockSeedLedger(),
-      cosmetics: MOCK_COSMETICS,
-      voiceCounts: MOCK_VOICE_COUNTS,
-      // Kept out of the balance like real rewards, so the coin chip and the pages agree.
+  // The sandbox: teachers preview it, and the public demo login plays in it so it never sees
+  // real classmates.
+  const sandboxWorld = useMemo(() => {
+    if (actualRole !== "teacher" && !isDemo) return null;
+    const demo = isDemo && ownRecord ? [ownRecord] : [];
+    const demoVoice = countVoiceMarks(data?.markLog ?? []);
+    return buildGameWorld({
+      students: [...MOCK_STUDENTS, ...demo],
+      config: gameConfig,
+      ledger: [...mockSeedLedger(), ...(isDemo ? (game?.ledger ?? []) : [])],
+      cosmetics: new Map<string, Cosmetics>([...MOCK_COSMETICS, ...liveCosmetics]),
+      voiceCounts: new Map<string, number>([...MOCK_VOICE_COUNTS, ...demoVoice]),
       rewardsSpendable: false,
     });
-    return MOCK_STUDENTS.map((s) => attachGame(s, profiles));
-  }, [actualRole, systemConfig]);
+  }, [actualRole, isDemo, ownRecord, data?.markLog, game, gameConfig, liveCosmetics]);
+
+  const liveStudents = useMemo(() => {
+    const rows = data?.students ?? [];
+    return teacherWorld ? rows.map((s) => attachGame(s, teacherWorld.profiles)) : rows;
+  }, [data, teacherWorld]);
+
+  const mockStudents = useMemo(
+    () =>
+      actualRole === "teacher" && sandboxWorld
+        ? MOCK_STUDENTS.map((s) => attachGame(s, sandboxWorld.profiles))
+        : [],
+    [actualRole, sandboxWorld],
+  );
 
   const previewStudent =
     actualRole === "teacher" && previewId !== null
@@ -463,11 +613,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
         mockStudents.find((s) => s.id === previewId) ??
         null)
       : null;
+  const previewSource: Store["previewSource"] = previewStudent
+    ? isMockStudentId(previewStudent.id)
+      ? "mock"
+      : "live"
+    : null;
 
   // Forget a preview that no longer matches anyone (for example after signing in as a student).
   useEffect(() => {
     if (data && previewId !== null && previewStudent === null) rememberPreview(null);
   }, [data, previewId, previewStudent, rememberPreview]);
+
+  const loadedSnapshot = useMemo(() => {
+    if (actualRole !== "student" || isDemo || !ownRecord) return null;
+    const row = game?.snapshots.find((r) => r.student_id === ownRecord.id);
+    return row ? parseSnapshot(row.payload) : null;
+  }, [actualRole, isDemo, ownRecord, game]);
+
+  const loadedBoards = useMemo(
+    () =>
+      (game?.boards ?? []).flatMap((r) => {
+        const b = parseLeaderboard(r.payload);
+        return b ? [b] : [];
+      }),
+    [game],
+  );
+
+  let gameSnapshot: StudentSnapshot | null = null;
+  let boards: Leaderboard[] = [];
+  if (previewStudent) {
+    const world = previewSource === "mock" ? sandboxWorld : teacherWorld;
+    gameSnapshot = world?.snapshots.get(previewStudent.id) ?? null;
+    boards = world?.boards ?? [];
+  } else if (actualRole === "teacher") {
+    boards = teacherWorld?.fullBoards ?? [];
+  } else if (isDemo && ownRecord) {
+    gameSnapshot = sandboxWorld?.snapshots.get(ownRecord.id) ?? null;
+    boards = sandboxWorld?.boards ?? [];
+  } else {
+    gameSnapshot = loadedSnapshot;
+    boards = loadedBoards;
+  }
 
   const students = user ? liveStudents : [];
   const metaName: unknown = user?.user_metadata?.["full_name"];
@@ -487,8 +673,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     coinsSpent: 0,
     completedVideos: [],
   };
-  const me = previewStudent ?? students.find((s) => s.userId === user?.id) ?? fallbackMe;
+  const baseMe = previewStudent ?? (user ? ownRecord : null) ?? fallbackMe;
+  const me: Student =
+    gameSnapshot && !baseMe.game ? { ...baseMe, game: gameSnapshot.profile } : baseMe;
   const isPreview = previewStudent !== null;
+  const selfChecks = isMockStudentId(me.id)
+    ? mockSelfChecks(me.id)
+    : (game?.selfChecks ?? []).filter((r) => r.student_id === me.id).map((r) => r.objective_id);
 
   const setDoubleMcEvent = async (active: boolean) => {
     if (actualRole !== "teacher") {
@@ -533,11 +724,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         homeworkError: data?.homeworkError ?? null,
         isPreview,
         readOnly: isPreview,
-        previewSource: previewStudent
-          ? isMockStudentId(previewStudent.id)
-            ? "mock"
-            : "live"
-          : null,
+        previewSource,
         startPreview: (studentId) => {
           if (actualRole === "teacher") rememberPreview(studentId);
         },
@@ -546,12 +733,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         systemConfig,
         configError: data?.configError ?? null,
         setDoubleMcEvent,
+        gameSnapshot,
+        boards,
+        gameError: game?.error ?? null,
+        gamePublishedAt: isDemo ? (gameSnapshot?.generatedAt ?? null) : (game?.publishedAt ?? null),
+        cosmeticsOf,
+        selfChecks,
+        isDemo,
         refresh: () => query.refetch(),
         logout: async () => {
           rememberPreview(null);
           await supabase.auth.signOut();
-          liveLedger.current.clear();
-          liveLedgerSeeded.current = false;
           qc.clear();
           setUser(null);
         },

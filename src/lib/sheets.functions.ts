@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { publishGame, type PublishReport } from "./gamification/publish";
 import { parseSetTab, type MathSet, type ParsedStudent } from "./sheet-parse";
 
 const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
@@ -35,6 +36,10 @@ export interface SyncReport {
   syncedAt: string;
   tabs: TabReport[];
   duplicates: string[];
+  /** Ranks, charts and leaderboards published for students after the sync. */
+  game: PublishReport | null;
+  /** Why publishing game data failed; the marks themselves were still saved. */
+  gameError: string | null;
 }
 
 interface SheetGrids {
@@ -404,5 +409,25 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
     });
     if (logError) console.warn("[Google Sheets] Could not record the sync time:", logError.message);
 
-    return { source, students: parsed.length, scores: rows.length, syncedAt, tabs, duplicates };
+    // New marks change ranks and rewards, so publish the game straight away. A failure here
+    // does not undo the sync; the teacher can publish again from the teacher bar.
+    let game: PublishReport | null = null;
+    let gameError: string | null = null;
+    try {
+      game = await publishGame(supabase);
+    } catch (err) {
+      gameError = errorMessage(err);
+      console.warn("[Game] Could not publish game data:", gameError);
+    }
+
+    return {
+      source,
+      students: parsed.length,
+      scores: rows.length,
+      syncedAt,
+      tabs,
+      duplicates,
+      game,
+      gameError,
+    };
   });

@@ -137,3 +137,107 @@ export interface GameProfile extends Cosmetics {
   standings: PublicStanding[];
   rewards: LedgerEntry[];
 }
+
+/** The six areas on the competency radar. */
+export type Strand =
+  "number_algebra" | "geometry" | "mensuration" | "trigonometry" | "data_handling" | "attitude";
+
+export interface RadarAxis {
+  strand: Strand;
+  label: string;
+  /** 0 to 100; null when there is no mark in this area yet. */
+  mine: number | null;
+  setAverage: number | null;
+}
+
+/** "SQ" short quiz, "CQ" chapter quiz, "TT" term test, "TOTAL" term total. */
+export type DistributionKind = "SQ" | "CQ" | "TT" | "TOTAL";
+
+/** How the set did on one assessment, in percentages. Never lists individual students. */
+export interface Distribution {
+  itemId: string;
+  label: string;
+  kind: DistributionKind;
+  term: number;
+  position: number;
+  count: number;
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  mean: number;
+  /** This student's percentage; null when absent or not sat. */
+  mine: number | null;
+}
+
+/** "S2" means both sets of the form together. */
+export type BoardScope = MathSet | "S2";
+export type BoardMetric = "total" | "coursework" | "exp";
+
+export interface LeaderboardEntry {
+  rank: number;
+  studentId: string;
+  name: string;
+  set: MathSet;
+  className: string;
+  classNo: string;
+  score: number;
+}
+
+/**
+ * A leaderboard. In the published version `top` holds ranks 1 to 10 only, and everyone below
+ * appears only as an anonymous code, with no name, score or rank.
+ */
+export interface Leaderboard {
+  id: string;
+  scope: BoardScope;
+  metric: BoardMetric;
+  /** Null for boards that cover the whole year (EXP). */
+  term: 1 | 2 | null;
+  unit: string;
+  top: LeaderboardEntry[];
+  anonymousCodes: number[];
+  rankedCount: number;
+  generatedAt: string;
+}
+
+/** One student's place on one leaderboard. */
+export interface BoardStanding {
+  boardId: string;
+  /** "#1" to "#10", "10+", or "—" when the student has no score on this board. */
+  display: string;
+  /** Only when 1 to 10. */
+  rank: number | null;
+  isTop10: boolean;
+  score: number | null;
+  /** How much more is needed to reach 10th place; null when already in the top 10. */
+  gapToTop10: number | null;
+  /** The code shown on the student's anonymous card when they are below 10th. */
+  anonymousCode: number | null;
+}
+
+export interface Unlocks {
+  frames: string[];
+  titles: string[];
+}
+
+/** Everything one student may see about their own game data, saved by the teacher's publish. */
+export interface StudentSnapshot {
+  version: 1;
+  studentId: string;
+  set: MathSet;
+  generatedAt: string;
+  profile: GameProfile;
+  radar: RadarAxis[];
+  distributions: Distribution[];
+  boards: BoardStanding[];
+  unlocks: Unlocks;
+}
+
+/** A dated thing the student did, for the activity heatmap. */
+export interface ActivityEvent {
+  /** Local date, "YYYY-MM-DD". */
+  date: string;
+  kind: "lesson" | "homework" | "video";
+}

@@ -17,6 +17,7 @@ import { Route as AuthenticatedAwardsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedHomeworkRouteImport } from './routes/_authenticated/homework'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
 import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
@@ -62,6 +63,11 @@ const AuthenticatedLeaderboardRoute =
     path: '/leaderboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
   id: '/teacher',
   path: '/teacher',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/homework': typeof AuthenticatedHomeworkRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/homework': typeof AuthenticatedHomeworkRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/homework': typeof AuthenticatedHomeworkRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
   '/_authenticated/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/homework'
     | '/leaderboard'
+    | '/profile'
     | '/teacher'
     | '/upload'
     | '/courses/$chapter'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/homework'
     | '/leaderboard'
+    | '/profile'
     | '/teacher'
     | '/upload'
     | '/courses/$chapter'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/homework'
     | '/_authenticated/leaderboard'
+    | '/_authenticated/profile'
     | '/_authenticated/teacher'
     | '/_authenticated/upload'
     | '/_authenticated/courses/$chapter'
@@ -233,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/teacher': {
       id: '/_authenticated/teacher'
       path: '/teacher'
@@ -270,6 +289,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHomeworkRoute: typeof AuthenticatedHomeworkRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
   AuthenticatedCoursesChapterRoute: typeof AuthenticatedCoursesChapterRoute
@@ -282,6 +302,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHomeworkRoute: AuthenticatedHomeworkRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
   AuthenticatedCoursesChapterRoute: AuthenticatedCoursesChapterRoute,

@@ -105,6 +105,35 @@ export type Database = {
           },
         ];
       };
+      chapter_self_checks: {
+        Row: {
+          chapter: number;
+          checked_at: string;
+          objective_id: string;
+          student_id: string;
+        };
+        Insert: {
+          chapter: number;
+          checked_at?: string;
+          objective_id: string;
+          student_id: string;
+        };
+        Update: {
+          chapter?: number;
+          checked_at?: string;
+          objective_id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chapter_self_checks_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       chapter_video_completions: {
         Row: {
           chapter: number;
@@ -214,6 +243,109 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "daily_marks_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      game_leaderboards: {
+        Row: {
+          generated_at: string;
+          id: string;
+          metric: string;
+          payload: Json;
+          scope: string;
+          term: number | null;
+        };
+        Insert: {
+          generated_at?: string;
+          id: string;
+          metric: string;
+          payload: Json;
+          scope: string;
+          term?: number | null;
+        };
+        Update: {
+          generated_at?: string;
+          id?: string;
+          metric?: string;
+          payload?: Json;
+          scope?: string;
+          term?: number | null;
+        };
+        Relationships: [];
+      };
+      game_rewards: {
+        Row: {
+          awarded_at: string;
+          base_mc: number;
+          description: string;
+          exp: number;
+          mc: number;
+          multiplier: number;
+          quiz_id: string | null;
+          reason: string;
+          source_key: string;
+          student_id: string;
+        };
+        Insert: {
+          awarded_at?: string;
+          base_mc: number;
+          description?: string;
+          exp?: number;
+          mc: number;
+          multiplier?: number;
+          quiz_id?: string | null;
+          reason: string;
+          source_key: string;
+          student_id: string;
+        };
+        Update: {
+          awarded_at?: string;
+          base_mc?: number;
+          description?: string;
+          exp?: number;
+          mc?: number;
+          multiplier?: number;
+          quiz_id?: string | null;
+          reason?: string;
+          source_key?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_rewards_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      game_snapshots: {
+        Row: {
+          generated_at: string;
+          math_set: string;
+          payload: Json;
+          student_id: string;
+        };
+        Insert: {
+          generated_at?: string;
+          math_set: string;
+          payload: Json;
+          student_id: string;
+        };
+        Update: {
+          generated_at?: string;
+          math_set?: string;
+          payload?: Json;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_snapshots_student_id_fkey";
             columns: ["student_id"];
             isOneToOne: false;
             referencedRelation: "students";
@@ -389,6 +521,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      student_cosmetics: {
+        Row: {
+          avatar_id: string;
+          frame_id: string | null;
+          student_id: string;
+          title_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          avatar_id?: string;
+          frame_id?: string | null;
+          student_id: string;
+          title_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          avatar_id?: string;
+          frame_id?: string | null;
+          student_id?: string;
+          title_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_cosmetics_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       students: {
         Row: {
           class_name: string;
@@ -536,6 +700,10 @@ export type Database = {
       claim_student: { Args: never; Returns: undefined };
       complete_chapter_video: { Args: { _video_id: string }; Returns: boolean };
       complete_video: { Args: { _chapter: number }; Returns: undefined };
+      equip_cosmetics: {
+        Args: { _avatar: string; _frame: string | null; _title: string | null };
+        Returns: undefined;
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -543,6 +711,7 @@ export type Database = {
         };
         Returns: boolean;
       };
+      is_demo_user: { Args: never; Returns: boolean };
       redeem_reward: { Args: { _reward_id: string }; Returns: string };
     };
     Enums: {
