@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Check, Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 const EXP_PER_LEVEL = 1000;
 
 function ProfilePage() {
-  const { role, me, cosmeticsOf, gameSnapshot, readOnly, refresh, gameError } = useApp();
+  const { role, me, cosmeticsOf, gameSnapshot, myUnlocks, readOnly, refresh, gameError } = useApp();
   const saved = cosmeticsOf(me.id);
   const [avatarId, setAvatarId] = useState(avatarById(saved.avatarId).id);
   const [frameId, setFrameId] = useState(frameById(saved.equippedFrameId).id);
@@ -57,8 +57,8 @@ function ProfilePage() {
     );
   }
 
-  const unlockedFrames = new Set([DEFAULT_FRAME_ID, ...(gameSnapshot?.unlocks.frames ?? [])]);
-  const unlockedTitles = new Set(gameSnapshot?.unlocks.titles ?? []);
+  const unlockedFrames = new Set([DEFAULT_FRAME_ID, ...myUnlocks.frames]);
+  const unlockedTitles = new Set(myUnlocks.titles);
   const exp = me.game?.exp ?? me.xp;
   const level = me.game?.level ?? Math.floor(exp / EXP_PER_LEVEL) + 1;
   const changed =
@@ -131,6 +131,14 @@ function ProfilePage() {
           {busy ? "Saving…" : readOnly ? "Preview only" : changed ? "Save profile" : "Saved"}
         </Button>
       </section>
+
+      <p className="mt-4 text-sm text-muted-foreground">
+        Want a locked frame or more titles sooner? Some can be bought in the{" "}
+        <Link to="/shop" className="font-bold text-primary underline">
+          Shop
+        </Link>
+        .
+      </p>
 
       <Panel tone="berry" className="mt-6" title="Avatar">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">

@@ -114,12 +114,26 @@ export const DEFAULT_COSMETICS: Cosmetics = {
   equippedTitle: null,
 };
 
+/**
+ * One term's academic result, every part out of 200:
+ * total = 20% Term Test (TT) + 40% Continuous Assessment (CA, TnA2) + 40% Exam (TnA3).
+ */
+export interface TermResult {
+  term: 1 | 2;
+  tt: number | null;
+  ca: number | null;
+  exam: number | null;
+  /** Null until the term test, CA and exam all have a mark. */
+  total: number | null;
+}
+
 export interface GameProfile extends Cosmetics {
   set: MathSet;
-  /** Term 1 total academic score out of 200 (the term result, not coursework). */
+  /** Term 1 total academic score out of 200; null until TT, CA and exam are all in. */
   t1Total: number | null;
   /** Term 2 total academic score out of 200. */
   t2Total: number | null;
+  termResults: TermResult[];
   /** Balance the student can spend. Includes game rewards only when rewardsSpendable is true. */
   mathCoins: number;
   /** Math Coins earned from game rewards (quiz ranks, most improved, homework streaks). */
@@ -150,8 +164,11 @@ export interface RadarAxis {
   setAverage: number | null;
 }
 
-/** "SQ" short quiz, "CQ" chapter quiz, "TT" term test, "TOTAL" term total. */
-export type DistributionKind = "SQ" | "CQ" | "TT" | "TOTAL";
+/**
+ * "SQ" short quiz, "CQ" chapter quiz, "TT" term test, "CA" continuous assessment,
+ * "EXAM" exam, "TOTAL" term total.
+ */
+export type DistributionKind = "SQ" | "CQ" | "TT" | "CA" | "EXAM" | "TOTAL";
 
 /** How the set did on one assessment, in percentages. Never lists individual students. */
 export interface Distribution {
@@ -173,7 +190,8 @@ export interface Distribution {
 
 /** "S2" means both sets of the form together. */
 export type BoardScope = MathSet | "S2";
-export type BoardMetric = "total" | "coursework" | "exp";
+/** "total" term academic score, "ca" continuous assessment (TnA2), "exp" EXP. */
+export type BoardMetric = "total" | "ca" | "exp";
 
 export interface LeaderboardEntry {
   rank: number;
@@ -224,7 +242,7 @@ export interface Unlocks {
 
 /** Everything one student may see about their own game data, saved by the teacher's publish. */
 export interface StudentSnapshot {
-  version: 1;
+  version: 2;
   studentId: string;
   set: MathSet;
   generatedAt: string;

@@ -8,6 +8,7 @@ import {
   Medal,
   Sparkles,
   Store,
+  Timer,
   Trophy,
   Upload,
   Users,
@@ -24,7 +25,11 @@ export type LiveRoute =
   | "/activity"
   | "/upload"
   | "/leaderboard"
-  | "/profile";
+  | "/profile"
+  | "/shop"
+  | "/badges"
+  | "/mistake-vault"
+  | "/gacha";
 
 /**
  * A navigation entry. "soon" entries are pages planned for the next steps: real students
@@ -39,11 +44,10 @@ export const STUDENT_NAV: NavItem[] = [
   { status: "live", to: "/courses", label: "Chapters", icon: BookOpen },
   { status: "live", to: "/homework", label: "Homework", icon: ClipboardList },
   { status: "live", to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { status: "soon", path: "/mistake-vault", label: "Mistake Vault", icon: Archive },
-  { status: "soon", path: "/badges", label: "Badges", icon: Medal },
-  { status: "soon", path: "/shop", label: "Shop", icon: Store },
-  { status: "soon", path: "/gacha", label: "Gacha", icon: Sparkles },
-  { status: "live", to: "/awards", label: "Awards", icon: Gift },
+  { status: "live", to: "/mistake-vault", label: "Mistake Vault", icon: Archive },
+  { status: "live", to: "/badges", label: "Badges", icon: Medal },
+  { status: "live", to: "/shop", label: "Shop", icon: Store },
+  { status: "live", to: "/gacha", label: "Gacha", icon: Sparkles },
 ];
 
 export const TEACHER_NAV: NavItem[] = [
@@ -51,6 +55,7 @@ export const TEACHER_NAV: NavItem[] = [
   { status: "live", to: "/homework", label: "Homework", icon: ClipboardList },
   { status: "live", to: "/activity", label: "Class activity", icon: Dices },
   { status: "live", to: "/upload", label: "Content", icon: Upload },
+  { status: "live", to: "/mistake-vault", label: "Exam dates", icon: Timer },
   { status: "live", to: "/awards", label: "Awards", icon: Gift },
   { status: "live", to: "/leaderboard", label: "Rankings", icon: Trophy },
 ];

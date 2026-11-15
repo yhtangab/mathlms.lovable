@@ -206,6 +206,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      daily_checkins: {
+        Row: {
+          checkin_date: string;
+          correct: boolean;
+          created_at: string;
+          question_id: string;
+          student_id: string;
+        };
+        Insert: {
+          checkin_date: string;
+          correct: boolean;
+          created_at?: string;
+          question_id: string;
+          student_id: string;
+        };
+        Update: {
+          checkin_date?: string;
+          correct?: boolean;
+          created_at?: string;
+          question_id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "daily_checkins_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       daily_marks: {
         Row: {
           awarded_by: string;
@@ -249,6 +281,33 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      exam_dates: {
+        Row: {
+          created_at: string;
+          id: string;
+          kind: string;
+          math_set: string;
+          starts_at: string;
+          title: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          math_set?: string;
+          starts_at: string;
+          title: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          math_set?: string;
+          starts_at?: string;
+          title?: string;
+        };
+        Relationships: [];
       };
       game_leaderboards: {
         Row: {
@@ -392,6 +451,53 @@ export type Database = {
         };
         Relationships: [];
       };
+      mistakes: {
+        Row: {
+          chapter: number;
+          created_at: string;
+          error_type: string;
+          id: string;
+          image_path: string | null;
+          question: string;
+          solution: string;
+          status: string;
+          student_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          chapter: number;
+          created_at?: string;
+          error_type: string;
+          id?: string;
+          image_path?: string | null;
+          question?: string;
+          solution?: string;
+          status?: string;
+          student_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          chapter?: number;
+          created_at?: string;
+          error_type?: string;
+          id?: string;
+          image_path?: string | null;
+          question?: string;
+          solution?: string;
+          status?: string;
+          student_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mistakes_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           display_name: string;
@@ -520,6 +626,72 @@ export type Database = {
           synced_by?: string;
         };
         Relationships: [];
+      };
+      shop_items: {
+        Row: {
+          active: boolean;
+          description: string;
+          grants: string[];
+          id: string;
+          name: string;
+          position: number;
+          price: number;
+        };
+        Insert: {
+          active?: boolean;
+          description?: string;
+          grants: string[];
+          id: string;
+          name: string;
+          position?: number;
+          price: number;
+        };
+        Update: {
+          active?: boolean;
+          description?: string;
+          grants?: string[];
+          id?: string;
+          name?: string;
+          position?: number;
+          price?: number;
+        };
+        Relationships: [];
+      };
+      shop_purchases: {
+        Row: {
+          item_id: string;
+          price: number;
+          purchased_at: string;
+          student_id: string;
+        };
+        Insert: {
+          item_id: string;
+          price: number;
+          purchased_at?: string;
+          student_id: string;
+        };
+        Update: {
+          item_id?: string;
+          price?: number;
+          purchased_at?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_purchases_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_purchases_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       student_cosmetics: {
         Row: {
@@ -688,7 +860,10 @@ export type Database = {
     Views: {
       student_coin_totals: {
         Row: {
+          checkin_earned: number | null;
           daily_earned: number | null;
+          reward_earned: number | null;
+          shop_spent: number | null;
           spent: number | null;
           student_id: string | null;
           video_earned: number | null;
@@ -697,6 +872,7 @@ export type Database = {
       };
     };
     Functions: {
+      buy_shop_item: { Args: { _item_id: string }; Returns: undefined };
       claim_student: { Args: never; Returns: undefined };
       complete_chapter_video: { Args: { _video_id: string }; Returns: boolean };
       complete_video: { Args: { _chapter: number }; Returns: undefined };
@@ -713,6 +889,7 @@ export type Database = {
       };
       is_demo_user: { Args: never; Returns: boolean };
       redeem_reward: { Args: { _reward_id: string }; Returns: string };
+      submit_daily_checkin: { Args: { _question_id: string; _correct: boolean }; Returns: number };
     };
     Enums: {
       app_role: "teacher" | "student";

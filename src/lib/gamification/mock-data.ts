@@ -1,4 +1,4 @@
-import { chapterScoresFromAssessments, type Assessment } from "@/lib/assessments";
+import { chapterScoresFromAssessments, termSummary, type Assessment } from "@/lib/assessments";
 import type { MathSet, ScoreSource, Student } from "@/lib/data";
 import { buildGameProfiles } from "./rules";
 import {
@@ -277,12 +277,26 @@ function makeStudent(
     }
   }
 
-  const total = () => clamp(Math.round(200 * clamp(ability + (rnd() - 0.5) * 0.08, 0, 1)), 0, 200);
+  // Term results, each out of 200: Term Test (typed), CA = TnA2 (formula), Exam = TnA3 (formula).
+  const outOf200 = () =>
+    clamp(Math.round(200 * clamp(ability + (rnd() - 0.5) * 0.12, 0.05, 1)), 1, 200);
   const daily = clamp(Math.round(10 * ability + (rnd() - 0.5) * 2), 0, 10);
   assessments.push(summaryRow(1, "Daily (10%)", "daily", daily, 10, 50));
-  assessments.push(summaryRow(1, "T1 Total (200)", "other", total(), 200, 55));
   assessments.push(summaryRow(2, "Daily (10%)", "daily", daily, 10, 110));
-  assessments.push(summaryRow(2, "T2 Total (200)", "other", total(), 200, 115));
+  const tt1 = outOf200();
+  const exam1 = outOf200();
+  const tt2 = outOf200();
+  const exam2 = outOf200();
+  assessments.push({ ...summaryRow(1, "1st TT (200)", "term_test", tt1, 200, 52), kind: "item" });
+  assessments.push(
+    summaryRow(1, "T1A2 (200)", "overall", termSummary(assessments, 1).coursework200, 200, 54),
+  );
+  assessments.push(summaryRow(1, "T1A3 (200)", "exam", exam1, 200, 56));
+  assessments.push({ ...summaryRow(2, "2nd TT (200)", "term_test", tt2, 200, 112), kind: "item" });
+  assessments.push(
+    summaryRow(2, "T2A2 (200)", "overall", termSummary(assessments, 2).coursework200, 200, 114),
+  );
+  assessments.push(summaryRow(2, "T2A3 (200)", "exam", exam2, 200, 116));
 
   const scores = chapterScoresFromAssessments(assessments);
   const scoreSources: ScoreSource[] = scores.map((s) => (s === null ? null : "sheet"));

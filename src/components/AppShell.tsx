@@ -4,7 +4,7 @@ import { CheckCircle2, Circle, GraduationCap, LogOut, PlayCircle } from "lucide-
 import { GlobalBars } from "@/components/GlobalBars";
 import { AvatarBadge, FrameStyles, TitleTag } from "@/components/game/AvatarBadge";
 import { useApp } from "@/lib/app-store";
-import { coinBalance } from "@/lib/coins";
+import { displayCoins } from "@/lib/gamification/rules";
 import { STUDENT_NAV, TEACHER_NAV, navKey, visibleNav, type NavItem } from "@/lib/nav";
 import { TONES, toneForPath } from "@/lib/tones";
 import { cn } from "@/lib/utils";
@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils";
 function CoinChip({ amount }: { amount: number }) {
   return (
     <Link
-      to="/awards"
-      title="Math Coins"
+      to="/shop"
+      title="Math Coins: open the Shop"
       className="flex items-center gap-1.5 rounded-full bg-gold/30 py-1 pl-1 pr-3 text-sm font-bold text-gold-deep transition-transform hover:-translate-y-0.5"
     >
       <span
@@ -146,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         ? me.set
         : "Student";
   const showCoins = role === "student" && Boolean(me.id);
-  const coins = coinBalance(me);
+  const coins = displayCoins(me);
 
   const signOut = async () => {
     await logout();

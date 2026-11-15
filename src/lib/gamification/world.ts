@@ -1,10 +1,8 @@
-import { termSummary, type Assessment } from "@/lib/assessments";
 import type { MathSet, Student } from "@/lib/data";
 import { CHAPTER_STRANDS, STRANDS, computeUnlocks } from "./catalog";
 import {
   buildGameProfiles,
   homeworkFromAssessments,
-  itemId,
   releasedHomeworkIds,
   type GameInput,
 } from "./rules";
@@ -22,12 +20,12 @@ import type {
   StudentSnapshot,
 } from "./types";
 
-export const SNAPSHOT_VERSION = 1;
+export const SNAPSHOT_VERSION = 2;
 /** A set's spread for one assessment is only shown when at least this many students sat it. */
 export const MIN_DISTRIBUTION_COUNT = 5;
 export const TOP_N = 10;
 export const BOARD_SCOPES: BoardScope[] = ["S2M3", "S2M5", "S2"];
-export const BOARD_METRICS: BoardMetric[] = ["total", "coursework", "exp"];
+export const BOARD_METRICS: BoardMetric[] = ["total", "ca", "exp"];
 export const BOARD_TERMS: (1 | 2)[] = [1, 2];
 
 const SETS: MathSet[] = ["S2M3", "S2M5"];
@@ -65,21 +63,11 @@ export function quantile(sorted: readonly number[], p: number): number {
 
 /* --------------------------------------------------------------- Metrics */
 
-/** Coursework out of 200 for a term, or null when the term has no coursework marks yet. */
-export function coursework200(list: Assessment[], term: number): number | null {
-  const { parts, coursework200: total } = termSummary(list, term);
-  return parts.some((p) => p.value !== null) ? total : null;
-}
-
-function metricValue(
-  student: Student,
-  profile: GameProfile,
-  metric: BoardMetric,
-  term: 1 | 2,
-): number | null {
+function metricValue(profile: GameProfile, metric: BoardMetric, term: 1 | 2): number | null {
   if (metric === "exp") return profile.exp > 0 ? profile.exp : null;
-  if (metric === "total") return term === 1 ? profile.t1Total : profile.t2Total;
-  return coursework200(student.assessments ?? [], term);
+  const result = profile.termResults.find((r) => r.term === term);
+  if (!result) return null;
+  return metric === "total" ? result.total : result.ca;
 }
 
 /* ------------------------------------------------------------- Radar */
@@ -144,7 +132,7 @@ interface ItemValue {
   percent: number | null;
 }
 
-function studentItemValues(student: Student, profile: GameProfile): ItemValue[] {
+function studentItemValues(profile: GameProfile): ItemValue[] {
   const out: ItemValue[] = profile.quizHistory.map((q) => ({
     itemId: q.quizId,
     label: q.label,
@@ -153,31 +141,34 @@ function studentItemValues(student: Student, profile: GameProfile): ItemValue[] 
     position: q.position,
     percent: q.percent,
   }));
-  for (const a of student.assessments ?? []) {
-    if (a.kind !== "item" || a.category !== "term_test") continue;
-    const full = a.full_marks !== null && a.full_marks > 0 ? a.full_marks : null;
-    out.push({
-      itemId: itemId(a.term, a.label),
-      label: a.label,
+  const parts: {
+    key: "tt" | "ca" | "exam" | "total";
+    kind: DistributionKind;
+    label: (t: number) => string;
+    position: number;
+  }[] = [
+    {
+      key: "tt",
       kind: "TT",
-      term: a.term,
-      position: a.position,
-      percent: !a.absent && a.score !== null && full !== null ? (a.score / full) * 100 : null,
-    });
-  }
-  const totals: [1 | 2, number | null][] = [
-    [1, profile.t1Total],
-    [2, profile.t2Total],
+      label: (t) => `${t === 1 ? "1st" : "2nd"} Term Test`,
+      position: 90000,
+    },
+    { key: "ca", kind: "CA", label: (t) => `CA (T${t}A2)`, position: 90001 },
+    { key: "exam", kind: "EXAM", label: (t) => `Exam (T${t}A3)`, position: 90002 },
+    { key: "total", kind: "TOTAL", label: (t) => `Term ${t} total`, position: 90003 },
   ];
-  for (const [term, total] of totals) {
-    out.push({
-      itemId: `${term}:TOTAL`,
-      label: `Term ${term} total`,
-      kind: "TOTAL",
-      term,
-      position: 100000,
-      percent: total === null ? null : total / 2,
-    });
+  for (const r of profile.termResults) {
+    for (const p of parts) {
+      const value = r[p.key];
+      out.push({
+        itemId: `${r.term}:${p.kind}`,
+        label: p.label(r.term),
+        kind: p.kind,
+        term: r.term,
+        position: p.position,
+        percent: value === null ? null : value / 2,
+      });
+    }
   }
   return out;
 }
@@ -266,7 +257,7 @@ function buildBoard(
   const bTerm = boardTerm(metric, term);
   const id = boardId(scope, metric, bTerm);
   const scored = members
-    .map((m) => ({ ...m, score: metricValue(m.student, m.profile, metric, term) }))
+    .map((m) => ({ ...m, score: metricValue(m.profile, metric, term) }))
     .filter((m): m is typeof m & { score: number } => m.score !== null)
     .sort((a, b) => b.score - a.score || a.student.name.localeCompare(b.student.name));
   const keys = scored.map((m) => Math.round(m.score * 10));
@@ -402,10 +393,7 @@ export function buildGameWorld(input: GameInput): GameWorld {
       );
     }
     const dist = setDistributions(
-      list.map((m) => ({
-        studentId: m.student.id,
-        items: studentItemValues(m.student, m.profile),
-      })),
+      list.map((m) => ({ studentId: m.student.id, items: studentItemValues(m.profile) })),
     );
     for (const [id, d] of dist) distributionsByStudent.set(id, d);
   }

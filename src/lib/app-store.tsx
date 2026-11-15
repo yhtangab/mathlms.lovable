@@ -23,7 +23,9 @@ import {
 } from "./gamification/mock-data";
 import { mockSelfChecks } from "./gamification/mock-activity";
 import { cosmeticsFromRow, ledgerFromRow } from "./gamification/publish";
+import { mergeUnlocks } from "./gamification/catalog";
 import { attachGame, countVoiceMarks } from "./gamification/rules";
+import type { ExamDate, ExamKind } from "./gamification/vault";
 import {
   DEFAULT_COSMETICS,
   DEFAULT_SYSTEM_CONFIG,
@@ -32,6 +34,7 @@ import {
   type Leaderboard,
   type StudentSnapshot,
   type SystemConfig,
+  type Unlocks,
 } from "./gamification/types";
 import { buildGameWorld, parseLeaderboard, parseSnapshot } from "./gamification/world";
 
@@ -49,6 +52,8 @@ type CosmeticsRow = PublicTables["student_cosmetics"]["Row"];
 type SnapshotRow = PublicTables["game_snapshots"]["Row"];
 type BoardRow = PublicTables["game_leaderboards"]["Row"];
 type SelfCheckRow = Pick<PublicTables["chapter_self_checks"]["Row"], "student_id" | "objective_id">;
+export type ShopItem = PublicTables["shop_items"]["Row"];
+type PurchaseRow = PublicTables["shop_purchases"]["Row"];
 
 const CHAPTER_COUNT = 7;
 const PAGE_SIZE = 1000;
@@ -268,6 +273,43 @@ async function loadGameData(role: "student" | "teacher"): Promise<GameData> {
   }
 }
 
+interface ExtrasData {
+  error: string | null;
+  shopItems: ShopItem[];
+  purchases: PurchaseRow[];
+  examDates: ExamDate[];
+}
+
+/** Shop and exam dates are optional too: before 0011 is run, every other page keeps working. */
+async function loadExtras(): Promise<ExtrasData> {
+  const [items, purchases, exams] = await Promise.all([
+    supabase.from("shop_items").select("*").order("position"),
+    supabase.from("shop_purchases").select("*"),
+    supabase.from("exam_dates").select("*").order("starts_at"),
+  ]);
+  const error = items.error ?? purchases.error ?? exams.error;
+  if (error) {
+    return {
+      error: `The Shop, check-ins and Mistake Vault are not set up yet (${error.message}). Run supabase/sql/0011_shop_badges_vault.sql in the Supabase SQL Editor.`,
+      shopItems: [],
+      purchases: [],
+      examDates: [],
+    };
+  }
+  return {
+    error: null,
+    shopItems: items.data ?? [],
+    purchases: purchases.data ?? [],
+    examDates: (exams.data ?? []).map((e) => ({
+      id: e.id,
+      title: e.title,
+      kind: e.kind as ExamKind,
+      set: e.math_set === "S2M3" || e.math_set === "S2M5" ? e.math_set : "ALL",
+      startsAt: e.starts_at,
+    })),
+  };
+}
+
 function toAssessment(row: AssessmentRow): Assessment {
   return {
     term: row.term,
@@ -325,6 +367,13 @@ interface Store {
   selfChecks: string[];
   /** True for the public demo login, which only ever sees sandbox classmates. */
   isDemo: boolean;
+  shopItems: ShopItem[];
+  /** Shop item ids that `me` has bought. */
+  ownedItems: string[];
+  /** Frames and titles `me` may equip: earned plus bought. */
+  myUnlocks: Unlocks;
+  examDates: ExamDate[];
+  extrasError: string | null;
   setDoubleMcEvent: (active: boolean) => Promise<void>;
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
@@ -407,6 +456,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         coins,
         homeworkData,
         configData,
+        extras,
       ] = await Promise.all([
         supabase.from("user_roles").select("role"),
         supabase.from("students").select("*"),
@@ -428,6 +478,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         loadCoinData(),
         loadHomework(),
         loadSystemConfig(),
+        loadExtras(),
       ]);
       for (const r of [roles, roster, scores, markLog, content, syncs, chapterVideos]) {
         if (r.error) throw r.error;
@@ -497,6 +548,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           dailyMarks: total?.daily_earned ?? dailyFromLog.get(s.id) ?? 0,
           videoMarks: ownVideos.length,
           coinsSpent: total?.spent ?? 0,
+          rewardCoins: total?.reward_earned ?? 0,
+          checkinCoins: total?.checkin_earned ?? 0,
+          shopSpent: total?.shop_spent ?? 0,
           completedVideos: ownVideos.flatMap((v) => (v.video_id ? [v.video_id] : [])),
           assessments: own,
           hlcNo: s.hlc_no,
@@ -532,6 +586,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         systemConfig: configData.config,
         configError: configData.error,
         game,
+        extras,
       };
     },
   });
@@ -582,7 +637,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // real classmates.
   const sandboxWorld = useMemo(() => {
     if (actualRole !== "teacher" && !isDemo) return null;
-    const demo = isDemo && ownRecord ? [ownRecord] : [];
+    // The demo account's saved rewards are already in its database balance, so they are
+    // taken out here and counted once, from the sandbox ledger.
+    const demo = isDemo && ownRecord ? [{ ...ownRecord, rewardCoins: 0 }] : [];
     const demoVoice = countVoiceMarks(data?.markLog ?? []);
     return buildGameWorld({
       students: [...MOCK_STUDENTS, ...demo],
@@ -590,7 +647,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ledger: [...mockSeedLedger(), ...(isDemo ? (game?.ledger ?? []) : [])],
       cosmetics: new Map<string, Cosmetics>([...MOCK_COSMETICS, ...liveCosmetics]),
       voiceCounts: new Map<string, number>([...MOCK_VOICE_COUNTS, ...demoVoice]),
-      rewardsSpendable: false,
+      // Sandbox rewards live only here, so they count towards the sandbox balance.
+      rewardsSpendable: true,
     });
   }, [actualRole, isDemo, ownRecord, data?.markLog, game, gameConfig, liveCosmetics]);
 
@@ -677,6 +735,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const me: Student =
     gameSnapshot && !baseMe.game ? { ...baseMe, game: gameSnapshot.profile } : baseMe;
   const isPreview = previewStudent !== null;
+  const extras = data?.extras;
+  const ownedItems = (extras?.purchases ?? [])
+    .filter((p) => p.student_id === me.id)
+    .map((p) => p.item_id);
+  const boughtGrants = (extras?.shopItems ?? [])
+    .filter((i) => ownedItems.includes(i.id))
+    .flatMap((i) => i.grants);
+  const myUnlocks = mergeUnlocks(gameSnapshot?.unlocks ?? null, boughtGrants);
   const selfChecks = isMockStudentId(me.id)
     ? mockSelfChecks(me.id)
     : (game?.selfChecks ?? []).filter((r) => r.student_id === me.id).map((r) => r.objective_id);
@@ -740,6 +806,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         cosmeticsOf,
         selfChecks,
         isDemo,
+        shopItems: extras?.shopItems ?? [],
+        ownedItems,
+        myUnlocks,
+        examDates: extras?.examDates ?? [],
+        extrasError: extras?.error ?? null,
         refresh: () => query.refetch(),
         logout: async () => {
           rememberPreview(null);

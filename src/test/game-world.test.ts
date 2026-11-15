@@ -53,13 +53,15 @@ function student(i: number, set: MathSet, assessments: Assessment[]): Student {
   };
 }
 
-/** 14 students; student i scores 100 - 5i on SQ1.1 and a term total of 190 - 5i. */
+/** 14 students; student i scores 100 - 5i on SQ1.1 and 190 - 5i in the Term Test, CA and Exam. */
 function classOf14(set: MathSet = "S2M3"): Student[] {
   return Array.from({ length: 14 }, (_, k) => {
     const i = k + 1;
     return student(i, set, [
       row("SQ1.1", 100 - 5 * i, 100),
-      row("T1 Total (200)", 190 - 5 * i, 200, { kind: "summary", category: "other", position: 50 }),
+      row("1st TT (200)", 190 - 5 * i, 200, { category: "term_test", position: 50 }),
+      row("T1A2 (200)", 190 - 5 * i, 200, { kind: "summary", category: "overall", position: 51 }),
+      row("T1A3 (200)", 190 - 5 * i, 200, { kind: "summary", category: "exam", position: 52 }),
     ]);
   });
 }

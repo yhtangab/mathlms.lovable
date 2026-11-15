@@ -34,8 +34,8 @@ const SCOPES: { id: BoardScope; label: string }[] = [
 ];
 
 const METRICS: { id: BoardMetric; label: string }[] = [
-  { id: "total", label: "Total score" },
-  { id: "coursework", label: "Coursework" },
+  { id: "total", label: "Academic score" },
+  { id: "ca", label: "Continuous Assessment" },
   { id: "exp", label: "EXP" },
 ];
 
@@ -96,7 +96,7 @@ function LeaderboardPage() {
   const startScope: BoardScope = teacherView ? "S2M3" : me.set;
   const [scope, setScope] = useState<BoardScope>(startScope);
   const [metric, setMetric] = useState<BoardMetric>(
-    (firstBoard(startScope, "total")?.rankedCount ?? 0) > 0 ? "total" : "coursework",
+    (firstBoard(startScope, "total")?.rankedCount ?? 0) > 0 ? "total" : "ca",
   );
   const [term, setTerm] = useState<1 | 2>(1);
 

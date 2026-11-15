@@ -14,10 +14,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedAwardsRouteImport } from './routes/_authenticated/awards'
+import { Route as AuthenticatedBadgesRouteImport } from './routes/_authenticated/badges'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedGachaRouteImport } from './routes/_authenticated/gacha'
 import { Route as AuthenticatedHomeworkRouteImport } from './routes/_authenticated/homework'
 import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
+import { Route as AuthenticatedMistakeVaultRouteImport } from './routes/_authenticated/mistake-vault'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
 import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
@@ -47,9 +51,19 @@ const AuthenticatedAwardsRoute = AuthenticatedAwardsRouteImport.update({
   path: '/awards',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBadgesRoute = AuthenticatedBadgesRouteImport.update({
+  id: '/badges',
+  path: '/badges',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGachaRoute = AuthenticatedGachaRouteImport.update({
+  id: '/gacha',
+  path: '/gacha',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHomeworkRoute = AuthenticatedHomeworkRouteImport.update({
@@ -63,9 +77,20 @@ const AuthenticatedLeaderboardRoute =
     path: '/leaderboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMistakeVaultRoute =
+  AuthenticatedMistakeVaultRouteImport.update({
+    id: '/mistake-vault',
+    path: '/mistake-vault',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
@@ -96,10 +121,14 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/awards': typeof AuthenticatedAwardsRoute
+  '/badges': typeof AuthenticatedBadgesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gacha': typeof AuthenticatedGachaRoute
   '/homework': typeof AuthenticatedHomeworkRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/mistake-vault': typeof AuthenticatedMistakeVaultRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
@@ -110,10 +139,14 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/awards': typeof AuthenticatedAwardsRoute
+  '/badges': typeof AuthenticatedBadgesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gacha': typeof AuthenticatedGachaRoute
   '/homework': typeof AuthenticatedHomeworkRoute
   '/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/mistake-vault': typeof AuthenticatedMistakeVaultRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
@@ -126,10 +159,14 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/awards': typeof AuthenticatedAwardsRoute
+  '/_authenticated/badges': typeof AuthenticatedBadgesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/gacha': typeof AuthenticatedGachaRoute
   '/_authenticated/homework': typeof AuthenticatedHomeworkRoute
   '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
+  '/_authenticated/mistake-vault': typeof AuthenticatedMistakeVaultRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
   '/_authenticated/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
@@ -142,10 +179,14 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/activity'
     | '/awards'
+    | '/badges'
     | '/dashboard'
+    | '/gacha'
     | '/homework'
     | '/leaderboard'
+    | '/mistake-vault'
     | '/profile'
+    | '/shop'
     | '/teacher'
     | '/upload'
     | '/courses/$chapter'
@@ -156,10 +197,14 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/activity'
     | '/awards'
+    | '/badges'
     | '/dashboard'
+    | '/gacha'
     | '/homework'
     | '/leaderboard'
+    | '/mistake-vault'
     | '/profile'
+    | '/shop'
     | '/teacher'
     | '/upload'
     | '/courses/$chapter'
@@ -171,10 +216,14 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/activity'
     | '/_authenticated/awards'
+    | '/_authenticated/badges'
     | '/_authenticated/dashboard'
+    | '/_authenticated/gacha'
     | '/_authenticated/homework'
     | '/_authenticated/leaderboard'
+    | '/_authenticated/mistake-vault'
     | '/_authenticated/profile'
+    | '/_authenticated/shop'
     | '/_authenticated/teacher'
     | '/_authenticated/upload'
     | '/_authenticated/courses/$chapter'
@@ -224,11 +273,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAwardsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/badges': {
+      id: '/_authenticated/badges'
+      path: '/badges'
+      fullPath: '/badges'
+      preLoaderRoute: typeof AuthenticatedBadgesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gacha': {
+      id: '/_authenticated/gacha'
+      path: '/gacha'
+      fullPath: '/gacha'
+      preLoaderRoute: typeof AuthenticatedGachaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/homework': {
@@ -245,11 +308,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mistake-vault': {
+      id: '/_authenticated/mistake-vault'
+      path: '/mistake-vault'
+      fullPath: '/mistake-vault'
+      preLoaderRoute: typeof AuthenticatedMistakeVaultRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shop': {
+      id: '/_authenticated/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof AuthenticatedShopRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/teacher': {
@@ -286,10 +363,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedAwardsRoute: typeof AuthenticatedAwardsRoute
+  AuthenticatedBadgesRoute: typeof AuthenticatedBadgesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGachaRoute: typeof AuthenticatedGachaRoute
   AuthenticatedHomeworkRoute: typeof AuthenticatedHomeworkRoute
   AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
+  AuthenticatedMistakeVaultRoute: typeof AuthenticatedMistakeVaultRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
   AuthenticatedCoursesChapterRoute: typeof AuthenticatedCoursesChapterRoute
@@ -299,10 +380,14 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedAwardsRoute: AuthenticatedAwardsRoute,
+  AuthenticatedBadgesRoute: AuthenticatedBadgesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGachaRoute: AuthenticatedGachaRoute,
   AuthenticatedHomeworkRoute: AuthenticatedHomeworkRoute,
   AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
+  AuthenticatedMistakeVaultRoute: AuthenticatedMistakeVaultRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
   AuthenticatedCoursesChapterRoute: AuthenticatedCoursesChapterRoute,

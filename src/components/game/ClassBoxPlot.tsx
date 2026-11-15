@@ -6,7 +6,9 @@ const FILTERS: { id: DistributionKind | "ALL"; label: string }[] = [
   { id: "ALL", label: "All" },
   { id: "SQ", label: "Short quizzes" },
   { id: "CQ", label: "Chapter quizzes" },
-  { id: "TT", label: "Term tests" },
+  { id: "TT", label: "Term test" },
+  { id: "CA", label: "CA" },
+  { id: "EXAM", label: "Exam" },
   { id: "TOTAL", label: "Term total" },
 ];
 
@@ -54,7 +56,7 @@ export function ClassBoxPlot({
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 text-[10px] font-semibold text-muted-foreground">
+      <div className="mt-4 grid grid-cols-[104px_minmax(0,1fr)] gap-x-3 text-[10px] font-semibold text-muted-foreground">
         <span />
         <div className="relative h-4">
           {[0, 25, 50, 75, 100].map((t) => (
@@ -67,7 +69,7 @@ export function ClassBoxPlot({
 
       <ul className="mt-1 space-y-3">
         {shown.map((d) => (
-          <li key={d.itemId} className="grid grid-cols-[88px_minmax(0,1fr)] items-center gap-x-3">
+          <li key={d.itemId} className="grid grid-cols-[104px_minmax(0,1fr)] items-center gap-x-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-bold">{d.label}</p>
               <p className="text-[11px] text-muted-foreground">

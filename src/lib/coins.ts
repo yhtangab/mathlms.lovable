@@ -42,19 +42,36 @@ export function reasonLabel(id: string): string {
   return REASONS.find((r) => r.id === id)?.label ?? id;
 }
 
-export function coinsEarned(s: Pick<Student, "dailyMarks" | "videoMarks">): number {
-  return (s.dailyMarks ?? 0) + (s.videoMarks ?? 0) * VIDEO_COINS;
+type CoinFields = Pick<
+  Student,
+  "dailyMarks" | "videoMarks" | "coinsSpent" | "rewardCoins" | "checkinCoins" | "shopSpent"
+>;
+
+/** Everything earned: lesson marks, videos, game rewards and daily check-ins. */
+export function coinsEarned(s: Partial<CoinFields>): number {
+  return (
+    (s.dailyMarks ?? 0) +
+    (s.videoMarks ?? 0) * VIDEO_COINS +
+    (s.rewardCoins ?? 0) +
+    (s.checkinCoins ?? 0)
+  );
 }
 
-export function coinBalance(s: Pick<Student, "dailyMarks" | "videoMarks" | "coinsSpent">): number {
-  return coinsEarned(s) - (s.coinsSpent ?? 0);
+/** Everything spent: reward tickets (not rejected) and Shop items. */
+export function coinsSpentTotal(s: Partial<CoinFields>): number {
+  return (s.coinsSpent ?? 0) + (s.shopSpent ?? 0);
+}
+
+/** The same sum as the database's coin_balance() function. */
+export function coinBalance(s: Partial<CoinFields>): number {
+  return coinsEarned(s) - coinsSpentTotal(s);
 }
 
 const STATUS = {
-  pending: { label: "Waiting for teacher", cls: "bg-gold/25 text-gold-deep" },
-  approved: { label: "Approved · ready to use", cls: "bg-primary/10 text-primary" },
-  used: { label: "Used", cls: "bg-success/15 text-success" },
-  rejected: { label: "Rejected · coins returned", cls: "bg-muted text-muted-foreground" },
+  pending: { label: "⏳ Pending teacher approval", cls: "bg-gold/25 text-gold-deep" },
+  approved: { label: "🎟️ Approved, show your teacher", cls: "bg-primary/10 text-primary" },
+  used: { label: "✅ Redeemed", cls: "bg-success/15 text-success" },
+  rejected: { label: "❌ Rejected, coins returned", cls: "bg-muted text-muted-foreground" },
 } as const;
 
 export function redemptionStatus(status: string): { label: string; cls: string } {

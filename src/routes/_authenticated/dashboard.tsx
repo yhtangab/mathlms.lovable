@@ -11,9 +11,15 @@ import { CompetencyRadar } from "@/components/game/CompetencyRadar";
 import { QuizTrajectory } from "@/components/game/QuizTrajectory";
 import { ScoreComposition } from "@/components/game/ScoreComposition";
 import { useApp } from "@/lib/app-store";
-import { COIN_NAME, coinBalance, reasonLabel } from "@/lib/coins";
-import { markMostImproved, quizResultsFromAssessments } from "@/lib/gamification/rules";
-import { boardId, coursework200 } from "@/lib/gamification/world";
+import { COIN_NAME, reasonLabel } from "@/lib/coins";
+import {
+  TERM_WEIGHTS,
+  displayCoins,
+  markMostImproved,
+  quizResultsFromAssessments,
+  termResult,
+} from "@/lib/gamification/rules";
+import { boardId } from "@/lib/gamification/world";
 import {
   DUE_LABEL,
   DUE_TONE,
@@ -46,20 +52,24 @@ function Dashboard() {
   const { me, homework, markLog, gameSnapshot, gameError, gamePublishedAt, cosmeticsOf } = useApp();
   const assessments = me.assessments ?? [];
   const game = me.game;
-  const hasTerm2 =
-    (game?.t2Total ?? null) !== null ||
-    assessments.some((a) => a.term === 2 && a.kind === "item" && (a.score !== null || a.absent));
+  const hasTerm2 = assessments.some(
+    (a) =>
+      a.term === 2 && (a.score !== null || a.absent) && !(a.kind === "summary" && a.score === 0),
+  );
   const [term, setTerm] = useState<1 | 2>(hasTerm2 ? 2 : 1);
 
-  const total = term === 1 ? (game?.t1Total ?? null) : (game?.t2Total ?? null);
-  const coursework = coursework200(assessments, term);
+  // Worked out from the student's own marks, so it shows even before anything is published.
+  const result = termResult(assessments, term);
   const totalStanding = gameSnapshot?.boards.find(
     (b) => b.boardId === boardId(me.set, "total", term),
   );
-  const courseworkStanding = gameSnapshot?.boards.find(
-    (b) => b.boardId === boardId(me.set, "coursework", term),
-  );
-  const headline = total !== null ? totalStanding : courseworkStanding;
+  const caStanding = gameSnapshot?.boards.find((b) => b.boardId === boardId(me.set, "ca", term));
+  const headline = result.total !== null ? totalStanding : caStanding;
+  const parts = [
+    { label: `${term === 1 ? "1st" : "2nd"} Term Test`, weight: TERM_WEIGHTS.tt, value: result.tt },
+    { label: `Continuous Assessment (T${term}A2)`, weight: TERM_WEIGHTS.ca, value: result.ca },
+    { label: `Exam (T${term}A3)`, weight: TERM_WEIGHTS.exam, value: result.exam },
+  ];
 
   // Without published data the trajectory is still drawn from the student's own marks.
   const quizzes =
@@ -137,22 +147,30 @@ function Dashboard() {
         </div>
         <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
-            <p className="text-sm font-semibold text-muted-foreground">Total academic score</p>
+            <p className="text-sm font-semibold text-muted-foreground">
+              Term {term} academic score
+            </p>
             <p className="mt-1 text-5xl font-bold tabular-nums">
-              {total === null ? "—" : total}
+              {result.total ?? "—"}
               <span className="text-xl font-semibold text-muted-foreground"> / 200</span>
             </p>
-            {total === null ? (
-              <p className="mt-1 text-sm text-muted-foreground">
-                Not released yet. Your coursework so far is shown below.
-              </p>
-            ) : null}
-            <p className="mt-3 text-sm">
-              Coursework:{" "}
-              <span className="font-bold tabular-nums">
-                {coursework === null ? "no marks yet" : `${coursework} / 200`}
-              </span>
+            <p className="mt-1 text-xs text-muted-foreground">
+              20% Term Test + 40% Continuous Assessment + 40% Exam
+              {result.total === null ? ". Shown once all three have a mark." : "."}
             </p>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-3">
+              {parts.map((p) => (
+                <li key={p.label} className="rounded-lg bg-muted/60 px-3 py-2">
+                  <p className="text-[11px] font-semibold leading-tight text-muted-foreground">
+                    {p.label} ({Math.round(p.weight * 100)}%)
+                  </p>
+                  <p className="text-lg font-bold tabular-nums">
+                    {p.value ?? "—"}
+                    <span className="text-xs font-semibold text-muted-foreground"> / 200</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="flex flex-col justify-center gap-2">
             {headline ? (
@@ -163,7 +181,8 @@ function Dashboard() {
                 )}
               >
                 <p className="text-sm font-semibold opacity-90">
-                  {total !== null ? "Total score" : "Coursework"} rank in {me.set}
+                  {result.total !== null ? "Academic score" : "Continuous Assessment"} rank in{" "}
+                  {me.set}
                 </p>
                 <p className="text-3xl font-bold">{headline.display}</p>
                 {headline.gapToTop10 !== null ? (
@@ -211,18 +230,18 @@ function Dashboard() {
           label="Times answered in class"
           value={String(game?.activeVoiceCount ?? 0)}
         />
-        <Link to="/awards" className="block rounded-xl transition-transform hover:-translate-y-0.5">
+        <Link to="/shop" className="block rounded-xl transition-transform hover:-translate-y-0.5">
           <StatCard
             tone="gold"
             label={COIN_NAME}
-            value={String(coinBalance(me))}
-            note="See rewards"
+            value={String(displayCoins(me))}
+            note="Open the Shop"
           />
         </Link>
       </section>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Panel tone="blue" title={`Term ${term} coursework breakdown`}>
+        <Panel tone="blue" title={`Term ${term} score breakdown`}>
           <ScoreComposition assessments={assessments} term={term} />
         </Panel>
         <Panel
@@ -364,11 +383,6 @@ function Dashboard() {
               ))}
             </ul>
           )}
-          {game && !game.rewardsSpendable && game.rewardCoins > 0 ? (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Quiz reward coins ({game.rewardCoins} MC) can be spent when the Shop opens.
-            </p>
-          ) : null}
         </Panel>
       </div>
 

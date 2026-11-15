@@ -31,8 +31,14 @@ export interface Student {
   dailyMarks?: number;
   /** Math Coins earned from watching chapter videos to the end. */
   videoMarks?: number;
-  /** Math Coins spent on rewards (rejected requests are not counted). */
+  /** Math Coins spent on reward tickets (rejected requests are not counted). */
   coinsSpent?: number;
+  /** Math Coins from saved game rewards (quiz ranks, most improved, homework streaks). */
+  rewardCoins?: number;
+  /** Math Coins from daily check-ins (1 for every 5). */
+  checkinCoins?: number;
+  /** Math Coins spent on Shop items such as frames and title packs. */
+  shopSpent?: number;
   /** Ids of chapter videos this student has watched to the end. */
   completedVideos?: string[];
   assessments?: Assessment[];

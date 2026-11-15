@@ -1,4 +1,4 @@
-import { chapterOfLabel, type Assessment } from "@/lib/assessments";
+import { chapterOfLabel, termSummary, type Assessment } from "@/lib/assessments";
 import { coinBalance } from "@/lib/coins";
 import { level, type MathSet, type Student } from "@/lib/data";
 import {
@@ -13,6 +13,7 @@ import {
   type QuizStanding,
   type RewardGrant,
   type SystemConfig,
+  type TermResult,
 } from "./types";
 
 /** Every number the reward rules use, in one place. */
@@ -29,14 +30,8 @@ export const REWARD_RULES = {
 /** Lesson-mark reasons that count as the student speaking up in class. */
 const VOICE_REASONS = new Set(["participation", "correct_answer", "incorrect_answer"]);
 
-/**
- * Which Google Sheet column holds a term's total academic score (out of 200).
- * Change these patterns if the sheet names the columns differently.
- */
-export const TERM_TOTAL_LABELS: Record<1 | 2, RegExp> = {
-  1: /^(T1\s*total|T1A3)\b/i,
-  2: /^(T2\s*total|T2A3)\b/i,
-};
+/** How a term's academic result is made up (each part is out of 200). */
+export const TERM_WEIGHTS = { tt: 0.2, ca: 0.4, exam: 0.4 } as const;
 
 const EPSILON = 1e-9;
 
@@ -398,13 +393,40 @@ export function reconcileLedger(
   return added;
 }
 
-/** A term's total academic score, scaled to /200, from the matching sheet column. */
-export function termTotal200(list: readonly Assessment[], term: 1 | 2): number | null {
-  const pattern = TERM_TOTAL_LABELS[term];
-  const row = list.find((a) => pattern.test(a.label.trim()) && a.score !== null && !a.absent);
-  if (!row || row.score === null) return null;
-  const full = row.full_marks !== null && row.full_marks > 0 ? row.full_marks : 200;
-  return round1((row.score / full) * 200);
+/** A mark scaled to /200, or null when absent, blank or 0 (a 0 is a formula waiting for marks). */
+function scaled200(a: Assessment): number | null {
+  if (a.absent || a.score === null || a.score <= 0) return null;
+  const full = a.full_marks !== null && a.full_marks > 0 ? a.full_marks : 200;
+  return round1((a.score / full) * 200);
+}
+
+/**
+ * A term's result out of 200: 20% Term Test + 40% Continuous Assessment + 40% Exam.
+ * - Term Test: the term's "1st TT" / "2nd TT" (or TnA1) column.
+ * - CA: the sheet's TnA2 column; if the sheet has none, worked out from HW, SQ, CQ, Mock and Daily.
+ * - Exam: the sheet's TnA3 column.
+ * The total stays empty until all three parts have a mark.
+ */
+export function termResult(list: readonly Assessment[], term: 1 | 2): TermResult {
+  const inTerm = list.filter((a) => a.term === term);
+  const byLabel = (re: RegExp) =>
+    inTerm.find((a) => re.test(a.label.trim()) && scaled200(a) !== null) ?? null;
+  const ttRow =
+    byLabel(new RegExp(`^(${term === 1 ? "1st" : "2nd"}\\s*TT|T${term}A1)\\b`, "i")) ??
+    inTerm.find((a) => a.category === "term_test" && scaled200(a) !== null) ??
+    null;
+  const caRow = byLabel(new RegExp(`^T${term}A2\\b`, "i"));
+  const examRow = byLabel(new RegExp(`^T${term}A3\\b`, "i"));
+  const caItems = termSummary([...list], term);
+  const caFromItems = caItems.parts.some((p) => p.value !== null) ? caItems.coursework200 : null;
+  const tt = ttRow ? scaled200(ttRow) : null;
+  const ca = caRow ? scaled200(caRow) : caFromItems;
+  const exam = examRow ? scaled200(examRow) : null;
+  const total =
+    tt !== null && ca !== null && exam !== null
+      ? round1(TERM_WEIGHTS.tt * tt + TERM_WEIGHTS.ca * ca + TERM_WEIGHTS.exam * exam)
+      : null;
+  return { term, tt, ca, exam, total };
 }
 
 /** How many times each student has answered or taken part, from lesson-mark rows. */
@@ -474,12 +496,14 @@ export function buildGameProfiles(input: GameInput): GameOutput {
       grants.push(...rankRewardGrants(s.id, own));
       const homework = summarizeHomework(s.id, homeworkFromAssessments(assessments, released));
       grants.push(...homework.grants);
+      const terms = [termResult(assessments, 1), termResult(assessments, 2)];
       bases.set(s.id, {
         ...DEFAULT_COSMETICS,
         ...input.cosmetics?.get(s.id),
         set,
-        t1Total: termTotal200(assessments, 1),
-        t2Total: termTotal200(assessments, 2),
+        t1Total: terms[0]?.total ?? null,
+        t2Total: terms[1]?.total ?? null,
+        termResults: terms,
         homeworkStreak: homework.current,
         bestHomeworkStreak: homework.best,
         missingHomeworkCount: homework.missing,
@@ -524,7 +548,10 @@ export function attachGame(s: Student, profiles: ReadonlyMap<string, GameProfile
   return game ? { ...s, game } : s;
 }
 
-/** The Math Coins figure to show for a student: game balance when there is one. */
+/**
+ * The Math Coins figure to show. Real students' balances come from the database (which already
+ * counts saved rewards); sandbox students keep their rewards in the game profile.
+ */
 export function displayCoins(s: Student): number {
-  return s.game?.mathCoins ?? coinBalance(s);
+  return s.game?.rewardsSpendable ? s.game.mathCoins : coinBalance(s);
 }

@@ -8,6 +8,7 @@ import { Panel } from "@/components/PageParts";
 import { useApp } from "@/lib/app-store";
 import { syncGoogleSheet, type SheetSource, type SyncReport } from "@/lib/sheets.functions";
 import { ITEM_CATEGORIES, percent, termSummary, termsOf, WEIGHTS } from "@/lib/assessments";
+import { termResult } from "@/lib/gamification/rules";
 import type { Category, MathSet } from "@/lib/sheet-parse";
 import { cn } from "@/lib/utils";
 
@@ -113,6 +114,8 @@ export function SheetGradebook() {
       setReport(result);
       await refresh();
       toast.success(`Synced ${result.students} students and ${result.scores} marks`);
+      if (result.gameError)
+        toast.error(`Marks saved, but game data was not published: ${result.gameError}`);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Sync failed";
       setSyncError(message);
@@ -121,6 +124,8 @@ export function SheetGradebook() {
       setBusy(false);
     }
   };
+
+  const termNo: 1 | 2 = activeTerm === 2 ? 2 : 1;
 
   return (
     <Panel
@@ -172,6 +177,13 @@ export function SheetGradebook() {
                 items, {t.scores} marks filled in
               </li>
             ))}
+            <li>
+              {report.game
+                ? `Ranks, charts and leaderboards published for ${report.game.students} students${
+                    report.game.newRewards ? `, ${report.game.newRewards} new rewards given` : ""
+                  }.`
+                : `Game data not published: ${report.gameError ?? "unknown error"}`}
+            </li>
           </ul>
           {report.duplicates.length > 0 && (
             <p className="mt-1 text-gold-deep">
@@ -222,7 +234,7 @@ export function SheetGradebook() {
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            Weighted summary
+            CA and term score
           </button>
           {ITEM_CATEGORIES.map((c) => {
             const count = categoryCounts.get(c.id) ?? 0;
@@ -270,7 +282,10 @@ export function SheetGradebook() {
                         {w.label} ({w.weight})
                       </th>
                     ))}
-                    <th className="p-2 text-center">Total /200</th>
+                    <th className="p-2 text-center">CA (T{termNo}A2) /200</th>
+                    <th className="p-2 text-center">TT /200</th>
+                    <th className="p-2 text-center">Exam (T{termNo}A3) /200</th>
+                    <th className="p-2 text-center">Term total /200</th>
                   </>
                 ) : (
                   columns.map((c) => (
@@ -285,6 +300,7 @@ export function SheetGradebook() {
             <tbody>
               {list.map((s) => {
                 const sum = termSummary(s.assessments ?? [], activeTerm);
+                const result = termResult(s.assessments ?? [], termNo);
                 return (
                   <tr key={s.id} className="border-b border-border last:border-0">
                     <td className="whitespace-nowrap p-2 text-muted-foreground">
@@ -302,7 +318,12 @@ export function SheetGradebook() {
                           </td>
                         ))}
                         <td className="p-2 text-center font-semibold tabular-nums">
-                          {sum.coursework200}
+                          {result.ca ?? "—"}
+                        </td>
+                        <td className="p-2 text-center tabular-nums">{result.tt ?? "—"}</td>
+                        <td className="p-2 text-center tabular-nums">{result.exam ?? "—"}</td>
+                        <td className="p-2 text-center font-semibold tabular-nums">
+                          {result.total ?? "—"}
                         </td>
                       </>
                     ) : (
@@ -337,6 +358,9 @@ export function SheetGradebook() {
           </table>
         )}
       </div>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Term total = 20% Term Test + 40% CA + 40% Exam. It stays empty until all three have a mark.
+      </p>
     </Panel>
   );
 }

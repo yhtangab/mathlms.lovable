@@ -3,6 +3,7 @@ import { ITEM_CATEGORIES, percent, termSummary, termsOf, type Assessment } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { scoreTone } from "@/components/AppShell";
 import { Panel } from "@/components/PageParts";
+import { termResult } from "@/lib/gamification/rules";
 import { cn } from "@/lib/utils";
 
 export function AssessmentReport({ assessments }: { assessments: Assessment[] }) {
@@ -17,7 +18,9 @@ export function AssessmentReport({ assessments }: { assessments: Assessment[] })
       </Panel>
     );
   }
-  const { parts, coursework200 } = termSummary(assessments, term);
+  const { parts } = termSummary(assessments, term);
+  // The sheet's TnA2 column when there is one; otherwise worked out from the parts below.
+  const ca = termResult(assessments, term === 2 ? 2 : 1).ca;
   const items = assessments
     .filter((a) => a.term === term && a.kind === "item")
     .sort((a, b) => a.position - b.position);
@@ -25,7 +28,7 @@ export function AssessmentReport({ assessments }: { assessments: Assessment[] })
   return (
     <Panel
       title="Assessment record"
-      description="Weighted coursework from the class mark sheet"
+      description="Continuous Assessment (CA) from the class mark sheet"
       actions={
         terms.length > 1 ? (
           <div className="flex rounded-md border border-border p-0.5">
@@ -50,9 +53,11 @@ export function AssessmentReport({ assessments }: { assessments: Assessment[] })
     >
       <div className="grid gap-4 sm:grid-cols-[190px_minmax(0,1fr)]">
         <div className="rounded-md border border-border bg-muted/50 p-4">
-          <p className="text-sm text-muted-foreground">Term {term} coursework</p>
+          <p className="text-sm text-muted-foreground">
+            Term {term} CA (T{term}A2)
+          </p>
           <p className="mt-1 text-3xl font-semibold tabular-nums">
-            {coursework200}
+            {ca ?? "—"}
             <span className="text-base font-normal text-muted-foreground"> / 200</span>
           </p>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">

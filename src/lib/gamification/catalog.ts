@@ -89,14 +89,14 @@ export const FRAMES: FrameDef[] = [
     id: "frame-gold",
     name: "Golden Compass",
     style: "gold",
-    requirement: "Reach Level 2 (1,000 EXP).",
+    requirement: "Reach Level 2 (1,000 EXP), or buy it in the Shop.",
     isUnlocked: (ctx) => ctx.profile.level >= 2,
   },
   {
     id: "frame-neon",
     name: "Calculus Master Neon",
     style: "neon",
-    requirement: "Finish in the top 3 of any quiz in your set.",
+    requirement: "Finish in the top 3 of any quiz in your set, or buy it in the Shop.",
     isUnlocked: (ctx) => (bestSettledRank(ctx) ?? 99) <= 3,
   },
   {
@@ -192,12 +192,42 @@ export const TITLES: TitleDef[] = [
     requirement: "Reach Level 2 (1,000 EXP).",
     isUnlocked: (ctx) => ctx.profile.level >= 2,
   },
+  // The Title Pack in the Shop: these can only be bought.
+  {
+    id: "title-formula-fan",
+    label: "Formula Fanatic",
+    requirement: "Buy the Title Pack in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-graph-guru",
+    label: "Graph Guru",
+    requirement: "Buy the Title Pack in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-sigma-scholar",
+    label: "Sigma Scholar",
+    requirement: "Buy the Title Pack in the Shop.",
+    isUnlocked: () => false,
+  },
 ];
 
 /** Finds a title by its id, or by its label (older sandbox data stores the label). */
 export function titleById(id: string | null | undefined): TitleDef | null {
   if (!id) return null;
   return TITLES.find((t) => t.id === id || t.label === id) ?? null;
+}
+
+/** Achievement unlocks plus everything the student has bought in the Shop. */
+export function mergeUnlocks(earned: Unlocks | null, boughtGrants: readonly string[]): Unlocks {
+  const frames = new Set([DEFAULT_FRAME_ID, ...(earned?.frames ?? [])]);
+  const titles = new Set(earned?.titles ?? []);
+  for (const g of boughtGrants) {
+    if (g.startsWith("frame-")) frames.add(g);
+    if (g.startsWith("title-")) titles.add(g);
+  }
+  return { frames: [...frames], titles: [...titles] };
 }
 
 export function computeUnlocks(ctx: UnlockContext): Unlocks {

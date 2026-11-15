@@ -18,7 +18,7 @@ import {
   rankRewardGrants,
   reconcileLedger,
   summarizeHomework,
-  termTotal200,
+  termResult,
   toPublicStanding,
   type RosterQuizzes,
 } from "@/lib/gamification/rules";
@@ -263,31 +263,79 @@ describe("2x Math Coins event", () => {
 });
 
 describe("game profiles", () => {
-  it("reads term totals out of 200", () => {
+  it("works out the term total as 20% Term Test + 40% CA + 40% Exam", () => {
     const rows: Assessment[] = [
       {
         term: 1,
-        kind: "summary",
-        category: "other",
-        label: "T1 Total (200)",
+        kind: "item",
+        category: "term_test",
+        label: "1st TT (200)",
         score: 150,
         absent: false,
         full_marks: 200,
         position: 1,
       },
       {
-        term: 2,
+        term: 1,
         kind: "summary",
-        category: "exam",
-        label: "T2A3 (100)",
-        score: 80,
+        category: "overall",
+        label: "T1A2 (200)",
+        score: 160,
         absent: false,
-        full_marks: 100,
+        full_marks: 200,
         position: 2,
       },
+      {
+        term: 1,
+        kind: "summary",
+        category: "exam",
+        label: "T1A3 (200)",
+        score: 120,
+        absent: false,
+        full_marks: 200,
+        position: 3,
+      },
     ];
-    expect(termTotal200(rows, 1)).toBe(150);
-    expect(termTotal200(rows, 2)).toBe(160);
+    expect(termResult(rows, 1)).toEqual({ term: 1, tt: 150, ca: 160, exam: 120, total: 142 });
+  });
+
+  it("leaves the total empty until the exam has a mark (a 0 counts as not marked)", () => {
+    const rows: Assessment[] = [
+      {
+        term: 1,
+        kind: "item",
+        category: "term_test",
+        label: "1st TT (200)",
+        score: 150,
+        absent: false,
+        full_marks: 200,
+        position: 1,
+      },
+      {
+        term: 1,
+        kind: "summary",
+        category: "exam",
+        label: "T1A3 (200)",
+        score: 0,
+        absent: false,
+        full_marks: 200,
+        position: 3,
+      },
+      {
+        term: 1,
+        kind: "item",
+        category: "homework",
+        label: "HW1.1",
+        score: 10,
+        absent: false,
+        full_marks: 10,
+        position: 4,
+      },
+    ];
+    const r = termResult(rows, 1);
+    expect(r.exam).toBeNull();
+    expect(r.total).toBeNull();
+    expect(r.ca).toBe(60);
   });
 
   it("only adds reward coins to the balance once they are spendable", () => {
