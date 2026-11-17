@@ -1,17 +1,28 @@
 -- Subject captains can read the names in their own set, and badge coins can be saved.
 -- Run after 0011 and 0013. Safe to run more than once.
 
+-- A policy on students must not SELECT students, or Postgres reports
+-- "infinite recursion detected in policy". This function runs as its owner
+-- and bypasses row level security, so the policy below only compares a value.
+CREATE OR REPLACE FUNCTION public.captain_math_set()
+RETURNS text
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT me.math_set
+  FROM public.students me
+  JOIN public.subject_captains cap ON cap.student_id = me.id
+  WHERE me.user_id = auth.uid()
+  LIMIT 1
+$$;
+REVOKE ALL ON FUNCTION public.captain_math_set() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.captain_math_set() TO authenticated;
+
 DROP POLICY IF EXISTS students_captain_roster ON public.students;
 CREATE POLICY students_captain_roster ON public.students
   FOR SELECT TO authenticated
   USING (
-    EXISTS (
-      SELECT 1
-      FROM public.students me
-      JOIN public.subject_captains cap ON cap.student_id = me.id
-      WHERE me.user_id = auth.uid()
-        AND me.math_set = students.math_set
-    )
+    public.captain_math_set() IS NOT NULL
+    AND math_set = public.captain_math_set()
   );
 
 CREATE OR REPLACE FUNCTION public.captain_classmates()
