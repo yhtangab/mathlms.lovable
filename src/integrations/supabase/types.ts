@@ -451,6 +451,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      homework_checks: {
+        Row: {
+          homework_id: string;
+          status: string;
+          student_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          homework_id: string;
+          status: string;
+          student_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          homework_id?: string;
+          status?: string;
+          student_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       mistakes: {
         Row: {
           chapter: number;
@@ -600,6 +624,24 @@ export type Database = {
           id?: string;
           name?: string;
           position?: number;
+        };
+        Relationships: [];
+      };
+      subject_captains: {
+        Row: {
+          appointed_at: string;
+          appointed_by: string | null;
+          student_id: string;
+        };
+        Insert: {
+          appointed_at?: string;
+          appointed_by?: string | null;
+          student_id: string;
+        };
+        Update: {
+          appointed_at?: string;
+          appointed_by?: string | null;
+          student_id?: string;
         };
         Relationships: [];
       };
@@ -782,18 +824,21 @@ export type Database = {
         Row: {
           double_mc_event_active: boolean;
           id: boolean;
+          leaderboard_show_all: boolean;
           updated_at: string;
           updated_by: string | null;
         };
         Insert: {
           double_mc_event_active?: boolean;
           id?: boolean;
+          leaderboard_show_all?: boolean;
           updated_at?: string;
           updated_by?: string | null;
         };
         Update: {
           double_mc_event_active?: boolean;
           id?: boolean;
+          leaderboard_show_all?: boolean;
           updated_at?: string;
           updated_by?: string | null;
         };
@@ -873,6 +918,25 @@ export type Database = {
     };
     Functions: {
       buy_shop_item: { Args: { _item_id: string }; Returns: undefined };
+      captain_classmates: {
+        Args: never;
+        Returns: {
+          class_name: string;
+          class_no: string;
+          id: string;
+          math_set: string;
+          name: string;
+        }[];
+      };
+      grant_homework_streak: {
+        Args: {
+          _description: string;
+          _homework_id: string;
+          _multiplier: number;
+          _student_id: string;
+        };
+        Returns: undefined;
+      };
       claim_student: { Args: never; Returns: undefined };
       complete_chapter_video: { Args: { _video_id: string }; Returns: boolean };
       complete_video: { Args: { _chapter: number }; Returns: undefined };

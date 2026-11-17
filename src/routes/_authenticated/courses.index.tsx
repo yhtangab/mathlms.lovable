@@ -15,7 +15,12 @@ import { PageHeader } from "@/components/PageParts";
 import { chapterOfLabel } from "@/lib/assessments";
 import { useApp } from "@/lib/app-store";
 import { CHAPTERS, chapterStatus } from "@/lib/data";
-import { chapterCompletion, chapterStars, objectivesFor } from "@/lib/gamification/catalog";
+import {
+  chapterCompletion,
+  chapterStars,
+  objectivesFor,
+  strandOfChapter,
+} from "@/lib/gamification/catalog";
 import { TONES, chapterTone } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
@@ -133,6 +138,9 @@ function Courses() {
                 </div>
                 <div className="flex flex-1 flex-col p-4">
                   <p className="font-bold leading-snug">{c.title}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {strandOfChapter(c.id)?.label ?? "Mathematics"}
+                  </p>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <Stars count={stars} />
                     <span

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { Check, RotateCcw, Search, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, TeacherOnly } from "@/components/AppShell";
+import { AvatarBadge } from "@/components/game/AvatarBadge";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/lib/app-store";
@@ -17,6 +18,15 @@ import {
   type MarkReason,
 } from "@/lib/coins";
 import { sortByClass, type MathSet, type Student } from "@/lib/data";
+import {
+  currentChapter,
+  hkLessonDate,
+  pickWeightFor,
+  randomUnit,
+  weightedPick,
+  type PickEvent,
+  type PickMode,
+} from "@/lib/teacher-portal";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/activity")({
@@ -60,6 +70,31 @@ const ANIMATION_CSS = `
 @keyframes hlc-flick { from { opacity: 0.6; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hlc-ball[data-spin="true"], .hlc-machine[data-spin="true"], .hlc-winner, .hlc-ticker, .hlc-confetti { animation: none; } }
 `;
+
+const HISTORY_KEY = "hlc.pickHistory.v1";
+
+function readPickHistory(): PickEvent[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (e): e is PickEvent =>
+        typeof e === "object" &&
+        e !== null &&
+        typeof (e as PickEvent).studentId === "string" &&
+        typeof (e as PickEvent).set === "string" &&
+        typeof (e as PickEvent).lessonDate === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+function rememberPick(event: PickEvent) {
+  const next = [...readPickHistory(), event].slice(-400);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+}
 
 function randomIndex(n: number): number {
   if (n <= 1) return 0;
@@ -117,7 +152,7 @@ function ActivityPage() {
             <Notice tone="error">{coinsError}</Notice>
           </div>
         )}
-        <LuckyDraw key={`draw-${set}`} list={list} />
+        <LuckyDraw key={`draw-${set}`} list={list} set={set} />
         <QuickPoints key={`points-${set}`} list={list} />
         <RecentActivity />
       </TeacherOnly>
@@ -127,11 +162,14 @@ function ActivityPage() {
 
 type Phase = "idle" | "spinning" | "revealed";
 
-function LuckyDraw({ list }: { list: Student[] }) {
-  const { refresh } = useApp();
+function LuckyDraw({ list, set }: { list: Student[]; set: MathSet }) {
+  const { refresh, cosmeticsOf } = useApp();
   const [phase, setPhase] = useState<Phase>("idle");
   const [ticker, setTicker] = useState("");
   const [winner, setWinner] = useState<Student | null>(null);
+  const [reason, setReason] = useState<string | null>(null);
+  const [mode, setMode] = useState<PickMode>("weighted");
+  const [history, setHistory] = useState<PickEvent[]>(() => readPickHistory());
   const [drawn, setDrawn] = useState<string[]>([]);
   const [noRepeat, setNoRepeat] = useState(true);
   const [sound, setSound] = useState(true);
@@ -211,9 +249,10 @@ function LuckyDraw({ list }: { list: Student[] }) {
     });
   };
 
-  const draw = () => {
+  const draw = (excludeId?: string) => {
     if (spinning) return;
-    if (!pool.length) {
+    const candidates = pool.filter((s) => s.id !== excludeId);
+    if (!candidates.length) {
       toast.info(
         list.length
           ? "Everyone has had a turn. Press Reset to start again."
@@ -221,10 +260,31 @@ function LuckyDraw({ list }: { list: Student[] }) {
       );
       return;
     }
-    const pick = pool[randomIndex(pool.length)];
+    const chapter = currentChapter(candidates);
+    const weighted = candidates.map((student) => {
+      const result = pickWeightFor({
+        studentId: student.id,
+        set,
+        events: history,
+        chapter,
+        quizzes: student.game?.quizHistory ?? [],
+      });
+      return {
+        item: student,
+        weight: mode === "random" ? 1 : result.weight,
+        reason: result.reason,
+      };
+    });
+    const pick =
+      mode === "random"
+        ? candidates[randomIndex(candidates.length)]
+        : weightedPick(weighted, randomUnit());
     if (!pick) return;
+    const why =
+      mode === "random" ? null : (weighted.find((w) => w.item.id === pick.id)?.reason ?? null);
     setPhase("spinning");
     setWinner(null);
+    setReason(null);
     setSaved(null);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const steps = reduced ? 3 : 20;
@@ -234,13 +294,14 @@ function LuckyDraw({ list }: { list: Student[] }) {
       if (i >= steps) {
         setTicker(pick.name);
         setWinner(pick);
+        setReason(why);
         setPhase("revealed");
         setDrawn((d) => (d.includes(pick.id) ? d : [...d, pick.id]));
         setBurst((b) => b + 1);
         fanfare();
         return;
       }
-      setTicker(list[randomIndex(list.length)]?.name ?? "");
+      setTicker(candidates[randomIndex(candidates.length)]?.name ?? "");
       beep(300 + i * 25, 0.05, 0.03);
       timer.current = setTimeout(step, 50 + Math.pow(i / steps, 2) * 380);
     };
@@ -275,6 +336,9 @@ function LuckyDraw({ list }: { list: Student[] }) {
         reason: correct ? "correct_answer" : "incorrect_answer",
         note: "Lucky draw",
       });
+      const event = { studentId: winner.id, set, lessonDate: hkLessonDate() };
+      rememberPick(event);
+      setHistory((h) => [...h, event]);
       await refresh();
       const message = correct
         ? `+${reward} ${COIN_NAME} for ${winner.name}`
@@ -288,12 +352,61 @@ function LuckyDraw({ list }: { list: Student[] }) {
     }
   };
 
+  const effort = async () => {
+    if (!winner) return;
+    setBusy(true);
+    try {
+      const ids = await giveCoins({
+        studentIds: [winner.id],
+        marks: 1,
+        reason: "participation",
+        note: "Lucky draw: good effort",
+      });
+      const event = { studentId: winner.id, set, lessonDate: hkLessonDate() };
+      rememberPick(event);
+      setHistory((h) => [...h, event]);
+      await refresh();
+      const message = `+1 participation for ${winner.name}`;
+      setSaved(message);
+      toast.success(message, { action: { label: "Undo", onClick: () => void undo(ids) } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <Panel
       className="mt-6"
       title="Lucky draw"
+      description={
+        mode === "weighted"
+          ? "權重模式 gives 3× to students not picked in the last 3 lessons, or below 50% on the latest quiz in the current chapter."
+          : "Pure random: every student left in the draw has the same chance."
+      }
       actions={
         <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-md border border-border bg-card p-0.5">
+            {(
+              [
+                ["random", "Pure random"],
+                ["weighted", "權重模式"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                type="button"
+                key={id}
+                onClick={() => setMode(id)}
+                className={cn(
+                  "rounded px-3 py-1 text-sm font-semibold",
+                  mode === id ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -345,7 +458,7 @@ function LuckyDraw({ list }: { list: Student[] }) {
           <div className="h-4 w-20 rounded-b-md bg-primary/30" />
           <Button
             size="lg"
-            onClick={draw}
+            onClick={() => draw()}
             disabled={spinning || !list.length}
             className="mt-4 h-12 w-full text-base font-semibold"
           >
@@ -383,11 +496,19 @@ function LuckyDraw({ list }: { list: Student[] }) {
                 ))}
               </div>
               <p className="text-sm text-muted-foreground">Selected student</p>
-              <div className="hlc-winner mt-3 rounded-md border-2 border-gold bg-card px-8 py-5 shadow-chunky">
-                <p className="text-4xl font-semibold md:text-6xl">{live.name}</p>
+              <div className="hlc-winner mt-3 flex flex-col items-center rounded-md border-2 border-gold bg-card px-8 py-5 shadow-chunky">
+                <AvatarBadge
+                  avatarId={cosmeticsOf(live.id).avatarId}
+                  frameId={cosmeticsOf(live.id).equippedFrameId}
+                  size="xl"
+                />
+                <p className="mt-3 text-4xl font-semibold md:text-6xl">{live.name}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {live.className} {live.classNo}, {coinBalance(live)} coins
                 </p>
+                {reason ? (
+                  <p className="mt-2 text-sm font-semibold text-primary">{reason}</p>
+                ) : null}
               </div>
               {saved ? (
                 <p className="mt-5 flex items-center gap-1 font-semibold text-success">
@@ -421,6 +542,20 @@ function LuckyDraw({ list }: { list: Student[] }) {
                   </Button>
                   <Button disabled={busy} variant="outline" onClick={() => void answer(false)}>
                     <X /> Incorrect
+                  </Button>
+                  <Button disabled={busy} variant="outline" onClick={() => void effort()}>
+                    👍 Good Effort (+1)
+                  </Button>
+                  <Button
+                    disabled={busy}
+                    variant="ghost"
+                    onClick={() => {
+                      if (!winner) return;
+                      setDrawn((d) => d.filter((id) => id !== winner.id));
+                      draw(winner.id);
+                    }}
+                  >
+                    ⏭️ Pass / Re-spin
                   </Button>
                 </div>
               )}

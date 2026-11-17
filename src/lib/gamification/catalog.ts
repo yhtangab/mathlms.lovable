@@ -253,6 +253,12 @@ export const STRANDS: { id: Strand; label: string }[] = [
  * Mensuration and Trigonometry have no S2 chapter in this list yet, so they stay empty
  * until those chapters are added.
  */
+export function strandOfChapter(chapter: number): { id: Strand; label: string } | null {
+  const id = CHAPTER_STRANDS[chapter];
+  if (!id) return null;
+  return STRANDS.find((s) => s.id === id) ?? null;
+}
+
 export const CHAPTER_STRANDS: Record<number, Strand> = {
   1: "number_algebra",
   2: "number_algebra",

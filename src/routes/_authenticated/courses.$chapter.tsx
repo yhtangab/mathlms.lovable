@@ -27,6 +27,7 @@ import {
   homeworkForSet,
   splitByDue,
 } from "@/lib/homework";
+import { strandOfChapter } from "@/lib/gamification/catalog";
 import { chapterTone } from "@/lib/tones";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -135,6 +136,9 @@ function ChapterPage() {
           }
         />
       </div>
+      {strandOfChapter(c.id) ? (
+        <p className="mt-2 text-xs text-muted-foreground">{strandOfChapter(c.id)?.label}</p>
+      ) : null}
 
       <section aria-label="Progress" className="mt-6 grid gap-4 sm:grid-cols-3">
         <StatCard

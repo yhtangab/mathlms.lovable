@@ -88,9 +88,20 @@ function scoreText(board: Leaderboard, score: number): string {
 }
 
 function LeaderboardPage() {
-  const { role, me, boards, gameSnapshot, gameError, gamePublishedAt, cosmeticsOf, isPreview } =
-    useApp();
+  const {
+    role,
+    me,
+    boards,
+    gameSnapshot,
+    gameError,
+    gamePublishedAt,
+    cosmeticsOf,
+    isPreview,
+    showAllRanks,
+  } = useApp();
   const teacherView = role === "teacher";
+  const revealAll = teacherView && showAllRanks;
+  const scopes = teacherView ? SCOPES : SCOPES.filter((s) => s.id === me.set);
   const firstBoard = (scope: BoardScope, metric: BoardMetric) =>
     boards.find((b) => b.id === boardId(scope, metric, boardTerm(metric, 1)));
   const startScope: BoardScope = teacherView ? "S2M3" : me.set;
@@ -100,9 +111,10 @@ function LeaderboardPage() {
   );
   const [term, setTerm] = useState<1 | 2>(1);
 
-  const board = boards.find((b) => b.id === boardId(scope, metric, boardTerm(metric, term)));
+  const viewScope: BoardScope = teacherView ? scope : me.set;
+  const board = boards.find((b) => b.id === boardId(viewScope, metric, boardTerm(metric, term)));
   const standing = gameSnapshot?.boards.find((b) => b.boardId === board?.id) ?? null;
-  const named = board ? (teacherView ? board.top : board.top.filter((e) => e.rank <= 10)) : [];
+  const named = board ? (revealAll ? board.top : board.top.filter((e) => e.rank <= 10)) : [];
   const podium = named.slice(0, 3);
   const rest = named.slice(3);
   const unit = metric === "exp" ? "EXP" : "marks";
@@ -110,7 +122,7 @@ function LeaderboardPage() {
   const row = (entry: LeaderboardEntry) => {
     const c = cosmeticsOf(entry.studentId);
     const mine = entry.studentId === me.id;
-    const hidden = teacherView && entry.rank > 10;
+    const hidden = revealAll && entry.rank > 10;
     return (
       <li
         key={entry.studentId}
@@ -149,9 +161,9 @@ function LeaderboardPage() {
       <PageHeader
         title={teacherView ? "Rankings" : "Leaderboard"}
         description={
-          teacherView
+          revealAll
             ? "Full rankings with every name. Students only see the top 10 by name; everyone else is anonymous."
-            : "The top 10 are shown by name. Everyone else stays anonymous."
+            : "The top 10 in your class are shown by name. Everyone else stays anonymous."
         }
       />
 
@@ -162,7 +174,11 @@ function LeaderboardPage() {
       ) : null}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Segmented label="Set or form" options={SCOPES} value={scope} onChange={setScope} />
+        {teacherView ? (
+          <Segmented label="Set or form" options={scopes} value={scope} onChange={setScope} />
+        ) : (
+          <span className="rounded-full bg-muted px-3.5 py-1.5 text-sm font-bold">{me.set}</span>
+        )}
         <Segmented label="Score" options={METRICS} value={metric} onChange={setMetric} />
         {metric === "exp" ? null : (
           <Segmented
@@ -230,7 +246,7 @@ function LeaderboardPage() {
 
           {rest.length > 0 ? <ol className="mt-6 space-y-2">{rest.map((e) => row(e))}</ol> : null}
 
-          {!teacherView && board.anonymousCodes.length > 0 ? (
+          {!revealAll && board.anonymousCodes.length > 0 ? (
             <Panel
               tone="sky"
               className="mt-6"

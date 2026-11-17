@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Check, Plus, Save, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Minus, Plus, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
@@ -405,7 +405,7 @@ function RewardEditor() {
   const rows = [
     ...rewards.map((r) => edits[r.id] ?? toDraft(r)),
     ...Object.values(edits).filter((d) => !rewards.some((r) => r.id === d.id)),
-  ];
+  ].sort((a, b) => a.position - b.position || a.name.localeCompare(b.name));
 
   const change = (d: Draft, patch: Partial<Draft>) =>
     setEdits((e) => ({ ...e, [d.id]: { ...d, ...patch } }));
@@ -458,6 +458,68 @@ function RewardEditor() {
       toast.success(`${d.name.trim()} saved`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save the reward");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const move = async (id: string, dir: -1 | 1) => {
+    const index = rows.findIndex((d) => d.id === id);
+    const nextIndex = index + dir;
+    if (index < 0 || nextIndex < 0 || nextIndex >= rows.length) return;
+    const next = [...rows];
+    const [item] = next.splice(index, 1);
+    if (!item) return;
+    next.splice(nextIndex, 0, item);
+    const positioned = next.map((d, i) => ({ ...d, position: i + 1 }));
+    setEdits((current) => {
+      const copy = { ...current };
+      for (const d of positioned) copy[d.id] = d;
+      return copy;
+    });
+    setBusyId(id);
+    try {
+      const saved = positioned.filter((d) => rewards.some((r) => r.id === d.id));
+      for (const d of saved) {
+        const { error } = await supabase
+          .from("rewards")
+          .update({ position: d.position })
+          .eq("id", d.id);
+        if (error) throw new Error(error.message);
+      }
+      await refresh();
+      setEdits((current) => {
+        const copy = { ...current };
+        for (const d of saved) {
+          const draft = copy[d.id];
+          if (draft && draft.name === (rewards.find((r) => r.id === d.id)?.name ?? draft.name)) {
+            delete copy[d.id];
+          }
+        }
+        return copy;
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not move the reward");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const remove = async (d: Draft) => {
+    if (!window.confirm(`Remove "${d.name || "this reward"}" from the list?`)) return;
+    if (!rewards.some((r) => r.id === d.id)) {
+      setEdits(({ [d.id]: _gone, ...rest }) => rest);
+      return;
+    }
+    setBusyId(d.id);
+    try {
+      const { error } = await supabase.from("rewards").delete().eq("id", d.id);
+      if (error) throw new Error(error.message);
+      await refresh();
+      setEdits(({ [d.id]: _gone, ...rest }) => rest);
+      toast.success("Reward removed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not remove the reward");
     } finally {
       setBusyId(null);
     }
@@ -542,9 +604,38 @@ function RewardEditor() {
                 />
                 <span className="md:hidden">Shown</span>
               </label>
-              <Button size="sm" disabled={!dirty || busyId === d.id} onClick={() => void save(d)}>
-                <Save /> Save
-              </Button>
+              <div className="flex flex-wrap gap-1">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  aria-label={`Move ${d.name || "reward"} up`}
+                  disabled={busyId === d.id || rows[0]?.id === d.id}
+                  onClick={() => void move(d.id, -1)}
+                >
+                  <ChevronUp />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  aria-label={`Move ${d.name || "reward"} down`}
+                  disabled={busyId === d.id || rows[rows.length - 1]?.id === d.id}
+                  onClick={() => void move(d.id, 1)}
+                >
+                  <ChevronDown />
+                </Button>
+                <Button size="sm" disabled={!dirty || busyId === d.id} onClick={() => void save(d)}>
+                  <Save /> Save
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  aria-label={`Remove ${d.name || "reward"}`}
+                  disabled={busyId === d.id}
+                  onClick={() => void remove(d)}
+                >
+                  <Minus />
+                </Button>
+              </div>
             </div>
           );
         })}

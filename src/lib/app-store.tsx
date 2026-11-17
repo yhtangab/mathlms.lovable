@@ -357,8 +357,11 @@ interface Store {
   configError: string | null;
   /** The game data the current view should show for `me` (own, previewed or sandbox). */
   gameSnapshot: StudentSnapshot | null;
-  /** Leaderboards for the current view. Teachers (not previewing) get full rankings. */
+  /** Leaderboards for the current view. Teachers see every name only while showAllRanks is on. */
   boards: Leaderboard[];
+  /** Teacher Rankings page: true shows every name, false matches the student top-10 view. */
+  showAllRanks: boolean;
+  setShowAllRanks: (active: boolean) => Promise<void>;
   gameError: string | null;
   /** When game data was last published for students. */
   gamePublishedAt: string | null;
@@ -388,6 +391,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [showAllRanks, setShowAllRanksState] = useState(true);
   const qc = useQueryClient();
 
   const rememberPreview = useCallback((id: string | null) => {
@@ -407,6 +411,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Storage can be blocked; start without a preview.
     }
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    void supabase
+      .from("system_config")
+      .select("leaderboard_show_all")
+      .eq("id", true)
+      .maybeSingle()
+      .then(({ data: row, error }) => {
+        if (!active || error || !row) return;
+        setShowAllRanksState(row.leaderboard_show_all);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     let active = true;
@@ -704,7 +725,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     gameSnapshot = world?.snapshots.get(previewStudent.id) ?? null;
     boards = world?.boards ?? [];
   } else if (actualRole === "teacher") {
-    boards = teacherWorld?.fullBoards ?? [];
+    boards = (showAllRanks ? teacherWorld?.fullBoards : teacherWorld?.boards) ?? [];
   } else if (isDemo && ownRecord) {
     gameSnapshot = sandboxWorld?.snapshots.get(ownRecord.id) ?? null;
     boards = sandboxWorld?.boards ?? [];
@@ -769,6 +790,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await query.refetch();
   };
 
+  const setShowAllRanks = async (active: boolean) => {
+    if (actualRole !== "teacher") {
+      throw new Error("Only teacher accounts can change the leaderboard");
+    }
+    const { error } = await supabase
+      .from("system_config")
+      .update({
+        leaderboard_show_all: active,
+        updated_at: new Date().toISOString(),
+        updated_by: user?.id ?? null,
+      })
+      .eq("id", true);
+    if (error) {
+      throw new Error(
+        error.message.includes("leaderboard_show_all")
+          ? "Run supabase/sql/0012_teacher_portal.sql in the Supabase SQL Editor, then try the switch again."
+          : error.message,
+      );
+    }
+    setShowAllRanksState(active);
+  };
+
   return (
     <Ctx.Provider
       value={{
@@ -801,6 +844,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setDoubleMcEvent,
         gameSnapshot,
         boards,
+        showAllRanks,
+        setShowAllRanks,
         gameError: game?.error ?? null,
         gamePublishedAt: isDemo ? (gameSnapshot?.generatedAt ?? null) : (game?.publishedAt ?? null),
         cosmeticsOf,

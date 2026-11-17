@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { parseScoreCsv, scoreSchema } from "@/lib/grade-rules";
 import { Button } from "@/components/ui/button";
 import { SheetGradebook } from "@/components/SheetGradebook";
+import { TeacherControls } from "@/components/teacher/TeacherControls";
 import { AppShell, TeacherOnly, scoreTone } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
 import { useApp } from "@/lib/app-store";
@@ -163,8 +164,9 @@ function Teacher() {
       <TeacherOnly>
         <PageHeader
           title="Analytics"
-          description="Marks from the class Google Sheet, chapter averages and the master score table."
+          description="Event switches, the redemption queue, and the master score table."
         />
+        <TeacherControls />
         <SheetGradebook />
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">

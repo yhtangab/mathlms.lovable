@@ -1,9 +1,10 @@
-This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+The content has been processed where empty lines have been removed.
 
 # File Summary
 
 ## Purpose
-This file contains a packed representation of the entire repository's contents.
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
 It is designed to be easily consumable by AI systems for analysis, code review,
 or other automated processes.
 
@@ -28,97 +29,36 @@ The content is organized as follows:
 ## Notes
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: src/integrations/supabase/types.ts, src/lib/**, src/components/AppShell.tsx, src/components/PageParts.tsx, src/components/SheetGradebook.tsx, src/routes/_authenticated/teacher.tsx, src/routes/_authenticated/homework.tsx, src/routes/_authenticated/activity.tsx
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
+- Empty lines have been removed from all files
 - Files are sorted by Git change count (files with more changes are at the bottom)
 
 # Directory Structure
-````
-drizzle/
-  migrations/
-    meta/
-      _journal.json
-      0000_snapshot.json
-      0001_snapshot.json
-      0002_snapshot.json
-      0003_snapshot.json
-      0004_snapshot.json
-    0000_private_math_records.sql
-    0001_chapter_notes_access.sql
-    0002_restrict_math_function_grants.sql
-    0003_assessment_gradebook.sql
-    0004_chapter_videos.sql
-  schema.ts
-public/
-  favicon.ico
-  robots.txt
+```
 src/
   components/
-    ui/
-      accordion.tsx
-      alert-dialog.tsx
-      alert.tsx
-      aspect-ratio.tsx
-      avatar.tsx
-      badge.tsx
-      breadcrumb.tsx
-      button.tsx
-      calendar.tsx
-      card.tsx
-      carousel.tsx
-      chart.tsx
-      checkbox.tsx
-      collapsible.tsx
-      command.tsx
-      context-menu.tsx
-      dialog.tsx
-      drawer.tsx
-      dropdown-menu.tsx
-      form.tsx
-      hover-card.tsx
-      input-otp.tsx
-      input.tsx
-      label.tsx
-      menubar.tsx
-      navigation-menu.tsx
-      pagination.tsx
-      popover.tsx
-      progress.tsx
-      radio-group.tsx
-      resizable.tsx
-      scroll-area.tsx
-      select.tsx
-      separator.tsx
-      sheet.tsx
-      sidebar.tsx
-      skeleton.tsx
-      slider.tsx
-      sonner.tsx
-      switch.tsx
-      table.tsx
-      tabs.tsx
-      textarea.tsx
-      toggle-group.tsx
-      toggle.tsx
-      tooltip.tsx
     AppShell.tsx
-    AssessmentReport.tsx
-    ChapterVideoPlayer.tsx
-    LessonMarks.tsx
     PageParts.tsx
     SheetGradebook.tsx
-  hooks/
-    use-mobile.tsx
   integrations/
     supabase/
-      auth-attacher.ts
-      auth-middleware.ts
-      client.server.ts
-      client.ts
-      cron-auth.ts
-      previewAuthStorage.ts
       types.ts
   lib/
+    gamification/
+      badges.ts
+      catalog.ts
+      checkin.ts
+      math-text.ts
+      mock-activity.ts
+      mock-data.ts
+      publish.ts
+      rules.ts
+      student-data.ts
+      types.ts
+      vault.ts
+      world.ts
     app-store.tsx
     assessments.ts
     coins.ts
@@ -126,10 +66,12 @@ src/
     drive-link.ts
     error-capture.ts
     error-page.ts
+    game.functions.ts
     grade-rules.ts
     homework.ts
     lovable-error-reporting.ts
     math.functions.ts
+    nav.ts
     sheet-parse.ts
     sheets.functions.ts
     tones.ts
@@ -138,5123 +80,666 @@ src/
   routes/
     _authenticated/
       activity.tsx
-      awards.tsx
-      courses.$chapter.tsx
-      courses.index.tsx
-      dashboard.tsx
       homework.tsx
-      leaderboard.tsx
-      route.tsx
       teacher.tsx
-      upload.tsx
-    __root.tsx
-    index.tsx
-    README.md
-    reset-password.tsx
-  test/
-    app-routing.test.tsx
-    grade-rules.test.ts
-    homework.test.ts
-    setup.ts
-    sheet-sync.test.ts
-    student-privacy.integration.test.ts
-    video-watch.test.ts
-  router.tsx
-  routeTree.gen.ts
-  server.ts
-  start.ts
-  styles.css
-supabase/
-  sql/
-    0007_homework.sql
-    0008_demo_student_data.sql
-  config.toml
-.gitignore
-.prettierignore
-.prettierrc
-AGENTS.md
-bunfig.toml
-components.json
-dev
-drizzle.config.ts
-eslint.config.js
-package.json
-README.md
-roadmap.md
-tsconfig.json
-vite.config.ts
-vitest.config.ts
-````
+```
 
 # Files
 
-## File: drizzle/migrations/meta/0000_snapshot.json
-````json
-{
-  "id": "5d6dca4e-6546-4810-b387-eb15539d2b63",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {},
-  "enums": {},
-  "schemas": {},
-  "views": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
-}
-````
-
-## File: drizzle/migrations/meta/0001_snapshot.json
-````json
-{
-  "id": "3bf8d9df-c722-4d33-b7f8-e5d71068c37c",
-  "prevId": "5d6dca4e-6546-4810-b387-eb15539d2b63",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {},
-  "enums": {},
-  "schemas": {},
-  "views": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
-}
-````
-
-## File: drizzle/migrations/meta/0002_snapshot.json
-````json
-{
-  "id": "361c4ae2-20f5-448f-84ea-5064779aa395",
-  "prevId": "3bf8d9df-c722-4d33-b7f8-e5d71068c37c",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {},
-  "enums": {},
-  "schemas": {},
-  "views": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
-}
-````
-
-## File: drizzle/migrations/meta/0003_snapshot.json
-````json
-{
-  "id": "32054d1f-2588-4850-920b-322ea98e3454",
-  "prevId": "361c4ae2-20f5-448f-84ea-5064779aa395",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {},
-  "enums": {},
-  "schemas": {},
-  "views": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
-}
-````
-
-## File: drizzle/migrations/meta/0004_snapshot.json
-````json
-{
-  "id": "a094e4bf-d48a-4325-a393-73f24c3f1128",
-  "prevId": "32054d1f-2588-4850-920b-322ea98e3454",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {},
-  "enums": {},
-  "schemas": {},
-  "views": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
-}
-````
-
-## File: drizzle/migrations/0000_private_math_records.sql
-````sql
-CREATE TYPE public.app_role AS ENUM ('teacher', 'student');
-CREATE TABLE public.profiles (id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, display_name text NOT NULL DEFAULT '', preferences jsonb NOT NULL DEFAULT '{}');
-GRANT SELECT, UPDATE ON public.profiles TO authenticated;
-GRANT ALL ON public.profiles TO service_role;
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY own_profile_read ON public.profiles FOR SELECT TO authenticated USING (id = auth.uid());
-CREATE POLICY own_profile_update ON public.profiles FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid());
-CREATE TABLE public.user_roles (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, role public.app_role NOT NULL, UNIQUE(user_id, role));
-GRANT SELECT ON public.user_roles TO authenticated;
-GRANT ALL ON public.user_roles TO service_role;
-ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY own_role_read ON public.user_roles FOR SELECT TO authenticated USING (user_id = auth.uid());
-CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role) $$;
-REVOKE ALL ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated;
-CREATE FUNCTION public.create_math_profile() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ BEGIN INSERT INTO public.profiles(id, display_name) VALUES(NEW.id, coalesce(NEW.raw_user_meta_data->>'full_name', '')); INSERT INTO public.user_roles(user_id, role) VALUES(NEW.id, 'student'); RETURN NEW; END $$;
-CREATE TRIGGER math_profile_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.create_math_profile();
-CREATE TABLE public.students (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid UNIQUE REFERENCES public.profiles(id) ON DELETE SET NULL, name text NOT NULL, email text NOT NULL UNIQUE CHECK (email = lower(email)), math_set text NOT NULL CHECK (math_set IN ('S2M3','S2M5')), last_month_avg integer NOT NULL DEFAULT 0, last_month_form_rank integer NOT NULL DEFAULT 0, xp integer NOT NULL DEFAULT 0, streak integer NOT NULL DEFAULT 0);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.students TO authenticated;
-GRANT ALL ON public.students TO service_role;
-ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
-CREATE POLICY student_own_read ON public.students FOR SELECT TO authenticated USING (user_id = auth.uid() OR public.has_role(auth.uid(), 'teacher'));
-CREATE POLICY teacher_roster_write ON public.students FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'teacher')) WITH CHECK (public.has_role(auth.uid(), 'teacher'));
-CREATE FUNCTION public.claim_student() RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ DECLARE verified_email text; BEGIN SELECT lower(email) INTO verified_email FROM auth.users WHERE id = auth.uid() AND email_confirmed_at IS NOT NULL; IF verified_email IS NOT NULL THEN UPDATE public.students SET user_id = auth.uid() WHERE email = verified_email AND (user_id IS NULL OR user_id = auth.uid()); END IF; END $$;
-REVOKE ALL ON FUNCTION public.claim_student() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.claim_student() TO authenticated;
-CREATE TABLE public.chapter_scores (student_id uuid NOT NULL REFERENCES public.students(id) ON DELETE CASCADE, chapter integer NOT NULL CHECK (chapter BETWEEN 1 AND 7), score integer CHECK (score BETWEEN 0 AND 100), PRIMARY KEY(student_id, chapter));
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.chapter_scores TO authenticated;
-GRANT ALL ON public.chapter_scores TO service_role;
-ALTER TABLE public.chapter_scores ENABLE ROW LEVEL SECURITY;
-CREATE POLICY private_scores_read ON public.chapter_scores FOR SELECT TO authenticated USING (EXISTS(SELECT 1 FROM public.students s WHERE s.id = student_id AND (s.user_id = auth.uid() OR public.has_role(auth.uid(), 'teacher'))));
-CREATE POLICY teacher_scores_write ON public.chapter_scores FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'teacher')) WITH CHECK (public.has_role(auth.uid(), 'teacher'));
-CREATE TABLE public.daily_marks (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), student_id uuid NOT NULL REFERENCES public.students(id) ON DELETE CASCADE, awarded_by uuid NOT NULL, lesson_date date NOT NULL DEFAULT ((now() AT TIME ZONE 'Asia/Hong_Kong')::date), marks integer NOT NULL CHECK (marks BETWEEN 0 AND 100), reason text NOT NULL CHECK (reason IN ('classwork','participation','correct_answer','incorrect_answer')), created_at timestamptz NOT NULL DEFAULT now());
-GRANT SELECT, INSERT ON public.daily_marks TO authenticated;
-GRANT ALL ON public.daily_marks TO service_role;
-ALTER TABLE public.daily_marks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY private_marks_read ON public.daily_marks FOR SELECT TO authenticated USING (EXISTS(SELECT 1 FROM public.students s WHERE s.id = student_id AND (s.user_id = auth.uid() OR public.has_role(auth.uid(), 'teacher'))));
-CREATE POLICY teacher_marks_insert ON public.daily_marks FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'teacher') AND awarded_by = auth.uid());
-CREATE TABLE public.chapter_content (chapter integer PRIMARY KEY CHECK(chapter BETWEEN 1 AND 7), video text NOT NULL DEFAULT '', notes text NOT NULL DEFAULT '', quiz text NOT NULL DEFAULT '', updated_at timestamptz NOT NULL DEFAULT now());
-GRANT SELECT, INSERT, UPDATE ON public.chapter_content TO authenticated;
-GRANT ALL ON public.chapter_content TO service_role;
-ALTER TABLE public.chapter_content ENABLE ROW LEVEL SECURITY;
-CREATE POLICY content_read ON public.chapter_content FOR SELECT TO authenticated USING (true);
-CREATE POLICY teacher_content_write ON public.chapter_content FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'teacher')) WITH CHECK (public.has_role(auth.uid(), 'teacher'));
-CREATE TABLE public.video_completions (student_id uuid NOT NULL REFERENCES public.students(id) ON DELETE CASCADE, chapter integer NOT NULL REFERENCES public.chapter_content(chapter), video_url text NOT NULL, marks integer NOT NULL DEFAULT 1 CHECK (marks = 1), completed_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(student_id, chapter));
-GRANT SELECT ON public.video_completions TO authenticated;
-GRANT ALL ON public.video_completions TO service_role;
-ALTER TABLE public.video_completions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY private_video_read ON public.video_completions FOR SELECT TO authenticated USING (EXISTS(SELECT 1 FROM public.students s WHERE s.id = student_id AND (s.user_id = auth.uid() OR public.has_role(auth.uid(), 'teacher'))));
-CREATE FUNCTION public.complete_video(_chapter integer) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ DECLARE sid uuid; vid text; BEGIN SELECT id INTO sid FROM public.students WHERE user_id = auth.uid(); SELECT video INTO vid FROM public.chapter_content WHERE chapter = _chapter; IF sid IS NULL OR vid IS NULL OR vid = '' THEN RAISE EXCEPTION 'No student or video found'; END IF; INSERT INTO public.video_completions(student_id, chapter, video_url) VALUES(sid, _chapter, vid) ON CONFLICT DO NOTHING; END $$;
-REVOKE ALL ON FUNCTION public.complete_video(integer) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.complete_video(integer) TO authenticated;
-CREATE INDEX scores_student_idx ON public.chapter_scores(student_id);
-CREATE INDEX marks_student_idx ON public.daily_marks(student_id);
-CREATE INDEX students_user_idx ON public.students(user_id);
-````
-
-## File: drizzle/migrations/0001_chapter_notes_access.sql
-````sql
-CREATE POLICY math_notes_read ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'chapter-notes');
-CREATE POLICY math_notes_insert ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'chapter-notes' AND public.has_role(auth.uid(), 'teacher'));
-CREATE POLICY math_notes_update ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'chapter-notes' AND public.has_role(auth.uid(), 'teacher')) WITH CHECK (bucket_id = 'chapter-notes' AND public.has_role(auth.uid(), 'teacher'));
-````
-
-## File: drizzle/migrations/0002_restrict_math_function_grants.sql
-````sql
-REVOKE ALL ON FUNCTION public.create_math_profile() FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.has_role(uuid, public.app_role) FROM anon;
-REVOKE ALL ON FUNCTION public.claim_student() FROM anon;
-REVOKE ALL ON FUNCTION public.complete_video(integer) FROM anon;
-````
-
-## File: drizzle/migrations/0003_assessment_gradebook.sql
-````sql
-ALTER TABLE public.students ADD COLUMN hlc_no text UNIQUE, ADD COLUMN class_name text NOT NULL DEFAULT '', ADD COLUMN class_no text NOT NULL DEFAULT '';
-
-CREATE TABLE public.assessment_scores (
-  student_id uuid NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
-  term smallint NOT NULL CHECK (term BETWEEN 1 AND 2),
-  kind text NOT NULL CHECK (kind IN ('item','summary')),
-  category text NOT NULL CHECK (category IN ('homework','short_quiz','chapter_quiz','term_test','mock','exam','daily','overall','other')),
-  label text NOT NULL,
-  score numeric,
-  absent boolean NOT NULL DEFAULT false,
-  full_marks numeric,
-  position integer NOT NULL DEFAULT 0,
-  synced_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (student_id, term, kind, label)
-);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.assessment_scores TO authenticated;
-GRANT ALL ON public.assessment_scores TO service_role;
-ALTER TABLE public.assessment_scores ENABLE ROW LEVEL SECURITY;
-CREATE POLICY private_assessment_read ON public.assessment_scores FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.students s WHERE s.id = student_id AND (s.user_id = auth.uid() OR public.has_role(auth.uid(), 'teacher'))));
-CREATE POLICY teacher_assessment_write ON public.assessment_scores FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'teacher')) WITH CHECK (public.has_role(auth.uid(), 'teacher'));
-CREATE INDEX assessment_student_idx ON public.assessment_scores(student_id);
-
-CREATE TABLE public.sheet_syncs (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  synced_by uuid NOT NULL,
-  students integer NOT NULL DEFAULT 0,
-  scores integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT SELECT, INSERT ON public.sheet_syncs TO authenticated;
-GRANT ALL ON public.sheet_syncs TO service_role;
-ALTER TABLE public.sheet_syncs ENABLE ROW LEVEL SECURITY;
-CREATE POLICY teacher_sync_read ON public.sheet_syncs FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'teacher'));
-CREATE POLICY teacher_sync_insert ON public.sheet_syncs FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'teacher') AND synced_by = auth.uid());
-````
-
-## File: drizzle/migrations/0004_chapter_videos.sql
-````sql
-CREATE TABLE public.chapter_videos (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  chapter integer NOT NULL CHECK (chapter BETWEEN 1 AND 7),
-  title text NOT NULL CHECK (length(trim(title)) BETWEEN 1 AND 200),
-  url text NOT NULL CHECK (url ~ '^https://'),
-  position integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.chapter_videos TO authenticated;
-GRANT ALL ON public.chapter_videos TO service_role;
-ALTER TABLE public.chapter_videos ENABLE ROW LEVEL SECURITY;
-CREATE POLICY videos_read ON public.chapter_videos FOR SELECT TO authenticated USING (true);
-CREATE POLICY teacher_videos_write ON public.chapter_videos FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'teacher')) WITH CHECK (public.has_role(auth.uid(), 'teacher'));
-CREATE INDEX chapter_videos_chapter_idx ON public.chapter_videos(chapter, position);
-
-CREATE TABLE public.chapter_video_completions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id uuid NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
-  video_id uuid REFERENCES public.chapter_videos(id) ON DELETE SET NULL,
-  chapter integer NOT NULL CHECK (chapter BETWEEN 1 AND 7),
-  video_title text NOT NULL,
-  marks integer NOT NULL DEFAULT 1 CHECK (marks = 1),
-  completed_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (student_id, video_id)
-);
-GRANT SELECT ON public.chapter_video_completions TO authenticated;
-GRANT ALL ON public.chapter_video_completions TO service_role;
-ALTER TABLE public.chapter_video_completions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY private_video_completion_read ON public.chapter_video_completions FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.students s WHERE s.id = student_id AND (s.user_id = auth.uid() OR public.has_role(auth.uid(), 'teacher'))));
-CREATE INDEX chapter_video_completions_student_idx ON public.chapter_video_completions(student_id);
-
--- Backfill the single video each chapter used to have, and its earned marks.
-INSERT INTO public.chapter_videos (chapter, title, url, position)
-SELECT chapter, 'Chapter ' || chapter || ' video', video, 0 FROM public.chapter_content WHERE video ~ '^https://';
-INSERT INTO public.chapter_video_completions (student_id, video_id, chapter, video_title, completed_at)
-SELECT vc.student_id, cv.id, vc.chapter, cv.title, vc.completed_at
-FROM public.video_completions vc JOIN public.chapter_videos cv ON cv.chapter = vc.chapter AND cv.url = vc.video_url
-ON CONFLICT DO NOTHING;
-
-CREATE FUNCTION public.complete_chapter_video(_video_id uuid) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE sid uuid; v record; n integer;
-BEGIN
-  SELECT id INTO sid FROM public.students WHERE user_id = auth.uid();
-  SELECT id, chapter, title INTO v FROM public.chapter_videos WHERE id = _video_id;
-  IF sid IS NULL OR v.id IS NULL THEN RAISE EXCEPTION 'No student or video found'; END IF;
-  INSERT INTO public.chapter_video_completions(student_id, video_id, chapter, video_title) VALUES (sid, v.id, v.chapter, v.title) ON CONFLICT DO NOTHING;
-  GET DIAGNOSTICS n = ROW_COUNT;
-  RETURN n > 0;
-END $$;
-REVOKE ALL ON FUNCTION public.complete_chapter_video(uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.complete_chapter_video(uuid) FROM anon;
-GRANT EXECUTE ON FUNCTION public.complete_chapter_video(uuid) TO authenticated;
-
-REVOKE ALL ON FUNCTION public.complete_video(integer) FROM authenticated;
-COMMENT ON FUNCTION public.complete_video(integer) IS 'DEPRECATED: replaced by complete_chapter_video';
-COMMENT ON TABLE public.video_completions IS 'DEPRECATED: replaced by chapter_video_completions';
-COMMENT ON COLUMN public.chapter_content.video IS 'DEPRECATED: replaced by chapter_videos';
-````
-
-## File: drizzle/schema.ts
-````typescript
-// auto-generated and intentionally left blank, do not edit
-````
-
-## File: public/robots.txt
-````
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
-Allow: /
-````
-
-## File: src/components/ui/accordion.tsx
-````typescript
-import * as React from "react";
-import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { ChevronDown } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const Accordion = AccordionPrimitive.Root;
-
-const AccordionItem = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <AccordionPrimitive.Item ref={ref} className={cn("border-b", className)} {...props} />
-));
-AccordionItem.displayName = "AccordionItem";
-
-const AccordionTrigger = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <AccordionPrimitive.Header className="flex">
-    <AccordionPrimitive.Trigger
-      ref={ref}
-      className={cn(
-        "flex flex-1 items-center justify-between py-4 text-sm font-medium cursor-pointer transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
-    </AccordionPrimitive.Trigger>
-  </AccordionPrimitive.Header>
-));
-AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
-
-const AccordionContent = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <AccordionPrimitive.Content
-    ref={ref}
-    className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
-    {...props}
-  >
-    <div className={cn("pb-4 pt-0", className)}>{children}</div>
-  </AccordionPrimitive.Content>
-));
-AccordionContent.displayName = AccordionPrimitive.Content.displayName;
-
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
-````
-
-## File: src/components/ui/alert-dialog.tsx
-````typescript
-import * as React from "react";
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
-
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-
-const AlertDialog = AlertDialogPrimitive.Root;
-
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
-
-const AlertDialogPortal = AlertDialogPrimitive.Portal;
-
-const AlertDialogOverlay = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Overlay
-    className={cn(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
-    )}
-    {...props}
-    ref={ref}
-  />
-));
-AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
-
-const AlertDialogContent = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <AlertDialogPortal>
-    <AlertDialogOverlay />
-    <AlertDialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg",
-        className,
-      )}
-      {...props}
-    />
-  </AlertDialogPortal>
-));
-AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
-
-const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left", className)} {...props} />
-);
-AlertDialogHeader.displayName = "AlertDialogHeader";
-
-const AlertDialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
-    {...props}
-  />
-);
-AlertDialogFooter.displayName = "AlertDialogFooter";
-
-const AlertDialogTitle = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold", className)}
-    {...props}
-  />
-));
-AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName;
-
-const AlertDialogDescription = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName;
-
-const AlertDialogAction = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Action ref={ref} className={cn(buttonVariants(), className)} {...props} />
-));
-AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
-
-const AlertDialogCancel = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Cancel
-    ref={ref}
-    className={cn(buttonVariants({ variant: "outline" }), "mt-2 sm:mt-0", className)}
-    {...props}
-  />
-));
-AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName;
-
-export {
-  AlertDialog,
-  AlertDialogPortal,
-  AlertDialogOverlay,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
-};
-````
-
-## File: src/components/ui/alert.tsx
-````typescript
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-
-import { cn } from "@/lib/utils";
-
-const alertVariants = cva(
-  "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
-  {
-    variants: {
-      variant: {
-        default: "bg-background text-foreground",
-        destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-);
-
-const Alert = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
-  <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
-));
-Alert.displayName = "Alert";
-
-const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h5
-      ref={ref}
-      className={cn("mb-1 font-medium leading-none tracking-tight", className)}
-      {...props}
-    />
-  ),
-);
-AlertTitle.displayName = "AlertTitle";
-
-const AlertDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />
-));
-AlertDescription.displayName = "AlertDescription";
-
-export { Alert, AlertTitle, AlertDescription };
-````
-
-## File: src/components/ui/aspect-ratio.tsx
-````typescript
-import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio";
-
-const AspectRatio = AspectRatioPrimitive.Root;
-
-export { AspectRatio };
-````
-
-## File: src/components/ui/avatar.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
-
-import { cn } from "@/lib/utils";
-
-const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
-    ref={ref}
-    className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className)}
-    {...props}
-  />
-));
-Avatar.displayName = AvatarPrimitive.Root.displayName;
-
-const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
-    {...props}
-  />
-));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
-
-const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Fallback
-    ref={ref}
-    className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
-      className,
-    )}
-    {...props}
-  />
-));
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
-
-export { Avatar, AvatarImage, AvatarFallback };
-````
-
-## File: src/components/ui/badge.tsx
-````typescript
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-
-import { cn } from "@/lib/utils";
-
-const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        default: "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-);
-
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
-}
-
-export { Badge, badgeVariants };
-````
-
-## File: src/components/ui/breadcrumb.tsx
-````typescript
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const Breadcrumb = React.forwardRef<
-  HTMLElement,
-  React.ComponentPropsWithoutRef<"nav"> & {
-    separator?: React.ReactNode;
-  }
->(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />);
-Breadcrumb.displayName = "Breadcrumb";
-
-const BreadcrumbList = React.forwardRef<HTMLOListElement, React.ComponentPropsWithoutRef<"ol">>(
-  ({ className, ...props }, ref) => (
-    <ol
-      ref={ref}
-      className={cn(
-        "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
-BreadcrumbList.displayName = "BreadcrumbList";
-
-const BreadcrumbItem = React.forwardRef<HTMLLIElement, React.ComponentPropsWithoutRef<"li">>(
-  ({ className, ...props }, ref) => (
-    <li ref={ref} className={cn("inline-flex items-center gap-1.5", className)} {...props} />
-  ),
-);
-BreadcrumbItem.displayName = "BreadcrumbItem";
-
-const BreadcrumbLink = React.forwardRef<
-  HTMLAnchorElement,
-  React.ComponentPropsWithoutRef<"a"> & {
-    asChild?: boolean;
-  }
->(({ asChild, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a";
-
-  return (
-    <Comp
-      ref={ref}
-      className={cn("transition-colors hover:text-foreground", className)}
-      {...props}
-    />
-  );
-});
-BreadcrumbLink.displayName = "BreadcrumbLink";
-
-const BreadcrumbPage = React.forwardRef<HTMLSpanElement, React.ComponentPropsWithoutRef<"span">>(
-  ({ className, ...props }, ref) => (
-    <span
-      ref={ref}
-      role="link"
-      aria-disabled="true"
-      aria-current="page"
-      className={cn("font-normal text-foreground", className)}
-      {...props}
-    />
-  ),
-);
-BreadcrumbPage.displayName = "BreadcrumbPage";
-
-const BreadcrumbSeparator = ({ children, className, ...props }: React.ComponentProps<"li">) => (
-  <li
-    role="presentation"
-    aria-hidden="true"
-    className={cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
-    {...props}
-  >
-    {children ?? <ChevronRight />}
-  </li>
-);
-BreadcrumbSeparator.displayName = "BreadcrumbSeparator";
-
-const BreadcrumbEllipsis = ({ className, ...props }: React.ComponentProps<"span">) => (
-  <span
-    role="presentation"
-    aria-hidden="true"
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
-    {...props}
-  >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More</span>
-  </span>
-);
-BreadcrumbEllipsis.displayName = "BreadcrumbElipssis";
-
-export {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
-};
-````
-
-## File: src/components/ui/calendar.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
-
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
-
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  captionLayout = "label",
-  buttonVariant = "ghost",
-  formatters,
-  components,
-  ...props
-}: React.ComponentProps<typeof DayPicker> & {
-  buttonVariant?: React.ComponentProps<typeof Button>["variant"];
-}) {
-  const defaultClassNames = getDefaultClassNames();
-
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn(
-        "bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
-        String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
-        String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
-        className,
-      )}
-      captionLayout={captionLayout}
-      formatters={{
-        formatMonthDropdown: (date) => date.toLocaleString("default", { month: "short" }),
-        ...formatters,
-      }}
-      classNames={{
-        root: cn("w-fit", defaultClassNames.root),
-        months: cn("relative flex flex-col gap-4 md:flex-row", defaultClassNames.months),
-        month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
-        nav: cn(
-          "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
-          defaultClassNames.nav,
-        ),
-        button_previous: cn(
-          buttonVariants({ variant: buttonVariant }),
-          "h-(--cell-size) w-(--cell-size) select-none p-0 aria-disabled:opacity-50",
-          defaultClassNames.button_previous,
-        ),
-        button_next: cn(
-          buttonVariants({ variant: buttonVariant }),
-          "h-(--cell-size) w-(--cell-size) select-none p-0 aria-disabled:opacity-50",
-          defaultClassNames.button_next,
-        ),
-        month_caption: cn(
-          "flex h-(--cell-size) w-full items-center justify-center px-(--cell-size)",
-          defaultClassNames.month_caption,
-        ),
-        dropdowns: cn(
-          "flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium",
-          defaultClassNames.dropdowns,
-        ),
-        dropdown_root: cn(
-          "has-focus:border-ring border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] relative rounded-md border",
-          defaultClassNames.dropdown_root,
-        ),
-        dropdown: cn("bg-popover absolute inset-0 opacity-0", defaultClassNames.dropdown),
-        caption_label: cn(
-          "select-none font-medium",
-          captionLayout === "label"
-            ? "text-sm"
-            : "[&>svg]:text-muted-foreground flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5",
-          defaultClassNames.caption_label,
-        ),
-        table: "w-full border-collapse",
-        weekdays: cn("flex", defaultClassNames.weekdays),
-        weekday: cn(
-          "text-muted-foreground flex-1 select-none rounded-md text-[0.8rem] font-normal",
-          defaultClassNames.weekday,
-        ),
-        week: cn("mt-2 flex w-full", defaultClassNames.week),
-        week_number_header: cn("w-(--cell-size) select-none", defaultClassNames.week_number_header),
-        week_number: cn(
-          "text-muted-foreground select-none text-[0.8rem]",
-          defaultClassNames.week_number,
-        ),
-        day: cn(
-          "group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md",
-          defaultClassNames.day,
-        ),
-        range_start: cn("bg-accent rounded-l-md", defaultClassNames.range_start),
-        range_middle: cn("rounded-none", defaultClassNames.range_middle),
-        range_end: cn("bg-accent rounded-r-md", defaultClassNames.range_end),
-        today: cn(
-          "bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none",
-          defaultClassNames.today,
-        ),
-        outside: cn(
-          "text-muted-foreground aria-selected:text-muted-foreground",
-          defaultClassNames.outside,
-        ),
-        disabled: cn("text-muted-foreground opacity-50", defaultClassNames.disabled),
-        hidden: cn("invisible", defaultClassNames.hidden),
-        ...classNames,
-      }}
-      components={{
-        Root: ({ className, rootRef, ...props }) => {
-          return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />;
-        },
-        Chevron: ({ className, orientation, ...props }) => {
-          if (orientation === "left") {
-            return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
-          }
-
-          if (orientation === "right") {
-            return <ChevronRightIcon className={cn("size-4", className)} {...props} />;
-          }
-
-          return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
-        },
-        DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...props }) => {
-          return (
-            <td {...props}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          );
-        },
-        ...components,
-      }}
-      {...props}
-    />
-  );
-}
-
-function CalendarDayButton({
-  className,
-  day,
-  modifiers,
-  ...props
-}: React.ComponentProps<typeof DayButton>) {
-  const defaultClassNames = getDefaultClassNames();
-
-  const ref = React.useRef<HTMLButtonElement>(null);
-  React.useEffect(() => {
-    if (modifiers["focused"]) ref.current?.focus();
-  }, [modifiers]);
-
-  return (
-    <Button
-      ref={ref}
-      variant="ghost"
-      size="icon"
-      data-day={day.date.toLocaleDateString()}
-      data-selected-single={
-        modifiers["selected"] &&
-        !modifiers["range_start"] &&
-        !modifiers["range_end"] &&
-        !modifiers["range_middle"]
-      }
-      data-range-start={modifiers["range_start"]}
-      data-range-end={modifiers["range_end"]}
-      data-range-middle={modifiers["range_middle"]}
-      className={cn(
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square h-auto w-full min-w-(--cell-size) flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] [&>span]:text-xs [&>span]:opacity-70",
-        defaultClassNames.day,
-        className,
-      )}
-      {...props}
-    />
-  );
-}
-
-export { Calendar, CalendarDayButton };
-````
-
-## File: src/components/ui/card.tsx
-````typescript
-import * as React from "react";
-
-import { cn } from "@/lib/utils";
-
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("rounded-xl border bg-card text-card-foreground shadow", className)}
-      {...props}
-    />
-  ),
-);
-Card.displayName = "Card";
-
-const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
-  ),
-);
-CardHeader.displayName = "CardHeader";
-
-const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("font-semibold leading-none tracking-tight", className)}
-      {...props}
-    />
-  ),
-);
-CardTitle.displayName = "CardTitle";
-
-const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
-  ),
-);
-CardDescription.displayName = "CardDescription";
-
-const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-  ),
-);
-CardContent.displayName = "CardContent";
-
-const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
-  ),
-);
-CardFooter.displayName = "CardFooter";
-
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
-````
-
-## File: src/components/ui/carousel.tsx
-````typescript
-import * as React from "react";
-import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-
-type CarouselApi = UseEmblaCarouselType[1];
-type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
-type CarouselOptions = UseCarouselParameters[0];
-type CarouselPlugin = UseCarouselParameters[1];
-
-type CarouselProps = {
-  opts?: CarouselOptions;
-  plugins?: CarouselPlugin;
-  orientation?: "horizontal" | "vertical";
-  setApi?: (api: CarouselApi) => void;
-};
-
-type CarouselContextProps = {
-  carouselRef: ReturnType<typeof useEmblaCarousel>[0];
-  api: ReturnType<typeof useEmblaCarousel>[1];
-  scrollPrev: () => void;
-  scrollNext: () => void;
-  canScrollPrev: boolean;
-  canScrollNext: boolean;
-} & CarouselProps;
-
-const CarouselContext = React.createContext<CarouselContextProps | null>(null);
-
-function useCarousel() {
-  const context = React.useContext(CarouselContext);
-
-  if (!context) {
-    throw new Error("useCarousel must be used within a <Carousel />");
-  }
-
-  return context;
-}
-
-const Carousel = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & CarouselProps
->(({ orientation = "horizontal", opts, setApi, plugins, className, children, ...props }, ref) => {
-  const [carouselRef, api] = useEmblaCarousel(
-    {
-      ...opts,
-      axis: orientation === "horizontal" ? "x" : "y",
-    },
-    plugins,
-  );
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
-  const [canScrollNext, setCanScrollNext] = React.useState(false);
-
-  const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) {
-      return;
-    }
-
-    setCanScrollPrev(api.canScrollPrev());
-    setCanScrollNext(api.canScrollNext());
-  }, []);
-
-  const scrollPrev = React.useCallback(() => {
-    api?.scrollPrev();
-  }, [api]);
-
-  const scrollNext = React.useCallback(() => {
-    api?.scrollNext();
-  }, [api]);
-
-  const handleKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        scrollPrev();
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        scrollNext();
-      }
-    },
-    [scrollPrev, scrollNext],
-  );
-
-  React.useEffect(() => {
-    if (!api || !setApi) {
-      return;
-    }
-
-    setApi(api);
-  }, [api, setApi]);
-
-  React.useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    onSelect(api);
-    api.on("reInit", onSelect);
-    api.on("select", onSelect);
-
-    return () => {
-      api?.off("select", onSelect);
-    };
-  }, [api, onSelect]);
-
-  return (
-    <CarouselContext.Provider
-      value={{
-        carouselRef,
-        api: api,
-        opts,
-        orientation: orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
-        scrollPrev,
-        scrollNext,
-        canScrollPrev,
-        canScrollNext,
-      }}
-    >
-      <div
-        ref={ref}
-        onKeyDownCapture={handleKeyDown}
-        className={cn("relative", className)}
-        role="region"
-        aria-roledescription="carousel"
-        {...props}
-      >
-        {children}
-      </div>
-    </CarouselContext.Provider>
-  );
-});
-Carousel.displayName = "Carousel";
-
-const CarouselContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
-    const { carouselRef, orientation } = useCarousel();
-
-    return (
-      <div ref={carouselRef} className="overflow-hidden">
-        <div
-          ref={ref}
-          className={cn(
-            "flex",
-            orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-            className,
-          )}
-          {...props}
-        />
-      </div>
-    );
-  },
-);
-CarouselContent.displayName = "CarouselContent";
-
-const CarouselItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
-    const { orientation } = useCarousel();
-
-    return (
-      <div
-        ref={ref}
-        role="group"
-        aria-roledescription="slide"
-        className={cn(
-          "min-w-0 shrink-0 grow-0 basis-full",
-          orientation === "horizontal" ? "pl-4" : "pt-4",
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
-CarouselItem.displayName = "CarouselItem";
-
-const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
-  ({ className, variant = "outline", size = "icon", ...props }, ref) => {
-    const { orientation, scrollPrev, canScrollPrev } = useCarousel();
-
-    return (
-      <Button
-        ref={ref}
-        variant={variant}
-        size={size}
-        className={cn(
-          "absolute  h-8 w-8 rounded-full",
-          orientation === "horizontal"
-            ? "-left-12 top-1/2 -translate-y-1/2"
-            : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
-          className,
-        )}
-        disabled={!canScrollPrev}
-        onClick={scrollPrev}
-        {...props}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="sr-only">Previous slide</span>
-      </Button>
-    );
-  },
-);
-CarouselPrevious.displayName = "CarouselPrevious";
-
-const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
-  ({ className, variant = "outline", size = "icon", ...props }, ref) => {
-    const { orientation, scrollNext, canScrollNext } = useCarousel();
-
-    return (
-      <Button
-        ref={ref}
-        variant={variant}
-        size={size}
-        className={cn(
-          "absolute h-8 w-8 rounded-full",
-          orientation === "horizontal"
-            ? "-right-12 top-1/2 -translate-y-1/2"
-            : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
-          className,
-        )}
-        disabled={!canScrollNext}
-        onClick={scrollNext}
-        {...props}
-      >
-        <ArrowRight className="h-4 w-4" />
-        <span className="sr-only">Next slide</span>
-      </Button>
-    );
-  },
-);
-CarouselNext.displayName = "CarouselNext";
-
-export {
-  type CarouselApi,
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-};
-````
-
-## File: src/components/ui/chart.tsx
-````typescript
-import * as React from "react";
-import * as RechartsPrimitive from "recharts";
-
-import { cn } from "@/lib/utils";
-
-// Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: "", dark: ".dark" } as const;
-
-export type ChartConfig = {
-  [k in string]: {
-    label?: React.ReactNode;
-    icon?: React.ComponentType;
-  } & (
-    | { color?: string; theme?: never }
-    | { color?: never; theme: Record<keyof typeof THEMES, string> }
-  );
-};
-
-type ChartContextProps = {
-  config: ChartConfig;
-};
-
-const ChartContext = React.createContext<ChartContextProps | null>(null);
-
-function useChart() {
-  const context = React.useContext(ChartContext);
-
-  if (!context) {
-    throw new Error("useChart must be used within a <ChartContainer />");
-  }
-
-  return context;
-}
-
-const ChartContainer = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    config: ChartConfig;
-    children: React.ComponentProps<typeof RechartsPrimitive.ResponsiveContainer>["children"];
-  }
->(({ id, className, children, config, ...props }, ref) => {
-  const uniqueId = React.useId();
-  const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
-
-  return (
-    <ChartContext.Provider value={{ config }}>
-      <div
-        data-chart={chartId}
-        ref={ref}
-        className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
-          className,
-        )}
-        {...props}
-      >
-        <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
-      </div>
-    </ChartContext.Provider>
-  );
-});
-ChartContainer.displayName = "Chart";
-
-const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
-  const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color);
-
-  if (!colorConfig.length) {
-    return null;
-  }
-
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
-}
-`,
-          )
-          .join("\n"),
-      }}
-    />
-  );
-};
-
-const ChartTooltip = RechartsPrimitive.Tooltip;
-
-const ChartTooltipContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-    React.ComponentProps<"div"> & {
-      hideLabel?: boolean;
-      hideIndicator?: boolean;
-      indicator?: "line" | "dot" | "dashed";
-      nameKey?: string;
-      labelKey?: string;
-    }
->(
-  (
-    {
-      active,
-      payload,
-      className,
-      indicator = "dot",
-      hideLabel = false,
-      hideIndicator = false,
-      label,
-      labelFormatter,
-      labelClassName,
-      formatter,
-      color,
-      nameKey,
-      labelKey,
-    },
-    ref,
-  ) => {
-    const { config } = useChart();
-
-    const tooltipLabel = React.useMemo(() => {
-      if (hideLabel || !payload?.length) {
-        return null;
-      }
-
-      const [item] = payload;
-      const key = `${labelKey || item?.dataKey || item?.name || "value"}`;
-      const itemConfig = getPayloadConfigFromPayload(config, item, key);
-      const value =
-        !labelKey && typeof label === "string"
-          ? config[label as keyof typeof config]?.label || label
-          : itemConfig?.label;
-
-      if (labelFormatter) {
-        return (
-          <div className={cn("font-medium", labelClassName)}>{labelFormatter(value, payload)}</div>
-        );
-      }
-
-      if (!value) {
-        return null;
-      }
-
-      return <div className={cn("font-medium", labelClassName)}>{value}</div>;
-    }, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey]);
-
-    if (!active || !payload?.length) {
-      return null;
-    }
-
-    const nestLabel = payload.length === 1 && indicator !== "dot";
-
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
-          className,
-        )}
-      >
-        {!nestLabel ? tooltipLabel : null}
-        <div className="grid gap-1.5">
-          {payload
-            .filter((item) => item.type !== "none")
-            .map((item, index) => {
-              const key = `${nameKey || item.name || item.dataKey || "value"}`;
-              const itemConfig = getPayloadConfigFromPayload(config, item, key);
-              const indicatorColor = color || item.payload.fill || item.color;
-
-              return (
-                <div
-                  key={item.dataKey}
-                  className={cn(
-                    "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
-                    indicator === "dot" && "items-center",
-                  )}
-                >
-                  {formatter && item?.value !== undefined && item.name ? (
-                    formatter(item.value, item.name, item, index, item.payload)
-                  ) : (
-                    <>
-                      {itemConfig?.icon ? (
-                        <itemConfig.icon />
-                      ) : (
-                        !hideIndicator && (
-                          <div
-                            className={cn(
-                              "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
-                              {
-                                "h-2.5 w-2.5": indicator === "dot",
-                                "w-1": indicator === "line",
-                                "w-0 border-[1.5px] border-dashed bg-transparent":
-                                  indicator === "dashed",
-                                "my-0.5": nestLabel && indicator === "dashed",
-                              },
-                            )}
-                            style={
-                              {
-                                "--color-bg": indicatorColor,
-                                "--color-border": indicatorColor,
-                              } as React.CSSProperties
-                            }
-                          />
-                        )
-                      )}
-                      <div
-                        className={cn(
-                          "flex flex-1 justify-between leading-none",
-                          nestLabel ? "items-end" : "items-center",
-                        )}
-                      >
-                        <div className="grid gap-1.5">
-                          {nestLabel ? tooltipLabel : null}
-                          <span className="text-muted-foreground">
-                            {itemConfig?.label || item.name}
-                          </span>
-                        </div>
-                        {item.value && (
-                          <span className="font-mono font-medium tabular-nums text-foreground">
-                            {item.value.toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-      </div>
-    );
-  },
-);
-ChartTooltipContent.displayName = "ChartTooltip";
-
-const ChartLegend = RechartsPrimitive.Legend;
-
-const ChartLegendContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-      hideIcon?: boolean;
-      nameKey?: string;
-    }
->(({ className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }, ref) => {
-  const { config } = useChart();
-
-  if (!payload?.length) {
-    return null;
-  }
-
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "flex items-center justify-center gap-4",
-        verticalAlign === "top" ? "pb-3" : "pt-3",
-        className,
-      )}
-    >
-      {payload
-        .filter((item) => item.type !== "none")
-        .map((item) => {
-          const key = `${nameKey || item.dataKey || "value"}`;
-          const itemConfig = getPayloadConfigFromPayload(config, item, key);
-
-          return (
-            <div
-              key={item.value}
-              className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground",
-              )}
-            >
-              {itemConfig?.icon && !hideIcon ? (
-                <itemConfig.icon />
-              ) : (
-                <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
-                  style={{
-                    backgroundColor: item.color,
-                  }}
-                />
-              )}
-              {itemConfig?.label}
-            </div>
-          );
-        })}
-    </div>
-  );
-});
-ChartLegendContent.displayName = "ChartLegend";
-
-// Helper to extract item config from a payload.
-function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string) {
-  if (typeof payload !== "object" || payload === null) {
-    return undefined;
-  }
-
-  const payloadPayload =
-    "payload" in payload && typeof payload.payload === "object" && payload.payload !== null
-      ? payload.payload
-      : undefined;
-
-  let configLabelKey: string = key;
-
-  if (key in payload && typeof payload[key as keyof typeof payload] === "string") {
-    configLabelKey = payload[key as keyof typeof payload] as string;
-  } else if (
-    payloadPayload &&
-    key in payloadPayload &&
-    typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
-  ) {
-    configLabelKey = payloadPayload[key as keyof typeof payloadPayload] as string;
-  }
-
-  return configLabelKey in config ? config[configLabelKey] : config[key as keyof typeof config];
-}
-
-export {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  ChartStyle,
-};
-````
-
-## File: src/components/ui/checkbox.tsx
-````typescript
-import * as React from "react";
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import { Check } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const Checkbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <CheckboxPrimitive.Root
-    ref={ref}
-    className={cn(
-      "grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className,
-    )}
-    {...props}
-  >
-    <CheckboxPrimitive.Indicator className={cn("grid place-content-center text-current")}>
-      <Check className="h-4 w-4" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
-));
-Checkbox.displayName = CheckboxPrimitive.Root.displayName;
-
-export { Checkbox };
-````
-
-## File: src/components/ui/collapsible.tsx
-````typescript
-"use client";
-
-import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
-
-const Collapsible = CollapsiblePrimitive.Root;
-
-const CollapsibleTrigger = CollapsiblePrimitive.CollapsibleTrigger;
-
-const CollapsibleContent = CollapsiblePrimitive.CollapsibleContent;
-
-export { Collapsible, CollapsibleTrigger, CollapsibleContent };
-````
-
-## File: src/components/ui/command.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import { type DialogProps } from "@radix-ui/react-dialog";
-import { Command as CommandPrimitive } from "cmdk";
-import { Search } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-
-const Command = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive
-    ref={ref}
-    className={cn(
-      "flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
-      className,
-    )}
-    {...props}
-  />
-));
-Command.displayName = CommandPrimitive.displayName;
-
-const CommandDialog = ({ children, ...props }: DialogProps) => {
-  return (
-    <Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0">
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
-          {children}
-        </Command>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const CommandInput = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Input>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
->(({ className, ...props }, ref) => (
-  <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-    <CommandPrimitive.Input
-      ref={ref}
-      className={cn(
-        "flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    />
-  </div>
-));
-
-CommandInput.displayName = CommandPrimitive.Input.displayName;
-
-const CommandList = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.List
-    ref={ref}
-    className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
-    {...props}
-  />
-));
-
-CommandList.displayName = CommandPrimitive.List.displayName;
-
-const CommandEmpty = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Empty>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
->((props, ref) => (
-  <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm" {...props} />
-));
-
-CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
-
-const CommandGroup = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Group>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Group
-    ref={ref}
-    className={cn(
-      "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
-      className,
-    )}
-    {...props}
-  />
-));
-
-CommandGroup.displayName = CommandPrimitive.Group.displayName;
-
-const CommandSeparator = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 h-px bg-border", className)}
-    {...props}
-  />
-));
-CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
-
-const CommandItem = React.forwardRef<
-  React.ElementRef<typeof CommandPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-      className,
-    )}
-    {...props}
-  />
-));
-
-CommandItem.displayName = CommandPrimitive.Item.displayName;
-
-const CommandShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span
-      className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}
-      {...props}
-    />
-  );
-};
-CommandShortcut.displayName = "CommandShortcut";
-
-export {
-  Command,
-  CommandDialog,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandShortcut,
-  CommandSeparator,
-};
-````
-
-## File: src/components/ui/context-menu.tsx
-````typescript
-import * as React from "react";
-import * as ContextMenuPrimitive from "@radix-ui/react-context-menu";
-import { Check, ChevronRight, Circle } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const ContextMenu = ContextMenuPrimitive.Root;
-
-const ContextMenuTrigger = ContextMenuPrimitive.Trigger;
-
-const ContextMenuGroup = ContextMenuPrimitive.Group;
-
-const ContextMenuPortal = ContextMenuPrimitive.Portal;
-
-const ContextMenuSub = ContextMenuPrimitive.Sub;
-
-const ContextMenuRadioGroup = ContextMenuPrimitive.RadioGroup;
-
-const ContextMenuSubTrigger = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & {
-    inset?: boolean;
-  }
->(({ className, inset, children, ...props }, ref) => (
-  <ContextMenuPrimitive.SubTrigger
-    ref={ref}
-    className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-      inset && "pl-8",
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
-  </ContextMenuPrimitive.SubTrigger>
-));
-ContextMenuSubTrigger.displayName = ContextMenuPrimitive.SubTrigger.displayName;
-
-const ContextMenuSubContent = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.SubContent>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent>
->(({ className, ...props }, ref) => (
-  <ContextMenuPrimitive.SubContent
-    ref={ref}
-    className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-context-menu-content-transform-origin)",
-      className,
-    )}
-    {...props}
-  />
-));
-ContextMenuSubContent.displayName = ContextMenuPrimitive.SubContent.displayName;
-
-const ContextMenuContent = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <ContextMenuPrimitive.Portal>
-    <ContextMenuPrimitive.Content
-      ref={ref}
-      className={cn(
-        "z-50 max-h-(--radix-context-menu-content-available-height) min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-context-menu-content-transform-origin)",
-        className,
-      )}
-      {...props}
-    />
-  </ContextMenuPrimitive.Portal>
-));
-ContextMenuContent.displayName = ContextMenuPrimitive.Content.displayName;
-
-const ContextMenuItem = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & {
-    inset?: boolean;
-  }
->(({ className, inset, ...props }, ref) => (
-  <ContextMenuPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      inset && "pl-8",
-      className,
-    )}
-    {...props}
-  />
-));
-ContextMenuItem.displayName = ContextMenuPrimitive.Item.displayName;
-
-const ContextMenuCheckboxItem = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.CheckboxItem>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.CheckboxItem>
->(({ className, children, ...props }, ref) => (
-  <ContextMenuPrimitive.CheckboxItem
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <ContextMenuPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </ContextMenuPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </ContextMenuPrimitive.CheckboxItem>
-));
-ContextMenuCheckboxItem.displayName = ContextMenuPrimitive.CheckboxItem.displayName;
-
-const ContextMenuRadioItem = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.RadioItem>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.RadioItem>
->(({ className, children, ...props }, ref) => (
-  <ContextMenuPrimitive.RadioItem
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <ContextMenuPrimitive.ItemIndicator>
-        <Circle className="h-4 w-4 fill-current" />
-      </ContextMenuPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </ContextMenuPrimitive.RadioItem>
-));
-ContextMenuRadioItem.displayName = ContextMenuPrimitive.RadioItem.displayName;
-
-const ContextMenuLabel = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & {
-    inset?: boolean;
-  }
->(({ className, inset, ...props }, ref) => (
-  <ContextMenuPrimitive.Label
-    ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold text-foreground", inset && "pl-8", className)}
-    {...props}
-  />
-));
-ContextMenuLabel.displayName = ContextMenuPrimitive.Label.displayName;
-
-const ContextMenuSeparator = React.forwardRef<
-  React.ElementRef<typeof ContextMenuPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <ContextMenuPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-border", className)}
-    {...props}
-  />
-));
-ContextMenuSeparator.displayName = ContextMenuPrimitive.Separator.displayName;
-
-const ContextMenuShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span
-      className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}
-      {...props}
-    />
-  );
-};
-ContextMenuShortcut.displayName = "ContextMenuShortcut";
-
-export {
-  ContextMenu,
-  ContextMenuTrigger,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuCheckboxItem,
-  ContextMenuRadioItem,
-  ContextMenuLabel,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuGroup,
-  ContextMenuPortal,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
-  ContextMenuRadioGroup,
-};
-````
-
-## File: src/components/ui/dialog.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const Dialog = DialogPrimitive.Root;
-
-const DialogTrigger = DialogPrimitive.Trigger;
-
-const DialogPortal = DialogPrimitive.Portal;
-
-const DialogClose = DialogPrimitive.Close;
-
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
-    )}
-    {...props}
-  />
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
-
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-));
-DialogContent.displayName = DialogPrimitive.Content.displayName;
-
-const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />
-);
-DialogHeader.displayName = "DialogHeader";
-
-const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
-    {...props}
-  />
-);
-DialogFooter.displayName = "DialogFooter";
-
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
-
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
-
-export {
-  Dialog,
-  DialogPortal,
-  DialogOverlay,
-  DialogTrigger,
-  DialogClose,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-};
-````
-
-## File: src/components/ui/drawer.tsx
-````typescript
-import * as React from "react";
-import { Drawer as DrawerPrimitive } from "vaul";
-
-import { cn } from "@/lib/utils";
-
-const Drawer = ({
-  shouldScaleBackground = true,
-  ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
-  <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
-);
-Drawer.displayName = "Drawer";
-
-const DrawerTrigger = DrawerPrimitive.Trigger;
-
-const DrawerPortal = DrawerPrimitive.Portal;
-
-const DrawerClose = DrawerPrimitive.Close;
-
-const DrawerOverlay = React.forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Overlay
-    ref={ref}
-    className={cn("fixed inset-0 z-50 bg-black/80", className)}
-    {...props}
-  />
-));
-DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
-
-const DrawerContent = React.forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
-        className,
-      )}
-      {...props}
-    >
-      <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-));
-DrawerContent.displayName = "DrawerContent";
-
-const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("grid gap-1.5 p-4 text-center sm:text-left", className)} {...props} />
-);
-DrawerHeader.displayName = "DrawerHeader";
-
-const DrawerFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("mt-auto flex flex-col gap-2 p-4", className)} {...props} />
-);
-DrawerFooter.displayName = "DrawerFooter";
-
-const DrawerTitle = React.forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
-    {...props}
-  />
-));
-DrawerTitle.displayName = DrawerPrimitive.Title.displayName;
-
-const DrawerDescription = React.forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
-
-export {
-  Drawer,
-  DrawerPortal,
-  DrawerOverlay,
-  DrawerTrigger,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
-  DrawerDescription,
-};
-````
-
-## File: src/components/ui/dropdown-menu.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
-import { Check, ChevronRight, Circle } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const DropdownMenu = DropdownMenuPrimitive.Root;
-
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
-
-const DropdownMenuGroup = DropdownMenuPrimitive.Group;
-
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
-
-const DropdownMenuSub = DropdownMenuPrimitive.Sub;
-
-const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
-
-const DropdownMenuSubTrigger = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
-    inset?: boolean;
-  }
->(({ className, inset, children, ...props }, ref) => (
-  <DropdownMenuPrimitive.SubTrigger
-    ref={ref}
-    className={cn(
-      "flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-      inset && "pl-8",
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <ChevronRight className="ml-auto" />
-  </DropdownMenuPrimitive.SubTrigger>
-));
-DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
-
-const DropdownMenuSubContent = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.SubContent
-    ref={ref}
-    className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-dropdown-menu-content-transform-origin)",
-      className,
-    )}
-    {...props}
-  />
-));
-DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
-
-const DropdownMenuContent = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-dropdown-menu-content-transform-origin)",
-        className,
-      )}
-      {...props}
-    />
-  </DropdownMenuPrimitive.Portal>
-));
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
-
-const DropdownMenuItem = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
-    inset?: boolean;
-  }
->(({ className, inset, ...props }, ref) => (
-  <DropdownMenuPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
-      inset && "pl-8",
-      className,
-    )}
-    {...props}
-  />
-));
-DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
-
-const DropdownMenuCheckboxItem = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
->(({ className, children, ...props }, ref) => (
-  <DropdownMenuPrimitive.CheckboxItem
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <DropdownMenuPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </DropdownMenuPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </DropdownMenuPrimitive.CheckboxItem>
-));
-DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
-
-const DropdownMenuRadioItem = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
->(({ className, children, ...props }, ref) => (
-  <DropdownMenuPrimitive.RadioItem
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" />
-      </DropdownMenuPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </DropdownMenuPrimitive.RadioItem>
-));
-DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
-
-const DropdownMenuLabel = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
-    inset?: boolean;
-  }
->(({ className, inset, ...props }, ref) => (
-  <DropdownMenuPrimitive.Label
-    ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className)}
-    {...props}
-  />
-));
-DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
-
-const DropdownMenuSeparator = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
-    {...props}
-  />
-));
-DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
-
-const DropdownMenuShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span className={cn("ml-auto text-xs tracking-widest opacity-60", className)} {...props} />
-  );
-};
-DropdownMenuShortcut.displayName = "DropdownMenuShortcut";
-
-export {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuCheckboxItem,
-  DropdownMenuRadioItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
-};
-````
-
-## File: src/components/ui/form.tsx
-````typescript
-import * as React from "react";
-import * as LabelPrimitive from "@radix-ui/react-label";
-import { Slot } from "@radix-ui/react-slot";
-import {
-  Controller,
-  FormProvider,
-  useFormContext,
-  type ControllerProps,
-  type FieldPath,
-  type FieldValues,
-} from "react-hook-form";
-
-import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
-
-const Form = FormProvider;
-
-type FormFieldContextValue<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> = {
-  name: TName;
-};
-
-const FormFieldContext = React.createContext<FormFieldContextValue | null>(null);
-
-const FormField = <
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({
-  ...props
-}: ControllerProps<TFieldValues, TName>) => {
-  return (
-    <FormFieldContext.Provider value={{ name: props.name }}>
-      <Controller {...props} />
-    </FormFieldContext.Provider>
-  );
-};
-
-const useFormField = () => {
-  const fieldContext = React.useContext(FormFieldContext);
-  const itemContext = React.useContext(FormItemContext);
-  const { getFieldState, formState } = useFormContext();
-
-  if (!fieldContext) {
-    throw new Error("useFormField should be used within <FormField>");
-  }
-
-  if (!itemContext) {
-    throw new Error("useFormField should be used within <FormItem>");
-  }
-
-  const fieldState = getFieldState(fieldContext.name, formState);
-
-  const { id } = itemContext;
-
-  return {
-    id,
-    name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
-    ...fieldState,
-  };
-};
-
-type FormItemContextValue = {
+## File: src/lib/gamification/badges.ts
+```typescript
+import { objectivesFor } from "./catalog";
+import type { QuizResult } from "./types";
+export const TIER_NAMES = ["Locked", "Bronze", "Silver", "Gold", "Diamond"] as const;
+export type Tier = 0 | 1 | 2 | 3 | 4;
+export interface BadgeDef {
   id: string;
-};
-
-const FormItemContext = React.createContext<FormItemContextValue | null>(null);
-
-const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
-    const id = React.useId();
-
-    return (
-      <FormItemContext.Provider value={{ id }}>
-        <div ref={ref} className={cn("space-y-2", className)} {...props} />
-      </FormItemContext.Provider>
-    );
-  },
-);
-FormItem.displayName = "FormItem";
-
-const FormLabel = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
-  const { error, formItemId } = useFormField();
-
-  return (
-    <Label
-      ref={ref}
-      className={cn(error && "text-destructive", className)}
-      htmlFor={formItemId}
-      {...props}
-    />
-  );
-});
-FormLabel.displayName = "FormLabel";
-
-const FormControl = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot>
->(({ ...props }, ref) => {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
-
-  return (
-    <Slot
-      ref={ref}
-      id={formItemId}
-      aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
-      aria-invalid={!!error}
-      {...props}
-    />
-  );
-});
-FormControl.displayName = "FormControl";
-
-const FormDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => {
-  const { formDescriptionId } = useFormField();
-
-  return (
-    <p
-      ref={ref}
-      id={formDescriptionId}
-      className={cn("text-[0.8rem] text-muted-foreground", className)}
-      {...props}
-    />
-  );
-});
-FormDescription.displayName = "FormDescription";
-
-const FormMessage = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, ...props }, ref) => {
-  const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message ?? "") : children;
-
-  if (!body) {
-    return null;
-  }
-
-  return (
-    <p
-      ref={ref}
-      id={formMessageId}
-      className={cn("text-[0.8rem] font-medium text-destructive", className)}
-      {...props}
-    >
-      {body}
-    </p>
-  );
-});
-FormMessage.displayName = "FormMessage";
-
-export {
-  useFormField,
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  FormField,
-};
-````
-
-## File: src/components/ui/hover-card.tsx
-````typescript
-import * as React from "react";
-import * as HoverCardPrimitive from "@radix-ui/react-hover-card";
-
-import { cn } from "@/lib/utils";
-
-const HoverCard = HoverCardPrimitive.Root;
-
-const HoverCardTrigger = HoverCardPrimitive.Trigger;
-
-const HoverCardContent = React.forwardRef<
-  React.ElementRef<typeof HoverCardPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>
->(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
-  <HoverCardPrimitive.Content
-    ref={ref}
-    align={align}
-    sideOffset={sideOffset}
-    className={cn(
-      "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-hover-card-content-transform-origin)",
-      className,
-    )}
-    {...props}
-  />
-));
-HoverCardContent.displayName = HoverCardPrimitive.Content.displayName;
-
-export { HoverCard, HoverCardTrigger, HoverCardContent };
-````
-
-## File: src/components/ui/input-otp.tsx
-````typescript
-import * as React from "react";
-import { OTPInput, OTPInputContext } from "input-otp";
-import { Minus } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const InputOTP = React.forwardRef<
-  React.ElementRef<typeof OTPInput>,
-  React.ComponentPropsWithoutRef<typeof OTPInput>
->(({ className, containerClassName, ...props }, ref) => (
-  <OTPInput
-    ref={ref}
-    containerClassName={cn(
-      "flex items-center gap-2 has-[:disabled]:opacity-50",
-      containerClassName,
-    )}
-    className={cn("disabled:cursor-not-allowed", className)}
-    {...props}
-  />
-));
-InputOTP.displayName = "InputOTP";
-
-const InputOTPGroup = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center", className)} {...props} />
-));
-InputOTPGroup.displayName = "InputOTPGroup";
-
-const InputOTPSlot = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div"> & { index: number }
->(({ index, className, ...props }, ref) => {
-  const inputOTPContext = React.useContext(OTPInputContext);
-  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index] ?? {
-    char: null,
-    hasFakeCaret: false,
-    isActive: false,
-  };
-
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "relative flex h-9 w-9 items-center justify-center border-y border-r border-input text-sm shadow-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
-        isActive && "z-10 ring-1 ring-ring",
-        className,
-      )}
-      {...props}
-    >
-      {char}
-      {hasFakeCaret && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-4 w-px animate-caret-blink bg-foreground duration-1000" />
-        </div>
-      )}
-    </div>
-  );
-});
-InputOTPSlot.displayName = "InputOTPSlot";
-
-const InputOTPSeparator = React.forwardRef<
-  React.ElementRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ ...props }, ref) => (
-  <div ref={ref} role="separator" {...props}>
-    <Minus />
-  </div>
-));
-InputOTPSeparator.displayName = "InputOTPSeparator";
-
-export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator };
-````
-
-## File: src/components/ui/input.tsx
-````typescript
-import * as React from "react";
-
-import { cn } from "@/lib/utils";
-
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={cn(
-          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-          className,
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  },
-);
-Input.displayName = "Input";
-
-export { Input };
-````
-
-## File: src/components/ui/label.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as LabelPrimitive from "@radix-ui/react-label";
-import { cva, type VariantProps } from "class-variance-authority";
-
-import { cn } from "@/lib/utils";
-
-const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-);
-
-const Label = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & VariantProps<typeof labelVariants>
->(({ className, ...props }, ref) => (
-  <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />
-));
-Label.displayName = LabelPrimitive.Root.displayName;
-
-export { Label };
-````
-
-## File: src/components/ui/menubar.tsx
-````typescript
-import * as React from "react";
-import * as MenubarPrimitive from "@radix-ui/react-menubar";
-import { Check, ChevronRight, Circle } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-function MenubarMenu({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Menu>) {
-  return <MenubarPrimitive.Menu {...props} />;
+  name: string;
+  emoji: string;
+  description: string;
+  /** What the number counts, e.g. "full-mark quizzes". */
+  unit: string;
+  /** Targets for Bronze, Silver, Gold and Diamond. */
+  thresholds: readonly [number, number, number, number];
 }
-
-function MenubarGroup({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Group>) {
-  return <MenubarPrimitive.Group {...props} />;
-}
-
-function MenubarPortal({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Portal>) {
-  return <MenubarPrimitive.Portal {...props} />;
-}
-
-function MenubarRadioGroup({ ...props }: React.ComponentProps<typeof MenubarPrimitive.RadioGroup>) {
-  return <MenubarPrimitive.RadioGroup {...props} />;
-}
-
-function MenubarSub({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Sub>) {
-  return <MenubarPrimitive.Sub data-slot="menubar-sub" {...props} />;
-}
-
-const Menubar = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <MenubarPrimitive.Root
-    ref={ref}
-    className={cn(
-      "flex h-9 items-center space-x-1 rounded-md border bg-background p-1 shadow-sm",
-      className,
-    )}
-    {...props}
-  />
-));
-Menubar.displayName = MenubarPrimitive.Root.displayName;
-
-const MenubarTrigger = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <MenubarPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-3 py-1 text-sm font-medium outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-      className,
-    )}
-    {...props}
-  />
-));
-MenubarTrigger.displayName = MenubarPrimitive.Trigger.displayName;
-
-const MenubarSubTrigger = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubTrigger> & {
-    inset?: boolean;
-  }
->(({ className, inset, children, ...props }, ref) => (
-  <MenubarPrimitive.SubTrigger
-    ref={ref}
-    className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
-      inset && "pl-8",
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
-  </MenubarPrimitive.SubTrigger>
-));
-MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName;
-
-const MenubarSubContent = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.SubContent>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubContent>
->(({ className, ...props }, ref) => (
-  <MenubarPrimitive.SubContent
-    ref={ref}
-    className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-menubar-content-transform-origin)",
-      className,
-    )}
-    {...props}
-  />
-));
-MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName;
-
-const MenubarContent = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Content>
->(({ className, align = "start", alignOffset = -4, sideOffset = 8, ...props }, ref) => (
-  <MenubarPrimitive.Portal>
-    <MenubarPrimitive.Content
-      ref={ref}
-      align={align}
-      alignOffset={alignOffset}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 min-w-[12rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-menubar-content-transform-origin)",
-        className,
-      )}
-      {...props}
-    />
-  </MenubarPrimitive.Portal>
-));
-MenubarContent.displayName = MenubarPrimitive.Content.displayName;
-
-const MenubarItem = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Item> & {
-    inset?: boolean;
-  }
->(({ className, inset, ...props }, ref) => (
-  <MenubarPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      inset && "pl-8",
-      className,
-    )}
-    {...props}
-  />
-));
-MenubarItem.displayName = MenubarPrimitive.Item.displayName;
-
-const MenubarCheckboxItem = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.CheckboxItem>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.CheckboxItem>
->(({ className, children, ...props }, ref) => (
-  <MenubarPrimitive.CheckboxItem
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <MenubarPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </MenubarPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </MenubarPrimitive.CheckboxItem>
-));
-MenubarCheckboxItem.displayName = MenubarPrimitive.CheckboxItem.displayName;
-
-const MenubarRadioItem = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.RadioItem>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.RadioItem>
->(({ className, children, ...props }, ref) => (
-  <MenubarPrimitive.RadioItem
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <MenubarPrimitive.ItemIndicator>
-        <Circle className="h-4 w-4 fill-current" />
-      </MenubarPrimitive.ItemIndicator>
-    </span>
-    {children}
-  </MenubarPrimitive.RadioItem>
-));
-MenubarRadioItem.displayName = MenubarPrimitive.RadioItem.displayName;
-
-const MenubarLabel = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Label> & {
-    inset?: boolean;
-  }
->(({ className, inset, ...props }, ref) => (
-  <MenubarPrimitive.Label
-    ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className)}
-    {...props}
-  />
-));
-MenubarLabel.displayName = MenubarPrimitive.Label.displayName;
-
-const MenubarSeparator = React.forwardRef<
-  React.ElementRef<typeof MenubarPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <MenubarPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
-    {...props}
-  />
-));
-MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName;
-
-const MenubarShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span
-      className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}
-      {...props}
-    />
-  );
-};
-MenubarShortcut.displayname = "MenubarShortcut";
-
-export {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-  MenubarContent,
-  MenubarItem,
-  MenubarSeparator,
-  MenubarLabel,
-  MenubarCheckboxItem,
-  MenubarRadioGroup,
-  MenubarRadioItem,
-  MenubarPortal,
-  MenubarSubContent,
-  MenubarSubTrigger,
-  MenubarGroup,
-  MenubarSub,
-  MenubarShortcut,
-};
-````
-
-## File: src/components/ui/navigation-menu.tsx
-````typescript
-import * as React from "react";
-import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
-import { cva } from "class-variance-authority";
-import { ChevronDown } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const NavigationMenu = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root>
->(({ className, children, ...props }, ref) => (
-  <NavigationMenuPrimitive.Root
-    ref={ref}
-    className={cn("relative z-10 flex max-w-max flex-1 items-center justify-center", className)}
-    {...props}
-  >
-    {children}
-    <NavigationMenuViewport />
-  </NavigationMenuPrimitive.Root>
-));
-NavigationMenu.displayName = NavigationMenuPrimitive.Root.displayName;
-
-const NavigationMenuList = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
->(({ className, ...props }, ref) => (
-  <NavigationMenuPrimitive.List
-    ref={ref}
-    className={cn("group flex flex-1 list-none items-center justify-center space-x-1", className)}
-    {...props}
-  />
-));
-NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
-
-const NavigationMenuItem = NavigationMenuPrimitive.Item;
-
-const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed data-[state=open]:text-accent-foreground data-[state=open]:bg-accent/50 data-[state=open]:hover:bg-accent data-[state=open]:focus:bg-accent",
-);
-
-const NavigationMenuTrigger = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <NavigationMenuPrimitive.Trigger
-    ref={ref}
-    className={cn(navigationMenuTriggerStyle(), "group", className)}
-    {...props}
-  >
-    {children}{" "}
-    <ChevronDown
-      className="relative top-[1px] ml-1 h-3 w-3 transition duration-300 group-data-[state=open]:rotate-180"
-      aria-hidden="true"
-    />
-  </NavigationMenuPrimitive.Trigger>
-));
-NavigationMenuTrigger.displayName = NavigationMenuPrimitive.Trigger.displayName;
-
-const NavigationMenuContent = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <NavigationMenuPrimitive.Content
-    ref={ref}
-    className={cn(
-      "left-0 top-0 w-full data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 md:absolute md:w-auto ",
-      className,
-    )}
-    {...props}
-  />
-));
-NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName;
-
-const NavigationMenuLink = NavigationMenuPrimitive.Link;
-
-const NavigationMenuViewport = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.Viewport>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
->(({ className, ...props }, ref) => (
-  <div className={cn("absolute left-0 top-full flex justify-center")}>
-    <NavigationMenuPrimitive.Viewport
-      className={cn(
-        "origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]",
-        className,
-      )}
-      ref={ref}
-      {...props}
-    />
-  </div>
-));
-NavigationMenuViewport.displayName = NavigationMenuPrimitive.Viewport.displayName;
-
-const NavigationMenuIndicator = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.Indicator>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Indicator>
->(({ className, ...props }, ref) => (
-  <NavigationMenuPrimitive.Indicator
-    ref={ref}
-    className={cn(
-      "top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in",
-      className,
-    )}
-    {...props}
-  >
-    <div className="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-border shadow-md" />
-  </NavigationMenuPrimitive.Indicator>
-));
-NavigationMenuIndicator.displayName = NavigationMenuPrimitive.Indicator.displayName;
-
-export {
-  navigationMenuTriggerStyle,
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuContent,
-  NavigationMenuTrigger,
-  NavigationMenuLink,
-  NavigationMenuIndicator,
-  NavigationMenuViewport,
-};
-````
-
-## File: src/components/ui/pagination.tsx
-````typescript
-import * as React from "react";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import { ButtonProps, buttonVariants } from "@/components/ui/button";
-
-const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
-  <nav
-    role="navigation"
-    aria-label="pagination"
-    className={cn("mx-auto flex w-full justify-center", className)}
-    {...props}
-  />
-);
-Pagination.displayName = "Pagination";
-
-const PaginationContent = React.forwardRef<HTMLUListElement, React.ComponentProps<"ul">>(
-  ({ className, ...props }, ref) => (
-    <ul ref={ref} className={cn("flex flex-row items-center gap-1", className)} {...props} />
-  ),
-);
-PaginationContent.displayName = "PaginationContent";
-
-const PaginationItem = React.forwardRef<HTMLLIElement, React.ComponentProps<"li">>(
-  ({ className, ...props }, ref) => <li ref={ref} className={cn("", className)} {...props} />,
-);
-PaginationItem.displayName = "PaginationItem";
-
-type PaginationLinkProps = {
-  isActive?: boolean;
-} & Pick<ButtonProps, "size"> &
-  React.ComponentProps<"a">;
-
-const PaginationLink = ({ className, isActive, size = "icon", ...props }: PaginationLinkProps) => (
-  <a
-    aria-current={isActive ? "page" : undefined}
-    className={cn(
-      buttonVariants({
-        variant: isActive ? "outline" : "ghost",
-        size,
-      }),
-      className,
-    )}
-    {...props}
-  />
-);
-PaginationLink.displayName = "PaginationLink";
-
-const PaginationPrevious = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
-    aria-label="Go to previous page"
-    size="default"
-    className={cn("gap-1 pl-2.5", className)}
-    {...props}
-  >
-    <ChevronLeft className="h-4 w-4" />
-    <span>Previous</span>
-  </PaginationLink>
-);
-PaginationPrevious.displayName = "PaginationPrevious";
-
-const PaginationNext = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
-    aria-label="Go to next page"
-    size="default"
-    className={cn("gap-1 pr-2.5", className)}
-    {...props}
-  >
-    <span>Next</span>
-    <ChevronRight className="h-4 w-4" />
-  </PaginationLink>
-);
-PaginationNext.displayName = "PaginationNext";
-
-const PaginationEllipsis = ({ className, ...props }: React.ComponentProps<"span">) => (
-  <span
-    aria-hidden
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
-    {...props}
-  >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More pages</span>
-  </span>
-);
-PaginationEllipsis.displayName = "PaginationEllipsis";
-
-export {
-  Pagination,
-  PaginationContent,
-  PaginationLink,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationEllipsis,
-};
-````
-
-## File: src/components/ui/popover.tsx
-````typescript
-import * as React from "react";
-import * as PopoverPrimitive from "@radix-ui/react-popover";
-
-import { cn } from "@/lib/utils";
-
-const Popover = PopoverPrimitive.Root;
-
-const PopoverTrigger = PopoverPrimitive.Trigger;
-
-const PopoverAnchor = PopoverPrimitive.Anchor;
-
-const PopoverContent = React.forwardRef<
-  React.ElementRef<typeof PopoverPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
->(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
-    <PopoverPrimitive.Content
-      ref={ref}
-      align={align}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-popover-content-transform-origin)",
-        className,
-      )}
-      {...props}
-    />
-  </PopoverPrimitive.Portal>
-));
-PopoverContent.displayName = PopoverPrimitive.Content.displayName;
-
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
-````
-
-## File: src/components/ui/progress.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as ProgressPrimitive from "@radix-ui/react-progress";
-
-import { cn } from "@/lib/utils";
-
-const Progress = React.forwardRef<
-  React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, ...props }, ref) => (
-  <ProgressPrimitive.Root
-    ref={ref}
-    className={cn("relative h-2 w-full overflow-hidden rounded-full bg-primary/20", className)}
-    {...props}
-  >
-    <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-primary transition-all"
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-    />
-  </ProgressPrimitive.Root>
-));
-Progress.displayName = ProgressPrimitive.Root.displayName;
-
-export { Progress };
-````
-
-## File: src/components/ui/radio-group.tsx
-````typescript
-import * as React from "react";
-import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
-import { Circle } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const RadioGroup = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
->(({ className, ...props }, ref) => {
-  return <RadioGroupPrimitive.Root className={cn("grid gap-2", className)} {...props} ref={ref} />;
-});
-RadioGroup.displayName = RadioGroupPrimitive.Root.displayName;
-
-const RadioGroupItem = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
->(({ className, ...props }, ref) => {
-  return (
-    <RadioGroupPrimitive.Item
-      ref={ref}
-      className={cn(
-        "aspect-square h-4 w-4 rounded-full border border-primary text-primary shadow cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    >
-      <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <Circle className="h-3.5 w-3.5 fill-primary" />
-      </RadioGroupPrimitive.Indicator>
-    </RadioGroupPrimitive.Item>
-  );
-});
-RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName;
-
-export { RadioGroup, RadioGroupItem };
-````
-
-## File: src/components/ui/resizable.tsx
-````typescript
-import { GripVertical } from "lucide-react";
-import { Group, Panel, Separator } from "react-resizable-panels";
-
-import { cn } from "@/lib/utils";
-
-const ResizablePanelGroup = ({ className, ...props }: React.ComponentProps<typeof Group>) => (
-  <Group
-    className={cn("flex h-full w-full data-[panel-group-direction=vertical]:flex-col", className)}
-    {...props}
-  />
-);
-
-const ResizablePanel = Panel;
-
-const ResizableHandle = ({
-  withHandle,
-  className,
-  ...props
-}: React.ComponentProps<typeof Separator> & {
-  withHandle?: boolean;
-}) => (
-  <Separator
-    className={cn(
-      "relative flex w-px items-center justify-center bg-border after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:-translate-y-1/2 data-[panel-group-direction=vertical]:after:translate-x-0 [&[data-panel-group-direction=vertical]>div]:rotate-90",
-      className,
-    )}
-    {...props}
-  >
-    {withHandle && (
-      <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
-        <GripVertical className="h-2.5 w-2.5" />
-      </div>
-    )}
-  </Separator>
-);
-
-export { ResizablePanelGroup, ResizablePanel, ResizableHandle };
-````
-
-## File: src/components/ui/scroll-area.tsx
-````typescript
-import * as React from "react";
-import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-
-import { cn } from "@/lib/utils";
-
-const ScrollArea = React.forwardRef<
-  React.ElementRef<typeof ScrollAreaPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
->(({ className, children, ...props }, ref) => (
-  <ScrollAreaPrimitive.Root
-    ref={ref}
-    className={cn("relative overflow-hidden", className)}
-    {...props}
-  >
-    <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
-      {children}
-    </ScrollAreaPrimitive.Viewport>
-    <ScrollBar />
-    <ScrollAreaPrimitive.Corner />
-  </ScrollAreaPrimitive.Root>
-));
-ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
-
-const ScrollBar = React.forwardRef<
-  React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
-  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>
->(({ className, orientation = "vertical", ...props }, ref) => (
-  <ScrollAreaPrimitive.ScrollAreaScrollbar
-    ref={ref}
-    orientation={orientation}
-    className={cn(
-      "flex touch-none select-none transition-colors",
-      orientation === "vertical" && "h-full w-2.5 border-l border-l-transparent p-[1px]",
-      orientation === "horizontal" && "h-2.5 flex-col border-t border-t-transparent p-[1px]",
-      className,
-    )}
-    {...props}
-  >
-    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
-  </ScrollAreaPrimitive.ScrollAreaScrollbar>
-));
-ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
-
-export { ScrollArea, ScrollBar };
-````
-
-## File: src/components/ui/select.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const Select = SelectPrimitive.Root;
-
-const SelectGroup = SelectPrimitive.Group;
-
-const SelectValue = SelectPrimitive.Value;
-
-const SelectTrigger = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background cursor-pointer data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-));
-SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
-
-const SelectScrollUpButton = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.ScrollUpButton
-    ref={ref}
-    className={cn("flex cursor-default items-center justify-center py-1", className)}
-    {...props}
-  >
-    <ChevronUp className="h-4 w-4" />
-  </SelectPrimitive.ScrollUpButton>
-));
-SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
-
-const SelectScrollDownButton = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.ScrollDownButton
-    ref={ref}
-    className={cn("flex cursor-default items-center justify-center py-1", className)}
-    {...props}
-  >
-    <ChevronDown className="h-4 w-4" />
-  </SelectPrimitive.ScrollDownButton>
-));
-SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
-
-const SelectContent = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Portal>
-    <SelectPrimitive.Content
-      ref={ref}
-      className={cn(
-        "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-select-content-transform-origin)",
-        position === "popper" &&
-          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-        className,
-      )}
-      position={position}
-      {...props}
-    >
-      <SelectScrollUpButton />
-      <SelectPrimitive.Viewport
-        className={cn(
-          "p-1",
-          position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
-        )}
-      >
-        {children}
-      </SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
-    </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-));
-SelectContent.displayName = SelectPrimitive.Content.displayName;
-
-const SelectLabel = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Label>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.Label
-    ref={ref}
-    className={cn("px-2 py-1.5 text-sm font-semibold", className)}
-    {...props}
-  />
-));
-SelectLabel.displayName = SelectPrimitive.Label.displayName;
-
-const SelectItem = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-));
-SelectItem.displayName = SelectPrimitive.Item.displayName;
-
-const SelectSeparator = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <SelectPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
-    {...props}
-  />
-));
-SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
-
-export {
-  Select,
-  SelectGroup,
-  SelectValue,
-  SelectTrigger,
-  SelectContent,
-  SelectLabel,
-  SelectItem,
-  SelectSeparator,
-  SelectScrollUpButton,
-  SelectScrollDownButton,
-};
-````
-
-## File: src/components/ui/separator.tsx
-````typescript
-import * as React from "react";
-import * as SeparatorPrimitive from "@radix-ui/react-separator";
-
-import { cn } from "@/lib/utils";
-
-const Separator = React.forwardRef<
-  React.ElementRef<typeof SeparatorPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
->(({ className, orientation = "horizontal", decorative = true, ...props }, ref) => (
-  <SeparatorPrimitive.Root
-    ref={ref}
-    decorative={decorative}
-    orientation={orientation}
-    className={cn(
-      "shrink-0 bg-border",
-      orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
-      className,
-    )}
-    {...props}
-  />
-));
-Separator.displayName = SeparatorPrimitive.Root.displayName;
-
-export { Separator };
-````
-
-## File: src/components/ui/sheet.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as SheetPrimitive from "@radix-ui/react-dialog";
-import { cva, type VariantProps } from "class-variance-authority";
-import { X } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-const Sheet = SheetPrimitive.Root;
-
-const SheetTrigger = SheetPrimitive.Trigger;
-
-const SheetClose = SheetPrimitive.Close;
-
-const SheetPortal = SheetPrimitive.Portal;
-
-const SheetOverlay = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Overlay
-    className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
-    )}
-    {...props}
-    ref={ref}
-  />
-));
-SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
-
-const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out",
+export const BADGES: BadgeDef[] = [
   {
-    variants: {
-      side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
-        bottom:
-          "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
-        right:
-          "inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
-      },
-    },
-    defaultVariants: {
-      side: "right",
-    },
+    id: "full-marks",
+    name: "Full Marks Slayer",
+    emoji: "🛡️",
+    description: "Score 100% in a short quiz or chapter quiz.",
+    unit: "full-mark quizzes",
+    thresholds: [1, 3, 6, 10],
   },
-);
-
-interface SheetContentProps
-  extends
-    React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
-
-const SheetContent = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Content>,
-  SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
-      {children}
-    </SheetPrimitive.Content>
-  </SheetPortal>
-));
-SheetContent.displayName = SheetPrimitive.Content.displayName;
-
-const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left", className)} {...props} />
-);
-SheetHeader.displayName = "SheetHeader";
-
-const SheetFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
-    {...props}
-  />
-);
-SheetFooter.displayName = "SheetFooter";
-
-const SheetTitle = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold text-foreground", className)}
-    {...props}
-  />
-));
-SheetTitle.displayName = SheetPrimitive.Title.displayName;
-
-const SheetDescription = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-SheetDescription.displayName = SheetPrimitive.Description.displayName;
-
-export {
-  Sheet,
-  SheetPortal,
-  SheetOverlay,
-  SheetTrigger,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetFooter,
-  SheetTitle,
-  SheetDescription,
-};
-````
-
-## File: src/components/ui/sidebar.tsx
-````typescript
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
-import { PanelLeft } from "lucide-react";
-
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "16rem";
-const SIDEBAR_WIDTH_MOBILE = "18rem";
-const SIDEBAR_WIDTH_ICON = "3rem";
-const SIDEBAR_KEYBOARD_SHORTCUT = "b";
-
-type SidebarContextProps = {
-  state: "expanded" | "collapsed";
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  openMobile: boolean;
-  setOpenMobile: (open: boolean) => void;
-  isMobile: boolean;
-  toggleSidebar: () => void;
-};
-
-const SidebarContext = React.createContext<SidebarContextProps | null>(null);
-
-function useSidebar() {
-  const context = React.useContext(SidebarContext);
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.");
-  }
-
-  return context;
-}
-
-const SidebarProvider = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    defaultOpen?: boolean;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }
->(
-  (
-    {
-      defaultOpen = true,
-      open: openProp,
-      onOpenChange: setOpenProp,
-      className,
-      style,
-      children,
-      ...props
-    },
-    ref,
-  ) => {
-    const isMobile = useIsMobile();
-    const [openMobile, setOpenMobile] = React.useState(false);
-
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen);
-    const open = openProp ?? _open;
-    const setOpen = React.useCallback(
-      (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value;
-        if (setOpenProp) {
-          setOpenProp(openState);
-        } else {
-          _setOpen(openState);
-        }
-
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-      },
-      [setOpenProp, open],
-    );
-
-    // Helper to toggle the sidebar.
-    const toggleSidebar = React.useCallback(() => {
-      return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
-
-    // Adds a keyboard shortcut to toggle the sidebar.
-    React.useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
-          event.preventDefault();
-          toggleSidebar();
-        }
-      };
-
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [toggleSidebar]);
-
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
-    const state = open ? "expanded" : "collapsed";
-
-    const contextValue = React.useMemo<SidebarContextProps>(
-      () => ({
-        state,
-        open,
-        setOpen,
-        isMobile,
-        openMobile,
-        setOpenMobile,
-        toggleSidebar,
-      }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
-    );
-
-    return (
-      <SidebarContext.Provider value={contextValue}>
-        <TooltipProvider delayDuration={0}>
-          <div
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH,
-                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-                ...style,
-              } as React.CSSProperties
-            }
-            className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
-              className,
-            )}
-            ref={ref}
-            {...props}
-          >
-            {children}
-          </div>
-        </TooltipProvider>
-      </SidebarContext.Provider>
-    );
-  },
-);
-SidebarProvider.displayName = "SidebarProvider";
-
-const Sidebar = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    side?: "left" | "right";
-    variant?: "sidebar" | "floating" | "inset";
-    collapsible?: "offcanvas" | "icon" | "none";
-  }
->(
-  (
-    {
-      side = "left",
-      variant = "sidebar",
-      collapsible = "offcanvas",
-      className,
-      children,
-      ...props
-    },
-    ref,
-  ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-
-    if (collapsible === "none") {
-      return (
-        <div
-          className={cn(
-            "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
-            className,
-          )}
-          ref={ref}
-          {...props}
-        >
-          {children}
-        </div>
-      );
-    }
-
-    if (isMobile) {
-      return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
-            data-sidebar="sidebar"
-            data-mobile="true"
-            className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
-            side={side}
-          >
-            <SheetHeader className="sr-only">
-              <SheetTitle>Sidebar</SheetTitle>
-              <SheetDescription>Displays the mobile sidebar.</SheetDescription>
-            </SheetHeader>
-            <div className="flex h-full w-full flex-col">{children}</div>
-          </SheetContent>
-        </Sheet>
-      );
-    }
-
-    return (
-      <div
-        ref={ref}
-        className="group peer hidden text-sidebar-foreground md:block"
-        data-state={state}
-        data-collapsible={state === "collapsed" ? collapsible : ""}
-        data-variant={variant}
-        data-side={side}
-      >
-        {/* This is what handles the sidebar gap on desktop */}
-        <div
-          className={cn(
-            "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
-            "group-data-[collapsible=offcanvas]:w-0",
-            "group-data-[side=right]:rotate-180",
-            variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
-          )}
-        />
-        <div
-          className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
-            side === "left"
-              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            // Adjust the padding for floating and inset variants.
-            variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
-            className,
-          )}
-          {...props}
-        >
-          <div
-            data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
-          >
-            {children}
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
-Sidebar.displayName = "Sidebar";
-
-const SidebarTrigger = React.forwardRef<
-  React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
->(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar();
-
-  return (
-    <Button
-      ref={ref}
-      data-sidebar="trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("h-7 w-7", className)}
-      onClick={(event) => {
-        onClick?.(event);
-        toggleSidebar();
-      }}
-      {...props}
-    >
-      <PanelLeft />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
-  );
-});
-SidebarTrigger.displayName = "SidebarTrigger";
-
-const SidebarRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<"button">>(
-  ({ className, ...props }, ref) => {
-    const { toggleSidebar } = useSidebar();
-
-    return (
-      <button
-        ref={ref}
-        data-sidebar="rail"
-        aria-label="Toggle Sidebar"
-        tabIndex={-1}
-        onClick={toggleSidebar}
-        title="Toggle Sidebar"
-        className={cn(
-          "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
-          "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
-          "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-          "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
-          "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
-          "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
-SidebarRail.displayName = "SidebarRail";
-
-const SidebarInset = React.forwardRef<HTMLDivElement, React.ComponentProps<"main">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <main
-        ref={ref}
-        className={cn(
-          "relative flex w-full flex-1 flex-col bg-background",
-          "md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
-SidebarInset.displayName = "SidebarInset";
-
-const SidebarInput = React.forwardRef<
-  React.ElementRef<typeof Input>,
-  React.ComponentProps<typeof Input>
->(({ className, ...props }, ref) => {
-  return (
-    <Input
-      ref={ref}
-      data-sidebar="input"
-      className={cn(
-        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-        className,
-      )}
-      {...props}
-    />
-  );
-});
-SidebarInput.displayName = "SidebarInput";
-
-const SidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        data-sidebar="header"
-        className={cn("flex flex-col gap-2 p-2", className)}
-        {...props}
-      />
-    );
-  },
-);
-SidebarHeader.displayName = "SidebarHeader";
-
-const SidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        data-sidebar="footer"
-        className={cn("flex flex-col gap-2 p-2", className)}
-        {...props}
-      />
-    );
-  },
-);
-SidebarFooter.displayName = "SidebarFooter";
-
-const SidebarSeparator = React.forwardRef<
-  React.ElementRef<typeof Separator>,
-  React.ComponentProps<typeof Separator>
->(({ className, ...props }, ref) => {
-  return (
-    <Separator
-      ref={ref}
-      data-sidebar="separator"
-      className={cn("mx-2 w-auto bg-sidebar-border", className)}
-      {...props}
-    />
-  );
-});
-SidebarSeparator.displayName = "SidebarSeparator";
-
-const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        data-sidebar="content"
-        className={cn(
-          "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
-SidebarContent.displayName = "SidebarContent";
-
-const SidebarGroup = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        data-sidebar="group"
-        className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
-        {...props}
-      />
-    );
-  },
-);
-SidebarGroup.displayName = "SidebarGroup";
-
-const SidebarGroupLabel = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "div";
-
-  return (
-    <Comp
-      ref={ref}
-      data-sidebar="group-label"
-      className={cn(
-        "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
-        "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
-        className,
-      )}
-      {...props}
-    />
-  );
-});
-SidebarGroupLabel.displayName = "SidebarGroupLabel";
-
-const SidebarGroupAction = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button";
-
-  return (
-    <Comp
-      ref={ref}
-      data-sidebar="group-action"
-      className={cn(
-        "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring cursor-pointer transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
-        "after:absolute after:-inset-2 after:md:hidden",
-        "group-data-[collapsible=icon]:hidden",
-        className,
-      )}
-      {...props}
-    />
-  );
-});
-SidebarGroupAction.displayName = "SidebarGroupAction";
-
-const SidebarGroupContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      data-sidebar="group-content"
-      className={cn("w-full text-sm", className)}
-      {...props}
-    />
-  ),
-);
-SidebarGroupContent.displayName = "SidebarGroupContent";
-
-const SidebarMenu = React.forwardRef<HTMLUListElement, React.ComponentProps<"ul">>(
-  ({ className, ...props }, ref) => (
-    <ul
-      ref={ref}
-      data-sidebar="menu"
-      className={cn("flex w-full min-w-0 flex-col gap-1", className)}
-      {...props}
-    />
-  ),
-);
-SidebarMenu.displayName = "SidebarMenu";
-
-const SidebarMenuItem = React.forwardRef<HTMLLIElement, React.ComponentProps<"li">>(
-  ({ className, ...props }, ref) => (
-    <li
-      ref={ref}
-      data-sidebar="menu-item"
-      className={cn("group/menu-item relative", className)}
-      {...props}
-    />
-  ),
-);
-SidebarMenuItem.displayName = "SidebarMenuItem";
-
-const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring cursor-pointer transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
-    variants: {
-      variant: {
-        default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        outline:
-          "bg-background shadow-[0_0_0_1px_var(--sidebar-border)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_var(--sidebar-accent)]",
-      },
-      size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
-        lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    id: "homework-hero",
+    name: "Homework Hero",
+    emoji: "🔥",
+    description: "Hand in homework on time, many in a row.",
+    unit: "in a row (your best)",
+    thresholds: [10, 20, 30, 40],
   },
-);
-
-const SidebarMenuButton = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> & {
-    asChild?: boolean;
-    isActive?: boolean;
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>;
-  } & VariantProps<typeof sidebarMenuButtonVariants>
->(
-  (
-    {
-      asChild = false,
-      isActive = false,
-      variant = "default",
-      size = "default",
-      tooltip,
-      className,
-      ...props
-    },
-    ref,
-  ) => {
-    const Comp = asChild ? Slot : "button";
-    const { isMobile, state } = useSidebar();
-
-    const button = (
-      <Comp
-        ref={ref}
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        {...props}
-      />
-    );
-
-    if (!tooltip) {
-      return button;
-    }
-
-    if (typeof tooltip === "string") {
-      tooltip = {
-        children: tooltip,
-      };
-    }
-
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
-        />
-      </Tooltip>
-    );
-  },
-);
-SidebarMenuButton.displayName = "SidebarMenuButton";
-
-const SidebarMenuAction = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> & {
-    asChild?: boolean;
-    showOnHover?: boolean;
-  }
->(({ className, asChild = false, showOnHover = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button";
-
-  return (
-    <Comp
-      ref={ref}
-      data-sidebar="menu-action"
-      className={cn(
-        "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring cursor-pointer transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
-        "after:absolute after:-inset-2 after:md:hidden",
-        "peer-data-[size=sm]/menu-button:top-1",
-        "peer-data-[size=default]/menu-button:top-1.5",
-        "peer-data-[size=lg]/menu-button:top-2.5",
-        "group-data-[collapsible=icon]:hidden",
-        showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
-        className,
-      )}
-      {...props}
-    />
-  );
-});
-SidebarMenuAction.displayName = "SidebarMenuAction";
-
-const SidebarMenuBadge = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      data-sidebar="menu-badge"
-      className={cn(
-        "pointer-events-none absolute right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground",
-        "peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
-        "peer-data-[size=sm]/menu-button:top-1",
-        "peer-data-[size=default]/menu-button:top-1.5",
-        "peer-data-[size=lg]/menu-button:top-2.5",
-        "group-data-[collapsible=icon]:hidden",
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
-SidebarMenuBadge.displayName = "SidebarMenuBadge";
-
-const SidebarMenuSkeleton = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    showIcon?: boolean;
-  }
->(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      data-sidebar="menu-skeleton"
-      className={cn("flex h-8 items-center gap-2 rounded-md px-2", className)}
-      {...props}
-    >
-      {showIcon && <Skeleton className="size-4 rounded-md" data-sidebar="menu-skeleton-icon" />}
-      <Skeleton
-        className="h-4 max-w-(--skeleton-width) flex-1"
-        data-sidebar="menu-skeleton-text"
-        style={
-          {
-            "--skeleton-width": width,
-          } as React.CSSProperties
-        }
-      />
-    </div>
-  );
-});
-SidebarMenuSkeleton.displayName = "SidebarMenuSkeleton";
-
-const SidebarMenuSub = React.forwardRef<HTMLUListElement, React.ComponentProps<"ul">>(
-  ({ className, ...props }, ref) => (
-    <ul
-      ref={ref}
-      data-sidebar="menu-sub"
-      className={cn(
-        "mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5",
-        "group-data-[collapsible=icon]:hidden",
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
-SidebarMenuSub.displayName = "SidebarMenuSub";
-
-const SidebarMenuSubItem = React.forwardRef<HTMLLIElement, React.ComponentProps<"li">>(
-  ({ ...props }, ref) => <li ref={ref} {...props} />,
-);
-SidebarMenuSubItem.displayName = "SidebarMenuSubItem";
-
-const SidebarMenuSubButton = React.forwardRef<
-  HTMLAnchorElement,
-  React.ComponentProps<"a"> & {
-    asChild?: boolean;
-    size?: "sm" | "md";
-    isActive?: boolean;
-  }
->(({ asChild = false, size = "md", isActive, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a";
-
-  return (
-    <Comp
-      ref={ref}
-      data-sidebar="menu-sub-button"
-      data-size={size}
-      data-active={isActive}
-      className={cn(
-        "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground outline-none ring-sidebar-ring cursor-pointer hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
-        "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-        size === "sm" && "text-xs",
-        size === "md" && "text-sm",
-        "group-data-[collapsible=icon]:hidden",
-        className,
-      )}
-      {...props}
-    />
-  );
-});
-SidebarMenuSubButton.displayName = "SidebarMenuSubButton";
-
-export {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInput,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuBadge,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarRail,
-  SidebarSeparator,
-  SidebarTrigger,
-  useSidebar,
-};
-````
-
-## File: src/components/ui/skeleton.tsx
-````typescript
-import { cn } from "@/lib/utils";
-
-function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("animate-pulse rounded-md bg-primary/10", className)} {...props} />;
-}
-
-export { Skeleton };
-````
-
-## File: src/components/ui/slider.tsx
-````typescript
-import * as React from "react";
-import * as SliderPrimitive from "@radix-ui/react-slider";
-
-import { cn } from "@/lib/utils";
-
-const Slider = React.forwardRef<
-  React.ElementRef<typeof SliderPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <SliderPrimitive.Root
-    ref={ref}
-    className={cn("relative flex w-full touch-none select-none items-center", className)}
-    {...props}
-  >
-    <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20">
-      <SliderPrimitive.Range className="absolute h-full bg-primary" />
-    </SliderPrimitive.Track>
-    <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
-  </SliderPrimitive.Root>
-));
-Slider.displayName = SliderPrimitive.Root.displayName;
-
-export { Slider };
-````
-
-## File: src/components/ui/sonner.tsx
-````typescript
-import { Toaster as Sonner } from "sonner";
-
-type ToasterProps = React.ComponentProps<typeof Sonner>;
-
-const Toaster = ({ ...props }: ToasterProps) => {
-  return (
-    <Sonner
-      className="toaster group"
-      toastOptions={{
-        classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-        },
-      }}
-      {...props}
-    />
-  );
-};
-
-export { Toaster };
-````
-
-## File: src/components/ui/switch.tsx
-````typescript
-import * as React from "react";
-import * as SwitchPrimitives from "@radix-ui/react-switch";
-
-import { cn } from "@/lib/utils";
-
-const Switch = React.forwardRef<
-  React.ElementRef<typeof SwitchPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
->(({ className, ...props }, ref) => (
-  <SwitchPrimitives.Root
-    className={cn(
-      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
-      className,
-    )}
-    {...props}
-    ref={ref}
-  >
-    <SwitchPrimitives.Thumb
-      className={cn(
-        "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0",
-      )}
-    />
-  </SwitchPrimitives.Root>
-));
-Switch.displayName = SwitchPrimitives.Root.displayName;
-
-export { Switch };
-````
-
-## File: src/components/ui/table.tsx
-````typescript
-import * as React from "react";
-
-import { cn } from "@/lib/utils";
-
-const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
-  ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
-      <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
-    </div>
-  ),
-);
-Table.displayName = "Table";
-
-const TableHeader = React.forwardRef<
-  HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
-));
-TableHeader.displayName = "TableHeader";
-
-const TableBody = React.forwardRef<
-  HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <tbody ref={ref} className={cn("[&_tr:last-child]:border-0", className)} {...props} />
-));
-TableBody.displayName = "TableBody";
-
-const TableFooter = React.forwardRef<
-  HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <tfoot
-    ref={ref}
-    className={cn("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className)}
-    {...props}
-  />
-));
-TableFooter.displayName = "TableFooter";
-
-const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
-  ({ className, ...props }, ref) => (
-    <tr
-      ref={ref}
-      className={cn(
-        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
-TableRow.displayName = "TableRow";
-
-const TableHead = React.forwardRef<
-  HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
-  <th
-    ref={ref}
-    className={cn(
-      "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-      className,
-    )}
-    {...props}
-  />
-));
-TableHead.displayName = "TableHead";
-
-const TableCell = React.forwardRef<
-  HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
-  <td
-    ref={ref}
-    className={cn(
-      "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-      className,
-    )}
-    {...props}
-  />
-));
-TableCell.displayName = "TableCell";
-
-const TableCaption = React.forwardRef<
-  HTMLTableCaptionElement,
-  React.HTMLAttributes<HTMLTableCaptionElement>
->(({ className, ...props }, ref) => (
-  <caption ref={ref} className={cn("mt-4 text-sm text-muted-foreground", className)} {...props} />
-));
-TableCaption.displayName = "TableCaption";
-
-export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption };
-````
-
-## File: src/components/ui/tabs.tsx
-````typescript
-import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
-
-import { cn } from "@/lib/utils";
-
-const Tabs = TabsPrimitive.Root;
-
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsList.displayName = TabsPrimitive.List.displayName;
-
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
-
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className,
-    )}
-    {...props}
-  />
-));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
-
-export { Tabs, TabsList, TabsTrigger, TabsContent };
-````
-
-## File: src/components/ui/textarea.tsx
-````typescript
-import * as React from "react";
-
-import { cn } from "@/lib/utils";
-
-const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<"textarea">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <textarea
-        className={cn(
-          "flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-          className,
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  },
-);
-Textarea.displayName = "Textarea";
-
-export { Textarea };
-````
-
-## File: src/components/ui/toggle-group.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
-import { type VariantProps } from "class-variance-authority";
-
-import { cn } from "@/lib/utils";
-import { toggleVariants } from "@/components/ui/toggle";
-
-const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariants>>({
-  size: "default",
-  variant: "default",
-});
-
-const ToggleGroup = React.forwardRef<
-  React.ElementRef<typeof ToggleGroupPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    VariantProps<typeof toggleVariants>
->(({ className, variant, size, children, ...props }, ref) => (
-  <ToggleGroupPrimitive.Root
-    ref={ref}
-    className={cn("flex items-center justify-center gap-1", className)}
-    {...props}
-  >
-    <ToggleGroupContext.Provider value={{ variant, size }}>{children}</ToggleGroupContext.Provider>
-  </ToggleGroupPrimitive.Root>
-));
-
-ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
-
-const ToggleGroupItem = React.forwardRef<
-  React.ElementRef<typeof ToggleGroupPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
-    VariantProps<typeof toggleVariants>
->(({ className, children, variant, size, ...props }, ref) => {
-  const context = React.useContext(ToggleGroupContext);
-
-  return (
-    <ToggleGroupPrimitive.Item
-      ref={ref}
-      className={cn(
-        toggleVariants({
-          variant: context.variant || variant,
-          size: context.size || size,
-        }),
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </ToggleGroupPrimitive.Item>
-  );
-});
-
-ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName;
-
-export { ToggleGroup, ToggleGroupItem };
-````
-
-## File: src/components/ui/toggle.tsx
-````typescript
-import * as React from "react";
-import * as TogglePrimitive from "@radix-ui/react-toggle";
-import { cva, type VariantProps } from "class-variance-authority";
-
-import { cn } from "@/lib/utils";
-
-const toggleVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
-    variants: {
-      variant: {
-        default: "bg-transparent",
-        outline:
-          "border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground",
-      },
-      size: {
-        default: "h-9 px-2 min-w-9",
-        sm: "h-8 px-1.5 min-w-8",
-        lg: "h-10 px-2.5 min-w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    id: "topic-master",
+    name: "Topic Master",
+    emoji: "🎯",
+    description: "Reach 85% in both the self-check and the chapter quiz of a chapter.",
+    unit: "chapters mastered",
+    thresholds: [1, 3, 5, 7],
   },
-);
-
-const Toggle = React.forwardRef<
-  React.ElementRef<typeof TogglePrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> & VariantProps<typeof toggleVariants>
->(({ className, variant, size, ...props }, ref) => (
-  <TogglePrimitive.Root
-    ref={ref}
-    className={cn(toggleVariants({ variant, size, className }))}
-    {...props}
-  />
-));
-
-Toggle.displayName = TogglePrimitive.Root.displayName;
-
-export { Toggle, toggleVariants };
-````
-
-## File: src/components/ui/tooltip.tsx
-````typescript
-"use client";
-
-import * as React from "react";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-
-import { cn } from "@/lib/utils";
-
-const TooltipProvider = TooltipPrimitive.Provider;
-
-const Tooltip = TooltipPrimitive.Root;
-
-const TooltipTrigger = TooltipPrimitive.Trigger;
-
-const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Portal>
-    <TooltipPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-tooltip-content-transform-origin)",
-        className,
-      )}
-      {...props}
-    />
-  </TooltipPrimitive.Portal>
-));
-TooltipContent.displayName = TooltipPrimitive.Content.displayName;
-
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
-````
-
-## File: src/components/ChapterVideoPlayer.tsx
-````typescript
-import { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, ExternalLink } from 'lucide-react';
-import { toast } from 'sonner';
-import { REQUIRED_COVERAGE, createWatchTracker, parseVideoSource } from '@/lib/video-watch';
-
-interface YTPlayer { getCurrentTime(): number; getDuration(): number; getPlayerState(): number; destroy(): void }
-interface YTNamespace { Player: new (el: HTMLElement, opts: Record<string, unknown>) => YTPlayer }
-type YTWindow = Window & { YT?: YTNamespace; onYouTubeIframeAPIReady?: () => void; __hlcYouTube?: Promise<YTNamespace> };
-
-function loadYouTube(): Promise<YTNamespace> {
-  const w = window as YTWindow;
-  if (w.YT?.Player) return Promise.resolve(w.YT);
-  w.__hlcYouTube ??= new Promise(resolve => {
-    const previous = w.onYouTubeIframeAPIReady;
-    w.onYouTubeIframeAPIReady = () => { previous?.(); if (w.YT) resolve(w.YT); };
-    const script = document.createElement('script');
-    script.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(script);
-  });
-  return w.__hlcYouTube;
-}
-
-export interface PlayableVideo { id: string; title: string; url: string }
-
-/** Plays a chapter video inside the page and calls onComplete once the student has watched it through. */
-export function ChapterVideoPlayer({ video, completed, canEarn, onComplete }: { video: PlayableVideo; completed: boolean; canEarn: boolean; onComplete: (videoId: string) => Promise<void> }) {
-  const source = parseVideoSource(video.url);
-  const hostRef = useRef<HTMLDivElement>(null);
-  const tracker = useRef(createWatchTracker());
-  const done = useRef(completed);
-  const [watched, setWatched] = useState(0);
-  done.current = completed;
-
-  const finish = async (duration: number) => {
-    const coverage = tracker.current.coverage(duration);
-    setWatched(coverage);
-    if (!canEarn || done.current) return;
-    if (coverage < REQUIRED_COVERAGE) {
-      toast.info(`You watched ${Math.round(coverage * 100)}% of this video. Watch it all the way through, without skipping, to earn the mark.`);
-      return;
-    }
-    done.current = true;
-    try { await onComplete(video.id); } catch (e) { done.current = false; toast.error(e instanceof Error ? e.message : 'Could not save your mark'); }
-  };
-  const finishRef = useRef(finish);
-  finishRef.current = finish;
-
-  useEffect(() => {
-    tracker.current.reset();
-    setWatched(0);
-    if (source?.kind !== 'youtube' || !hostRef.current) return;
-    const host = hostRef.current;
-    const mount = document.createElement('div');
-    host.appendChild(mount);
-    let player: YTPlayer | null = null;
-    let timer: ReturnType<typeof setInterval> | undefined;
-    let cancelled = false;
-    void loadYouTube().then(YT => {
-      if (cancelled) return;
-      player = new YT.Player(mount, {
-        videoId: source.id, width: '100%', height: '100%', host: 'https://www.youtube-nocookie.com',
-        playerVars: { rel: 0, playsinline: 1, modestbranding: 1 },
-        events: { onStateChange: (e: { data: number }) => { if (e.data === 0 && player) void finishRef.current(player.getDuration()); } },
-      });
-      timer = setInterval(() => {
-        if (!player?.getPlayerState) return;
-        if (player.getPlayerState() === 1) {
-          tracker.current.tick(player.getCurrentTime());
-          setWatched(tracker.current.coverage(player.getDuration()));
-        } else tracker.current.pause();
-      }, 500);
-    });
-    return () => { cancelled = true; clearInterval(timer); player?.destroy(); host.replaceChildren(); };
-  }, [source?.kind, source?.kind === 'youtube' ? source.id : video.url]);
-
-  const pct = Math.round(watched * 100);
-  return (
-    <div>
-      {source?.kind === 'youtube' && <div ref={hostRef} className="aspect-video w-full overflow-hidden rounded-xl bg-foreground [&_iframe]:h-full [&_iframe]:w-full" />}
-      {source?.kind === 'file' && (
-        <video key={video.url} controls controlsList="nodownload" playsInline className="aspect-video w-full rounded-xl bg-foreground" src={source.url}
-          onTimeUpdate={e => { const v = e.currentTarget; if (!v.paused && !v.seeking) { tracker.current.tick(v.currentTime); setWatched(tracker.current.coverage(v.duration)); } }}
-          onSeeking={() => tracker.current.pause()} onPause={() => tracker.current.pause()}
-          onEnded={e => void finish(e.currentTarget.duration)} />
-      )}
-      {!source && (
-        <div className="grid aspect-video w-full place-items-center rounded-xl border border-dashed border-border bg-muted p-6 text-center text-sm text-muted-foreground">
-          <div><p>This link can't be played inside HLC Math.</p><a href={video.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-primary underline">Open video <ExternalLink className="h-4 w-4" /></a></div>
-        </div>
-      )}
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-        <h3 className="mr-auto font-semibold">{video.title}</h3>
-        {completed ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 font-semibold text-success"><CheckCircle2 className="h-4 w-4" /> Watched · 1 mark earned</span>
-        ) : canEarn && source ? (
-          <span className="rounded-full bg-muted px-3 py-1 font-semibold text-muted-foreground">Watched {pct}% · finish to earn 1 mark</span>
-        ) : null}
-      </div>
-      {!completed && canEarn && source && <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} /></div>}
-    </div>
-  );
-}
-````
-
-## File: src/hooks/use-mobile.tsx
-````typescript
-import * as React from "react";
-
-const MOBILE_BREAKPOINT = 768;
-
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
-  return !!isMobile;
-}
-````
-
-## File: src/integrations/supabase/auth-attacher.ts
-````typescript
-// This file is automatically generated. Do not edit it directly.
-import { createMiddleware } from '@tanstack/react-start'
-import { supabase } from './client'
-
-// Must be registered as a global `functionMiddleware` in `src/start.ts`; otherwise
-// the browser never attaches the bearer token to serverFn RPCs.
-export const attachSupabaseAuth = createMiddleware({ type: 'function' }).client(
-  async ({ next }) => {
-    const { data } = await supabase.auth.getSession()
-    const token = data.session?.access_token
-    return next({
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
+  {
+    id: "active-voice",
+    name: "Active Voice",
+    emoji: "🙋",
+    description: "Get picked in the class lucky draw and answer correctly.",
+    unit: "correct lucky-draw answers",
+    thresholds: [10, 20, 35, 50],
   },
-)
-````
-
-## File: src/lib/coins.ts
-````typescript
-import { supabase } from "@/integrations/supabase/client";
-import type { Student } from "./data";
-
-export const COIN_NAME = "Math Coins";
-export const COIN_NAME_ZH = "數學幣";
-export const COIN_EMOJI = "🪙";
-/** Coins for watching one chapter video to the end. */
-export const VIDEO_COINS = 1;
-
-export type MarkReason =
-  | "classwork"
-  | "participation"
-  | "correct_answer"
-  | "incorrect_answer"
-  | "homework"
-  | "bonus"
-  | "deduction";
-
-export interface ReasonInfo {
-  id: MarkReason;
-  label: string;
-  zh: string;
-}
-
-export const REASONS: ReasonInfo[] = [
-  { id: "correct_answer", label: "Correct answer", zh: "答啱問題" },
-  { id: "incorrect_answer", label: "Tried to answer", zh: "有嘗試作答（0 分紀錄）" },
-  { id: "classwork", label: "Classwork completed", zh: "完成課堂練習" },
-  { id: "participation", label: "Great lesson performance", zh: "課堂表現好" },
-  { id: "homework", label: "Homework on time", zh: "準時交齊功課" },
-  { id: "bonus", label: "Bonus", zh: "其他獎勵" },
-  { id: "deduction", label: "Deduction", zh: "扣分（欠交 / 違規）" },
+  {
+    id: "comeback-kid",
+    name: "Comeback Kid",
+    emoji: "🚀",
+    description: "Improve a chapter quiz by 15 points or more on the one before.",
+    unit: "comebacks",
+    thresholds: [1, 2, 3, 5],
+  },
+  {
+    id: "mistake-conqueror",
+    name: "Mistake Conqueror",
+    emoji: "🧠",
+    description: "Log your mistakes in the Mistake Vault and work on them until they are mastered.",
+    unit: "mistakes mastered",
+    thresholds: [3, 10, 20, 40],
+  },
+  {
+    id: "daily-streak",
+    name: "Daily Streak Master",
+    emoji: "⚡",
+    description: "Do the daily check-in on days in a row.",
+    unit: "days in a row (your best)",
+    thresholds: [3, 7, 14, 30],
+  },
 ];
-
-export const QUICK_REASONS: ReasonInfo[] = REASONS.filter(
-  (r) => r.id !== "correct_answer" && r.id !== "incorrect_answer",
-);
-
-export const QUICK_AMOUNTS = [-5, -2, -1, 1, 2, 5];
-
-export function reasonLabel(id: string): string {
-  return REASONS.find((r) => r.id === id)?.label ?? id;
+export interface BadgeInput {
+  quizzes: readonly QuizResult[];
+  bestHomeworkStreak: number;
+  selfChecks: readonly string[];
+  luckyDrawCorrect: number;
+  masteredMistakes: number;
+  bestCheckinStreak: number;
 }
-
-export function coinsEarned(s: Pick<Student, "dailyMarks" | "videoMarks">): number {
-  return (s.dailyMarks ?? 0) + (s.videoMarks ?? 0) * VIDEO_COINS;
+/** Chapters where the self-check is at least 85% ticked and the best chapter quiz is at least 85%. */
+export function topicMasterCount(
+  quizzes: readonly QuizResult[],
+  selfChecks: readonly string[],
+): number {
+  let count = 0;
+  for (let chapter = 1; chapter <= 7; chapter++) {
+    const objectives = objectivesFor(chapter);
+    const ticked = objectives.filter((o) => selfChecks.includes(o.id)).length;
+    const selfPct = objectives.length ? (ticked / objectives.length) * 100 : 0;
+    const best = Math.max(
+      -1,
+      ...quizzes
+        .filter((q) => q.kind === "CQ" && q.chapter === chapter && q.percent !== null)
+        .map((q) => q.percent ?? 0),
+    );
+    if (selfPct >= 85 && best >= 85) count++;
+  }
+  return count;
 }
-
-export function coinBalance(s: Pick<Student, "dailyMarks" | "videoMarks" | "coinsSpent">): number {
-  return coinsEarned(s) - (s.coinsSpent ?? 0);
+export function badgeValues(input: BadgeInput): Record<string, number> {
+  return {
+    "full-marks": input.quizzes.filter((q) => q.percent !== null && q.percent >= 100 - 1e-9).length,
+    "homework-hero": input.bestHomeworkStreak,
+    "topic-master": topicMasterCount(input.quizzes, input.selfChecks),
+    "active-voice": input.luckyDrawCorrect,
+    "comeback-kid": input.quizzes.filter((q) => q.isMostImproved).length,
+    "mistake-conqueror": input.masteredMistakes,
+    "daily-streak": input.bestCheckinStreak,
+  };
 }
+export interface BadgeProgress {
+  def: BadgeDef;
+  value: number;
+  tier: Tier;
+  /** The next target, or null at Diamond. */
+  next: number | null;
+  /** 0 to 1 between the last tier reached and the next. */
+  progress: number;
+}
+export function tierFor(value: number, thresholds: readonly number[]): Tier {
+  let tier = 0;
+  thresholds.forEach((t, i) => {
+    if (value >= t) tier = i + 1;
+  });
+  return tier as Tier;
+}
+export function badgeProgress(input: BadgeInput): BadgeProgress[] {
+  const values = badgeValues(input);
+  return BADGES.map((def) => {
+    const value = values[def.id] ?? 0;
+    const tier = tierFor(value, def.thresholds);
+    const targets: readonly number[] = def.thresholds;
+    const next = tier < 4 ? (targets[tier] ?? null) : null;
+    const prev = tier === 0 ? 0 : (targets[tier - 1] ?? 0);
+    const progress = next === null ? 1 : Math.min(1, Math.max(0, (value - prev) / (next - prev)));
+    return { def, value, tier, next, progress };
+  });
+}
+```
 
-const STATUS = {
-  pending: { label: "Waiting for teacher", cls: "bg-gold/25 text-gold-deep" },
-  approved: { label: "Approved · ready to use", cls: "bg-primary/10 text-primary" },
-  used: { label: "Used", cls: "bg-success/15 text-success" },
-  rejected: { label: "Rejected · coins returned", cls: "bg-muted text-muted-foreground" },
-} as const;
+## File: src/lib/gamification/checkin.ts
+```typescript
+/** Daily 1-question check-in: question bank, today's question and streaks. */
+export interface CheckinQuestion {
+  id: string;
+  chapter: number;
+  /** May contain $…$ maths. */
+  prompt: string;
+  options: [string, string, string, string];
+  /** Index of the correct option. */
+  answer: 0 | 1 | 2 | 3;
+  explanation: string;
+}
+/** Every 5 check-ins (right or wrong) earn 1 Math Coin. */
+export const CHECKINS_PER_COIN = 5;
+export const CHECKIN_QUESTIONS: CheckinQuestion[] = [
+  {
+    id: "q1-sf",
+    chapter: 1,
+    prompt: "Round $3.14159$ to 3 significant figures.",
+    options: ["$3.14$", "$3.141$", "$3.1$", "$3.142$"],
+    answer: 0,
+    explanation: "The 4th figure is 1, so 3.14159 rounds down to 3.14.",
+  },
+  {
+    id: "q1-sci",
+    chapter: 1,
+    prompt: "Write $0.00052$ in scientific notation.",
+    options: [
+      "$5.2 \\times 10^{-3}$",
+      "$5.2 \\times 10^{-4}$",
+      "$52 \\times 10^{-5}$",
+      "$0.52 \\times 10^{-3}$",
+    ],
+    answer: 1,
+    explanation:
+      "Move the decimal point 4 places right: $5.2 \\times 10^{-4}$, with $1 \\le 5.2 < 10$.",
+  },
+  {
+    id: "q1-abs",
+    chapter: 1,
+    prompt: "A length is 12 cm, correct to the nearest cm. What is the maximum absolute error?",
+    options: ["1 cm", "0.5 cm", "0.05 cm", "0.1 cm"],
+    answer: 1,
+    explanation:
+      "The maximum absolute error is half of the unit used: $\\frac{1}{2} \\times 1 = 0.5$ cm.",
+  },
+  {
+    id: "q1-pct",
+    chapter: 1,
+    prompt:
+      "A measurement of 20 cm has a maximum absolute error of 0.5 cm. What is the percentage error?",
+    options: ["$2.5\\%$", "$5\\%$", "$0.5\\%$", "$25\\%$"],
+    answer: 0,
+    explanation: "$\\frac{0.5}{20} \\times 100\\% = 2.5\\%$.",
+  },
+  {
+    id: "q2-degree",
+    chapter: 2,
+    prompt: "What is the degree of $3x^4 - 2x^2 + 7$?",
+    options: ["2", "3", "4", "7"],
+    answer: 2,
+    explanation: "The highest power of $x$ is 4.",
+  },
+  {
+    id: "q2-expand",
+    chapter: 2,
+    prompt: "Expand $(x + 3)(x - 2)$.",
+    options: ["$x^2 + x - 6$", "$x^2 - x - 6$", "$x^2 + 5x - 6$", "$x^2 + x + 6$"],
+    answer: 0,
+    explanation: "$x^2 - 2x + 3x - 6 = x^2 + x - 6$.",
+  },
+  {
+    id: "q2-common",
+    chapter: 2,
+    prompt: "Factorize $6ab + 9a$.",
+    options: ["$3a(2b + 3)$", "$3(2ab + 3a)$", "$a(6b + 9)$", "$3ab(2 + 3)$"],
+    answer: 0,
+    explanation: "The highest common factor is $3a$, so $6ab + 9a = 3a(2b + 3)$.",
+  },
+  {
+    id: "q2-group",
+    chapter: 2,
+    prompt: "Factorize $ax + ay + bx + by$.",
+    options: ["$(a + b)(x + y)$", "$(a + x)(b + y)$", "$abxy$", "$(a - b)(x - y)$"],
+    answer: 0,
+    explanation: "$a(x + y) + b(x + y) = (a + b)(x + y)$.",
+  },
+  {
+    id: "q3-square",
+    chapter: 3,
+    prompt: "Expand $(a + b)^2$.",
+    options: ["$a^2 + b^2$", "$a^2 + 2ab + b^2$", "$a^2 + ab + b^2$", "$2a + 2b$"],
+    answer: 1,
+    explanation: "Perfect square identity: $(a + b)^2 \\equiv a^2 + 2ab + b^2$.",
+  },
+  {
+    id: "q3-diff",
+    chapter: 3,
+    prompt: "Factorize $x^2 - 25$.",
+    options: ["$(x - 5)^2$", "$(x + 5)(x - 5)$", "$(x + 25)(x - 1)$", "$x(x - 25)$"],
+    answer: 1,
+    explanation: "Difference of two squares: $x^2 - 5^2 = (x + 5)(x - 5)$.",
+  },
+  {
+    id: "q3-calc",
+    chapter: 3,
+    prompt: "Find $101^2 - 99^2$ without a calculator.",
+    options: ["$4$", "$200$", "$400$", "$2$"],
+    answer: 2,
+    explanation: "$(101 + 99)(101 - 99) = 200 \\times 2 = 400$.",
+  },
+  {
+    id: "q3-identity",
+    chapter: 3,
+    prompt: "Which of these is an identity?",
+    options: ["$2(x + 1) = 2x + 2$", "$x + 1 = 3$", "$x^2 = 4$", "$2x = x + 5$"],
+    answer: 0,
+    explanation: "It is true for every value of $x$; the others are true for only some values.",
+  },
+  {
+    id: "q4-simplify",
+    chapter: 4,
+    prompt: "Simplify $\\dfrac{6x^2}{3x}$.",
+    options: ["$2x$", "$3x$", "$2x^2$", "$\\dfrac{2}{x}$"],
+    answer: 0,
+    explanation: "$\\frac{6}{3} = 2$ and $\\frac{x^2}{x} = x$.",
+  },
+  {
+    id: "q4-add",
+    chapter: 4,
+    prompt: "Simplify $\\dfrac{1}{x} + \\dfrac{1}{2x}$.",
+    options: ["$\\dfrac{2}{3x}$", "$\\dfrac{3}{2x}$", "$\\dfrac{1}{3x}$", "$\\dfrac{2}{x}$"],
+    answer: 1,
+    explanation: "$\\frac{2}{2x} + \\frac{1}{2x} = \\frac{3}{2x}$.",
+  },
+  {
+    id: "q4-subject",
+    chapter: 4,
+    prompt: "Make $h$ the subject of $A = \\dfrac{1}{2}bh$.",
+    options: ["$h = 2Ab$", "$h = \\dfrac{A}{2b}$", "$h = \\dfrac{2A}{b}$", "$h = \\dfrac{b}{2A}$"],
+    answer: 2,
+    explanation: "Multiply both sides by 2, then divide by $b$.",
+  },
+  {
+    id: "q4-sub",
+    chapter: 4,
+    prompt: "If $v = u + at$, find $v$ when $u = 5$, $a = 2$, $t = 3$.",
+    options: ["$10$", "$11$", "$21$", "$30$"],
+    answer: 1,
+    explanation: "$v = 5 + 2 \\times 3 = 11$.",
+  },
+  {
+    id: "q5-solve",
+    chapter: 5,
+    prompt: "Solve $x + y = 10$ and $x - y = 2$.",
+    options: ["$x = 4, y = 6$", "$x = 6, y = 4$", "$x = 5, y = 5$", "$x = 8, y = 2$"],
+    answer: 1,
+    explanation: "Adding gives $2x = 12$, so $x = 6$ and $y = 4$.",
+  },
+  {
+    id: "q5-point",
+    chapter: 5,
+    prompt: "Which point lies on the graph of $y = 2x + 1$?",
+    options: ["$(2, 4)$", "$(1, 2)$", "$(3, 7)$", "$(0, 2)$"],
+    answer: 2,
+    explanation: "$2 \\times 3 + 1 = 7$.",
+  },
+  {
+    id: "q5-elim",
+    chapter: 5,
+    prompt: "Solve $2x + y = 7$ and $x + y = 4$.",
+    options: ["$x = 3, y = 1$", "$x = 1, y = 3$", "$x = 2, y = 3$", "$x = 4, y = 0$"],
+    answer: 0,
+    explanation: "Subtracting gives $x = 3$, then $y = 4 - 3 = 1$.",
+  },
+  {
+    id: "q5-parallel",
+    chapter: 5,
+    prompt:
+      "The graphs of two linear equations are parallel lines. How many solutions do they have together?",
+    options: ["None", "One", "Two", "Infinitely many"],
+    answer: 0,
+    explanation: "Parallel lines never meet, so there is no common solution.",
+  },
+  {
+    id: "q6-hexagon",
+    chapter: 6,
+    prompt: "What is the sum of the interior angles of a hexagon?",
+    options: ["$540^\\circ$", "$720^\\circ$", "$900^\\circ$", "$1080^\\circ$"],
+    answer: 1,
+    explanation: "$(6 - 2) \\times 180^\\circ = 720^\\circ$.",
+  },
+  {
+    id: "q6-octagon",
+    chapter: 6,
+    prompt: "What is each exterior angle of a regular octagon?",
+    options: ["$30^\\circ$", "$40^\\circ$", "$45^\\circ$", "$60^\\circ$"],
+    answer: 2,
+    explanation: "$360^\\circ \\div 8 = 45^\\circ$.",
+  },
+  {
+    id: "q6-alternate",
+    chapter: 6,
+    prompt: "Two parallel lines are cut by a transversal. Alternate angles are…",
+    options: ["equal", "supplementary", "complementary", "always $90^\\circ$"],
+    answer: 0,
+    explanation: "Alternate angles between parallel lines are equal (alt. ∠s, AB // CD).",
+  },
+  {
+    id: "q6-interior",
+    chapter: 6,
+    prompt: "Interior angles on the same side of a transversal between parallel lines add up to…",
+    options: ["$90^\\circ$", "$180^\\circ$", "$270^\\circ$", "$360^\\circ$"],
+    answer: 1,
+    explanation: "They are supplementary (int. ∠s, AB // CD).",
+  },
+  {
+    id: "q7-stem",
+    chapter: 7,
+    prompt: "In a stem-and-leaf diagram, stem 4 with leaf 7 stands for…",
+    options: ["$4.7$", "$47$", "$74$", "$11$"],
+    answer: 1,
+    explanation: "The stem is the tens digit and the leaf is the units digit.",
+  },
+  {
+    id: "q7-mode",
+    chapter: 7,
+    prompt: "What is the mode of $3, 5, 5, 8, 9$?",
+    options: ["$3$", "$5$", "$6$", "$8$"],
+    answer: 1,
+    explanation: "5 appears most often.",
+  },
+  {
+    id: "q7-cumulative",
+    chapter: 7,
+    prompt: "Which graph shows running totals of frequencies?",
+    options: [
+      "Pie chart",
+      "Frequency polygon",
+      "Cumulative frequency polygon",
+      "Stem-and-leaf diagram",
+    ],
+    answer: 2,
+    explanation:
+      "A cumulative frequency polygon plots running totals against upper class boundaries.",
+  },
+  {
+    id: "q7-polygon",
+    chapter: 7,
+    prompt: "A frequency polygon is drawn by joining…",
+    options: [
+      "the class boundaries",
+      "the class marks at the tops of the bars",
+      "the corners of each bar",
+      "the cumulative frequencies",
+    ],
+    answer: 1,
+    explanation: "Join the mid-points (class marks) of the tops of the histogram bars.",
+  },
+];
+/** "YYYY-MM-DD" for a moment in Hong Kong time, the same day the database uses. */
+export function hkDateKey(d: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Hong_Kong",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+function hash(text: string): number {
+  let h = 2166136261;
+  for (const ch of text) h = Math.imul(h ^ (ch.codePointAt(0) ?? 0), 16777619) >>> 0;
+  return h;
+}
+/** Each student gets their own question each day; the same one all day. */
+export function questionForDay(studentId: string, dateKey: string): CheckinQuestion {
+  const q = CHECKIN_QUESTIONS[hash(`${studentId}|${dateKey}`) % CHECKIN_QUESTIONS.length];
+  if (!q) throw new Error("The check-in question bank is empty");
+  return q;
+}
+export function checkinById(id: string): CheckinQuestion | null {
+  return CHECKIN_QUESTIONS.find((q) => q.id === id) ?? null;
+}
+function dayNumber(dateKey: string): number {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  return Math.round(Date.UTC(y ?? 1970, (m ?? 1) - 1, d ?? 1) / 86_400_000);
+}
+/**
+ * Days in a row with a check-in. The current streak still counts if the last check-in was
+ * yesterday (today's has not been done yet).
+ */
+export function checkinStreak(
+  dates: readonly string[],
+  today: string,
+): { current: number; best: number } {
+  const days = [...new Set(dates.map(dayNumber))].sort((a, b) => a - b);
+  let best = 0;
+  let run = 0;
+  let prev: number | null = null;
+  for (const d of days) {
+    run = prev !== null && d === prev + 1 ? run + 1 : 1;
+    best = Math.max(best, run);
+    prev = d;
+  }
+  const t = dayNumber(today);
+  const last = days[days.length - 1];
+  const current = last !== undefined && (last === t || last === t - 1) ? run : 0;
+  return { current, best };
+}
+```
 
-export function redemptionStatus(status: string): { label: string; cls: string } {
+## File: src/lib/gamification/math-text.ts
+```typescript
+/** Splits text into plain parts and maths parts written as $…$ (inline) or $$…$$ (display). */
+export type MathPart =
+  { kind: "text"; value: string } | { kind: "math"; value: string; display: boolean };
+export function splitMath(text: string): MathPart[] {
+  const parts: MathPart[] = [];
+  const re = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g;
+  let last = 0;
+  for (let m = re.exec(text); m !== null; m = re.exec(text)) {
+    if (m.index > last) parts.push({ kind: "text", value: text.slice(last, m.index) });
+    const display = m[1] !== undefined;
+    parts.push({ kind: "math", value: (display ? m[1] : m[2]) ?? "", display });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push({ kind: "text", value: text.slice(last) });
+  return parts;
+}
+```
+
+## File: src/lib/gamification/student-data.ts
+```typescript
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { isMockStudentId } from "./mock-data";
+import { mockCheckinDates, mockLuckyDraws, mockMistakes } from "./mock-activity";
+import { hkDateKey } from "./checkin";
+import type { ErrorType, Mistake, MistakeStatus } from "./vault";
+export interface CheckinRecord {
+  date: string;
+  questionId: string;
+  correct: boolean;
+}
+export interface StudentProgress {
+  mistakes: Mistake[];
+  checkins: CheckinRecord[];
+  /** Correct answers after being picked in the class lucky draw. */
+  luckyDrawCorrect: number;
+}
+export const studentProgressKey = (studentId: string) => ["student-progress", studentId] as const;
+async function loadProgress(studentId: string): Promise<StudentProgress> {
+  const [mistakes, checkins, lucky] = await Promise.all([
+    supabase
+      .from("mistakes")
+      .select("*")
+      .eq("student_id", studentId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("daily_checkins")
+      .select("checkin_date, question_id, correct")
+      .eq("student_id", studentId)
+      .order("checkin_date"),
+    supabase
+      .from("daily_marks")
+      .select("id", { count: "exact", head: true })
+      .eq("student_id", studentId)
+      .eq("reason", "correct_answer")
+      .eq("note", "Lucky draw"),
+  ]);
+  const error = mistakes.error ?? checkins.error ?? lucky.error;
+  if (error) {
+    throw new Error(
+      `${error.message}. If this mentions a missing table, run supabase/sql/0011_shop_badges_vault.sql.`,
+    );
+  }
+  return {
+    mistakes: (mistakes.data ?? []).map((m) => ({
+      id: m.id,
+      studentId: m.student_id,
+      chapter: m.chapter,
+      errorType: m.error_type as ErrorType,
+      question: m.question,
+      imagePath: m.image_path,
+      solution: m.solution,
+      status: m.status as MistakeStatus,
+      createdAt: m.created_at,
+    })),
+    checkins: (checkins.data ?? []).map((c) => ({
+      date: c.checkin_date,
+      questionId: c.question_id,
+      correct: c.correct,
+    })),
+    luckyDrawCorrect: lucky.count ?? 0,
+  };
+}
+function mockProgress(studentId: string): StudentProgress {
+  return {
+    mistakes: mockMistakes(studentId),
+    checkins: mockCheckinDates(studentId).map((date) => ({
+      date,
+      questionId: "q1-sf",
+      correct: true,
+    })),
+    luckyDrawCorrect: mockLuckyDraws(studentId),
+  };
+}
+/** A student's mistakes, check-ins and lucky-draw answers (sandbox students use sample data). */
+export function useStudentProgress(studentId: string) {
+  return useQuery({
+    queryKey: studentProgressKey(studentId),
+    enabled: Boolean(studentId),
+    queryFn: () =>
+      isMockStudentId(studentId)
+        ? Promise.resolve(mockProgress(studentId))
+        : loadProgress(studentId),
+  });
+}
+/** Today's check-in, if there is one. */
+export function todaysCheckin(progress: StudentProgress | undefined): CheckinRecord | null {
+  const today = hkDateKey();
+  return progress?.checkins.find((c) => c.date === today) ?? null;
+}
+```
+
+## File: src/lib/gamification/vault.ts
+```typescript
+import type { MathSet } from "@/lib/data";
+export type ErrorType = "careless" | "concept" | "formula" | "misread";
+export type MistakeStatus = "review" | "practiced" | "mastered";
+export const ERROR_TYPES: { id: ErrorType; label: string; emoji: string }[] = [
+  { id: "careless", label: "Careless calculation", emoji: "🧮" },
+  { id: "concept", label: "Concept misunderstanding", emoji: "🤔" },
+  { id: "formula", label: "Formula forgotten", emoji: "📐" },
+  { id: "misread", label: "Misread question", emoji: "👀" },
+];
+export const MISTAKE_STATUS: Record<MistakeStatus, { label: string; emoji: string; cls: string }> =
+  {
+    review: { label: "Needs review", emoji: "🔴", cls: "bg-destructive/10 text-destructive" },
+    practiced: { label: "Practiced", emoji: "🟡", cls: "bg-gold/25 text-gold-deep" },
+    mastered: { label: "Mastered", emoji: "🟢", cls: "bg-success/15 text-success-deep" },
+  };
+/** Needs review → Practiced → Mastered → back to Needs review. */
+export function nextStatus(s: MistakeStatus): MistakeStatus {
+  return s === "review" ? "practiced" : s === "practiced" ? "mastered" : "review";
+}
+export function errorTypeLabel(id: string): string {
+  return ERROR_TYPES.find((e) => e.id === id)?.label ?? id;
+}
+export interface Mistake {
+  id: string;
+  studentId: string;
+  chapter: number;
+  errorType: ErrorType;
+  question: string;
+  imagePath: string | null;
+  solution: string;
+  status: MistakeStatus;
+  createdAt: string;
+}
+export type ExamKind = "term_test" | "exam" | "quiz" | "other";
+export interface ExamDate {
+  id: string;
+  title: string;
+  kind: ExamKind;
+  set: "ALL" | MathSet;
+  startsAt: string;
+}
+export const EXAM_KINDS: { id: ExamKind; label: string }[] = [
+  { id: "term_test", label: "Term test" },
+  { id: "exam", label: "Exam" },
+  { id: "quiz", label: "Quiz" },
+  { id: "other", label: "Other" },
+];
+/** The next test or exam for this set (or for everyone) that has not started yet. */
+export function nextExam(
+  list: readonly ExamDate[],
+  set: MathSet,
+  now: Date = new Date(),
+): ExamDate | null {
   return (
-    STATUS[status as keyof typeof STATUS] ?? {
-      label: status,
-      cls: "bg-muted text-muted-foreground",
-    }
+    [...list]
+      .filter(
+        (e) => (e.set === "ALL" || e.set === set) && new Date(e.startsAt).getTime() > now.getTime(),
+      )
+      .sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0] ?? null
   );
 }
-
-/** Saves the same marks for every chosen student in one go and returns the new row ids (for undo). */
-export async function giveCoins(input: {
-  studentIds: string[];
-  marks: number;
-  reason: MarkReason;
-  note: string;
-}): Promise<string[]> {
-  if (!input.studentIds.length) throw new Error("Choose at least one student first");
-  if (!Number.isInteger(input.marks) || input.marks < -100 || input.marks > 100) {
-    throw new Error("Marks must be a whole number from -100 to 100");
-  }
-  const { data: auth } = await supabase.auth.getUser();
-  const userId = auth.user?.id;
-  if (!userId) throw new Error("Please sign in with your teacher account again");
-
-  const batchId = crypto.randomUUID();
-  const { data, error } = await supabase
-    .from("daily_marks")
-    .insert(
-      input.studentIds.map((studentId) => ({
-        student_id: studentId,
-        marks: input.marks,
-        reason: input.reason,
-        note: input.note.trim().slice(0, 200),
-        awarded_by: userId,
-        batch_id: batchId,
-      })),
-    )
-    .select("id");
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => row.id);
+export function countdownParts(ms: number): {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+} {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return {
+    days: Math.floor(total / 86_400),
+    hours: Math.floor((total % 86_400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  };
 }
-
-export async function deleteMarks(ids: string[]): Promise<void> {
-  for (let i = 0; i < ids.length; i += 100) {
-    const { error } = await supabase
-      .from("daily_marks")
-      .delete()
-      .in("id", ids.slice(i, i + 100));
-    if (error) throw new Error(error.message);
-  }
-}
-````
+```
 
 ## File: src/lib/drive-link.ts
-````typescript
+```typescript
 /** Old notes were PDFs uploaded to Supabase Storage and saved as "<chapter>/<uuid>.pdf". */
 export function isStoragePath(value: string): boolean {
   return /^\d+\/[\w-]+\.pdf$/i.test(value.trim());
 }
-
 export function isWebLink(value: string): boolean {
   try {
     return new URL(value.trim()).protocol === "https:";
@@ -5262,7 +747,6 @@ export function isWebLink(value: string): boolean {
     return false;
   }
 }
-
 /** A version of a Google Drive / Docs / Slides / Sheets link that can be shown inside the page. */
 export function notesPreviewUrl(value: string): string | null {
   let url: URL;
@@ -5281,27 +765,23 @@ export function notesPreviewUrl(value: string): string | null {
   }
   return null;
 }
-````
+```
 
 ## File: src/lib/error-capture.ts
-````typescript
+```typescript
 // Captures the original Error out-of-band so server.ts can recover the stack
 // when h3 has already swallowed the throw into a generic 500 Response.
-
 let lastCapturedError: { error: unknown; at: number } | undefined;
 const TTL_MS = 5_000;
-
 function record(error: unknown) {
   lastCapturedError = { error, at: Date.now() };
 }
-
 // h3's HTTPError serializes to {"status":500,"unhandled":true,"message":"HTTPError"} —
 // no stack, no cause — so a plain console.error(error) reaches the log pipeline with
 // the failure detail stripped. Expand Error-like args into a string that keeps the
 // message, stack, and the full cause chain.
 const CAUSE_DEPTH_LIMIT = 5;
 const DESCRIPTION_LENGTH_LIMIT = 8_000;
-
 export function describeError(error: unknown): string {
   const parts: string[] = [];
   let current: unknown = error;
@@ -5317,13 +797,11 @@ export function describeError(error: unknown): string {
   }
   return parts.join("\n").slice(0, DESCRIPTION_LENGTH_LIMIT);
 }
-
 function describeStatus(error: Error): string {
   const { status, statusCode } = error as { status?: unknown; statusCode?: unknown };
   const value = status ?? statusCode;
   return typeof value === "number" ? ` (status ${value})` : "";
 }
-
 function safeStringify(value: unknown): string {
   try {
     return JSON.stringify(value) ?? String(value);
@@ -5331,11 +809,9 @@ function safeStringify(value: unknown): string {
     return String(value);
   }
 }
-
 function isErrorLike(value: unknown): value is Error {
   return value instanceof Error;
 }
-
 // Wrap console.error so errors logged by any layer — including h3's internal
 // unhandled-error logging, which this file cannot hook directly — are both
 // recorded for consumeLastCapturedError and expanded before serialization.
@@ -5348,14 +824,12 @@ console.error = (...args: unknown[]) => {
   });
   originalConsoleError(...expanded);
 };
-
 if (typeof globalThis.addEventListener === "function") {
   globalThis.addEventListener("error", (event) => record((event as ErrorEvent).error ?? event));
   globalThis.addEventListener("unhandledrejection", (event) =>
     record((event as PromiseRejectionEvent).reason),
   );
 }
-
 export function consumeLastCapturedError(): unknown {
   if (!lastCapturedError) return undefined;
   if (Date.now() - lastCapturedError.at > TTL_MS) {
@@ -5366,10 +840,10 @@ export function consumeLastCapturedError(): unknown {
   lastCapturedError = undefined;
   return error;
 }
-````
+```
 
 ## File: src/lib/error-page.ts
-````typescript
+```typescript
 export function renderErrorPage(): string {
   return `<!doctype html>
 <html lang="en">
@@ -5400,18 +874,34 @@ export function renderErrorPage(): string {
   </body>
 </html>`;
 }
-````
+```
+
+## File: src/lib/game.functions.ts
+```typescript
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { publishGame, type PublishReport } from "./gamification/publish";
+/** Teacher action: work out the game for every student and publish what students may see. */
+export const publishGameData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<PublishReport> => {
+    const { data: allowed, error } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "teacher",
+    });
+    if (error) throw new Error(`Could not check teacher access: ${error.message}`);
+    if (!allowed) throw new Error("Only teacher accounts can publish game data");
+    return publishGame(context.supabase);
+  });
+```
 
 ## File: src/lib/homework.ts
-````typescript
+```typescript
 import type { Database } from "@/integrations/supabase/types";
-
 export type Homework = Database["public"]["Tables"]["homework"]["Row"];
 export type HomeworkSet = "ALL" | "S2M3" | "S2M5";
 export type DueStatus = "past" | "today" | "tomorrow" | "week" | "later";
-
 export const HOMEWORK_SETS: HomeworkSet[] = ["ALL", "S2M3", "S2M5"];
-
 export const DUE_LABEL: Record<DueStatus, string> = {
   past: "Deadline passed",
   today: "Due today",
@@ -5419,7 +909,6 @@ export const DUE_LABEL: Record<DueStatus, string> = {
   week: "This week",
   later: "Upcoming",
 };
-
 export const DUE_TONE: Record<DueStatus, string> = {
   past: "bg-muted text-muted-foreground",
   today: "bg-destructive/10 text-destructive",
@@ -5427,18 +916,14 @@ export const DUE_TONE: Record<DueStatus, string> = {
   week: "bg-primary/10 text-primary",
   later: "bg-muted text-foreground",
 };
-
 const DAY_MS = 86_400_000;
-
 function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
-
 function time(iso: string): number {
   const t = new Date(iso).getTime();
   return Number.isNaN(t) ? 0 : t;
 }
-
 /** How close a deadline is, counted in calendar days on this device's clock. */
 export function dueStatus(dueAt: string, now: Date = new Date()): DueStatus {
   const due = new Date(dueAt);
@@ -5449,16 +934,13 @@ export function dueStatus(dueAt: string, now: Date = new Date()): DueStatus {
   if (days <= 7) return "week";
   return "later";
 }
-
 export function setLabel(set: string): string {
   return set === "ALL" ? "All sets" : set;
 }
-
 /** Homework a student in this set should see: their own set plus homework for all sets. */
 export function homeworkForSet<T extends { math_set: string }>(list: T[], set: string): T[] {
   return list.filter((h) => h.math_set === "ALL" || h.math_set === set);
 }
-
 /** Upcoming (nearest deadline first) and past (most recent first). */
 export function splitByDue<T extends { due_at: string }>(list: T[], now: Date = new Date()) {
   const t = now.getTime();
@@ -5470,7 +952,6 @@ export function splitByDue<T extends { due_at: string }>(list: T[], now: Date = 
     .sort((a, b) => time(b.due_at) - time(a.due_at));
   return { upcoming, past };
 }
-
 export function formatDue(dueAt: string): string {
   const d = new Date(dueAt);
   if (Number.isNaN(d.getTime())) return "No date";
@@ -5482,35 +963,30 @@ export function formatDue(dueAt: string): string {
     minute: "2-digit",
   });
 }
-
 const pad = (n: number) => String(n).padStart(2, "0");
-
 /** Value for an <input type="datetime-local"> in this device's time zone. */
 export function toLocalInput(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-
 /** Turns a datetime-local value back into an ISO time for the database. */
 export function fromLocalInput(value: string): string | null {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
-
 /** New homework defaults to 8:00 the next morning. */
 export function defaultDue(now: Date = new Date()): string {
   return toLocalInput(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 8, 0));
 }
-````
+```
 
 ## File: src/lib/tones.ts
-````typescript
+```typescript
 /**
  * Colour tones shared by the navigation rail, page banners, panels and chapter tiles.
  * Class names are written out in full so Tailwind can find them.
  */
 export type Tone = "blue" | "green" | "gold" | "flame" | "berry" | "grape" | "sky";
-
 export interface ToneStyle {
   /** Solid fill with readable text and a chunky bottom edge. */
   solid: string;
@@ -5525,7 +1001,6 @@ export interface ToneStyle {
   /** Dimmed fill, for inactive items on the dark navigation rail. */
   dim: string;
 }
-
 export const TONES: Record<Tone, ToneStyle> = {
   blue: {
     solid: "bg-primary text-primary-foreground shadow-chunky-primary",
@@ -5584,16 +1059,13 @@ export const TONES: Record<Tone, ToneStyle> = {
     dim: "bg-sky/40",
   },
 };
-
 /** One tone for each of the seven chapters. */
 const CHAPTER_TONES: readonly Tone[] = ["blue", "green", "gold", "flame", "berry", "grape", "sky"];
-
 export function chapterTone(chapter: number): Tone {
   const n = CHAPTER_TONES.length;
   const index = (((Math.trunc(chapter) - 1) % n) + n) % n;
   return CHAPTER_TONES[index] ?? "blue";
 }
-
 /** Each page has one colour, shared by its link in the navigation and its banner. */
 const ROUTE_TONES: readonly (readonly [string, Tone])[] = [
   ["/dashboard", "blue"],
@@ -5605,27 +1077,25 @@ const ROUTE_TONES: readonly (readonly [string, Tone])[] = [
   ["/upload", "sky"],
   ["/leaderboard", "blue"],
 ];
-
 export function toneForPath(pathname: string): Tone {
   for (const [prefix, tone] of ROUTE_TONES) {
     if (pathname === prefix || pathname.startsWith(`${prefix}/`)) return tone;
   }
   return "blue";
 }
-````
+```
 
 ## File: src/lib/utils.ts
-````typescript
+```typescript
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-````
+```
 
 ## File: src/routes/_authenticated/homework.tsx
-````typescript
+```typescript
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, type ReactNode } from "react";
 import { CalendarClock, ExternalLink, Pencil, Trash2 } from "lucide-react";
@@ -5653,7 +1123,6 @@ import {
   type HomeworkSet,
 } from "@/lib/homework";
 import { cn } from "@/lib/utils";
-
 export const Route = createFileRoute("/_authenticated/homework")({
   head: () => ({
     meta: [
@@ -5667,16 +1136,13 @@ export const Route = createFileRoute("/_authenticated/homework")({
   }),
   component: HomeworkPage,
 });
-
 const PAST_LIMIT = 20;
 const field =
   "mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-normal text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
-
 function HomeworkPage() {
   const { role } = useApp();
   return <AppShell>{role === "teacher" ? <TeacherHomework /> : <StudentHomework />}</AppShell>;
 }
-
 function HomeworkRow({
   item,
   showSet,
@@ -5734,7 +1200,6 @@ function HomeworkRow({
     </li>
   );
 }
-
 function StudentHomework() {
   const { me, homework, homeworkError } = useApp();
   const { upcoming, past } = useMemo(
@@ -5783,7 +1248,6 @@ function StudentHomework() {
     </>
   );
 }
-
 interface Draft {
   id: string | null;
   mathSet: HomeworkSet;
@@ -5793,7 +1257,6 @@ interface Draft {
   link: string;
   due: string;
 }
-
 function emptyDraft(): Draft {
   return {
     id: null,
@@ -5805,11 +1268,9 @@ function emptyDraft(): Draft {
     due: defaultDue(),
   };
 }
-
 function asSet(value: string): HomeworkSet {
   return value === "S2M3" || value === "S2M5" ? value : "ALL";
 }
-
 function TeacherHomework() {
   const { homework, homeworkError, refresh } = useApp();
   const [draft, setDraft] = useState<Draft>(emptyDraft);
@@ -5819,9 +1280,7 @@ function TeacherHomework() {
     () => splitByDue(filter === "ALL" ? homework : homeworkForSet(homework, filter)),
     [homework, filter],
   );
-
   const change = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
-
   const save = async () => {
     const title = draft.title.trim();
     const link = draft.link.trim();
@@ -5873,7 +1332,6 @@ function TeacherHomework() {
       setBusy(false);
     }
   };
-
   const edit = (h: Homework) => {
     setDraft({
       id: h.id,
@@ -5886,7 +1344,6 @@ function TeacherHomework() {
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
   const remove = async (h: Homework) => {
     if (!window.confirm(`Delete "${h.title}"? Students will no longer see it.`)) return;
     setBusy(true);
@@ -5902,7 +1359,6 @@ function TeacherHomework() {
       setBusy(false);
     }
   };
-
   const actionsFor = (h: Homework) => (
     <div className="flex shrink-0 gap-1">
       <Button variant="ghost" size="sm" onClick={() => edit(h)} aria-label={`Edit ${h.title}`}>
@@ -5919,7 +1375,6 @@ function TeacherHomework() {
       </Button>
     </div>
   );
-
   return (
     <>
       <PageHeader
@@ -6025,7 +1480,6 @@ function TeacherHomework() {
             </div>
           </form>
         </Panel>
-
         <div className="space-y-6">
           <div className="flex w-fit rounded-md border border-border bg-card p-0.5">
             {HOMEWORK_SETS.map((s) => (
@@ -6077,919 +1531,18 @@ function TeacherHomework() {
     </>
   );
 }
-````
-
-## File: src/test/app-routing.test.tsx
-````typescript
-import { QueryClient } from "@tanstack/react-query";
-import { createRouter, rootRouteId } from "@tanstack/react-router";
-import { describe, expect, it } from "vitest";
-
-import { routeTree } from "@/routeTree.gen";
-
-// Match routes without running loaders or rendering: loaders may need a server or
-// network the test run lacks, and jsdom never loads the stylesheets React waits on.
-describe("App routing", () => {
-  it("matches a page for / instead of falling back to not found", () => {
-    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
-
-    const matches = router.matchRoutes("/");
-
-    expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
-  });
-});
-````
-
-## File: src/test/grade-rules.test.ts
-````typescript
-import { describe, expect, it } from 'vitest';
-import { answerMarks, VIDEO_MARKS, scoreSchema, parseScoreCsv } from '@/lib/grade-rules';
-describe('School marks', () => {
- it('awards one daily mark for a correct answer', () => expect(answerMarks(true)).toBe(1));
- it('awards no marks for an incorrect answer', () => expect(answerMarks(false)).toBe(0));
- it('awards one mark per video', () => expect(VIDEO_MARKS).toBe(1));
- it('accepts a score between zero and 100 only', () => { expect(scoreSchema.parse(100)).toBe(100); expect(() => scoreSchema.parse(101)).toThrow(); expect(() => scoreSchema.parse(-1)).toThrow(); });
- it('imports blank scores as unattempted', () => expect(parseScoreCsv('email,ch1,ch2,ch3,ch4,ch5,ch6,ch7\na@hlc.edu.hk,0,100,,50,60,70,80').get('a@hlc.edu.hk')).toEqual([0,100,null,50,60,70,80]));
-});
-````
-
-## File: src/test/homework.test.ts
-````typescript
-import { describe, expect, it } from "vitest";
-import {
-  dueStatus,
-  fromLocalInput,
-  homeworkForSet,
-  splitByDue,
-  toLocalInput,
-} from "@/lib/homework";
-
-const now = new Date(2026, 10, 13, 10, 0);
-const at = (days: number, hour: number, minute = 0) =>
-  new Date(2026, 10, 13 + days, hour, minute).toISOString();
-
-describe("homework deadlines", () => {
-  it("treats a deadline earlier today as passed", () => {
-    expect(dueStatus(at(0, 9), now)).toBe("past");
-  });
-  it("labels a deadline later today", () => {
-    expect(dueStatus(at(0, 23, 59), now)).toBe("today");
-  });
-  it("labels tomorrow, this week and later", () => {
-    expect(dueStatus(at(1, 8), now)).toBe("tomorrow");
-    expect(dueStatus(at(5, 8), now)).toBe("week");
-    expect(dueStatus(at(10, 8), now)).toBe("later");
-  });
-  it("shows a set its own homework plus homework for all sets", () => {
-    const list = [{ math_set: "ALL" }, { math_set: "S2M3" }, { math_set: "S2M5" }];
-    expect(homeworkForSet(list, "S2M3").map((h) => h.math_set)).toEqual(["ALL", "S2M3"]);
-  });
-  it("sorts upcoming by nearest deadline and past by most recent", () => {
-    const list = [
-      { due_at: at(3, 8) },
-      { due_at: at(-2, 8) },
-      { due_at: at(1, 8) },
-      { due_at: at(-1, 8) },
-    ];
-    const { upcoming, past } = splitByDue(list, now);
-    expect(upcoming.map((h) => h.due_at)).toEqual([at(1, 8), at(3, 8)]);
-    expect(past.map((h) => h.due_at)).toEqual([at(-1, 8), at(-2, 8)]);
-  });
-  it("round-trips the date picker value", () => {
-    const d = new Date(2026, 10, 14, 8, 30);
-    expect(toLocalInput(d)).toBe("2026-11-14T08:30");
-    expect(fromLocalInput("2026-11-14T08:30")).toBe(d.toISOString());
-    expect(fromLocalInput("")).toBeNull();
-  });
-});
-````
-
-## File: src/test/setup.ts
-````typescript
-import "@testing-library/jest-dom/vitest";
-
-Object.defineProperty(window, "scrollTo", {
-  writable: true,
-  value: () => {},
-});
-
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
-});
-````
-
-## File: src/test/sheet-sync.test.ts
-````typescript
-import { describe, expect, it } from 'vitest';
-import { parseSetTab } from '@/lib/sheet-parse';
-import { contribution, termSummary, type Assessment } from '@/lib/assessments';
-
-// Mirrors the layout of the "2627 Name list (For LMS)" tabs.
-const formulas = [
-  ['', '', '2026-27 Set'],
-  ['', 'Class', 'No.', 'Name in English', '姓名', 'Sex', 'HW', 'Homework (30%)', 'SQ', 'SQ', 'Daily (10%)', 'T1A3 (200)'],
-  ['HLC no.', '', '', '', '', '', 'HWB1', '', 'SQ1.1', 'SQ1.2', '', ''],
-  ['HLC250015', '2B', '1', 'Chan Ying Tung (Percy)', '陳映彤', 'F', 4, '=G4/G$6*30', 10, 'ABS', 8, '=0'],
-  ['', '', '', 'Mean'],
-  ['', '', '', 'Full marks', '', '', 10, '', 14, 13, '', ''],
-];
-const values = formulas.map(r => r.map(c => (typeof c === 'string' && c.startsWith('=') ? 12 : c)));
-
-const item = (category: Assessment['category'], score: number | null, full: number | null, absent = false): Assessment =>
-  ({ term: 1, kind: 'item', category, label: `${category}${score}`, score, full_marks: full, absent, position: 0 });
-
-describe('Google Sheet sync', () => {
-  const [s] = parseSetTab('S2M3', formulas, values);
-  it('signs students in with their HLC no. school email', () => expect(s?.email).toBe('hlc250015@hlc.edu.hk'));
-  it('reads typed marks with full marks from the Full marks row', () =>
-    expect(s?.scores.find(x => x.label === 'SQ1.1')).toMatchObject({ kind: 'item', category: 'short_quiz', score: 10, full_marks: 14 }));
-  it('keeps ABS as absent, not zero', () => expect(s?.scores.find(x => x.label === 'SQ1.2')).toMatchObject({ absent: true, score: null }));
-  it('reads the Daily (10%) column as a mark out of 10', () => expect(s?.scores.find(x => x.category === 'daily')).toMatchObject({ score: 8, full_marks: 10 }));
-});
-
-describe('Weighted coursework', () => {
-  it('Homework is 30% of the average homework percentage', () => expect(contribution([item('homework', 4, 10), item('homework', 8, 10)], 1, 'homework', 30)).toBe(18));
-  it('absent quizzes are left out of the average', () => expect(contribution([item('short_quiz', 7, 14), item('short_quiz', null, 13, true)], 1, 'short_quiz', 20)).toBe(10));
-  it('coursework total is out of 200 (HW 30 + SQ 20 + CQ 30 + Mock 10 + Daily 10, doubled)', () => {
-    const all = [item('homework', 10, 10), item('short_quiz', 10, 10), item('chapter_quiz', 10, 10), item('mock', 20, 20),
-      { term: 1, kind: 'summary', category: 'daily', label: 'Daily (10%)', score: 10, full_marks: 10, absent: false, position: 0 } as Assessment];
-    expect(termSummary(all, 1).coursework200).toBe(200);
-  });
-});
-````
-
-## File: src/test/student-privacy.integration.test.ts
-````typescript
-import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-
-// Explicit opt-in: temporary test identities are prepared outside the repository.
-const fixturePath = process.env['MATH_PRIVACY_FIXTURE'];
-describe.skipIf(!fixturePath)('Live student privacy', () => {
-  it('returns only each student’s own scores and refuses teacher promotion', async () => {
-    if (!fixturePath) throw new Error('Missing temporary identity fixture');
-    const users = JSON.parse(readFileSync(fixturePath, 'utf8')) as { role: string; id: string; session: { access_token: string } }[];
-    const base = process.env['SUPABASE_URL'];
-    const key = process.env['SUPABASE_SERVICE_ROLE_KEY'];
-    if (!base || !key) throw new Error('Missing test connection');
-    for (const u of users.filter(u => u.role.startsWith('student'))) {
-      // JWT identity, not the service role, determines RLS permissions.
-      const headers = { apikey: key, Authorization: `Bearer ${u.session.access_token}` };
-      const roster = await fetch(`${base}/rest/v1/students?select=id,user_id`, { headers });
-      expect(roster.status).toBe(200);
-      const own = await roster.json() as { id: string; user_id: string }[];
-      expect(own.length).toBe(1);
-      expect(own[0]?.user_id).toBe(u.id);
-      const scores = await fetch(`${base}/rest/v1/chapter_scores`, { headers });
-      expect(scores.status).toBe(200);
-      const rows = await scores.json() as { student_id: string; score: number }[];
-      expect(rows.length).toBe(1);
-      expect(rows[0]?.student_id).toBe(own[0]?.id);
-      expect(rows[0]?.score).toBe(u.role === 'student-a' ? 78 : 93);
-      const promote = await fetch(`${base}/rest/v1/user_roles`, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: u.id, role: 'teacher' }) });
-      expect(promote.ok).toBe(false);
-    }
-  });
-});
-````
-
-## File: src/test/video-watch.test.ts
-````typescript
-import { describe, expect, it } from 'vitest';
-import { REQUIRED_COVERAGE, createWatchTracker, parseVideoSource } from '@/lib/video-watch';
-
-function play(t: ReturnType<typeof createWatchTracker>, from: number, to: number, step = 0.5) {
-  for (let p = from; p <= to + 1e-9; p += step) t.tick(p);
-}
-
-describe('video completion tracking', () => {
-  it('counts a video watched from start to end as complete', () => {
-    const t = createWatchTracker();
-    play(t, 0, 120);
-    expect(t.coverage(120)).toBeGreaterThanOrEqual(REQUIRED_COVERAGE);
-  });
-  it('does not count seconds skipped by jumping ahead', () => {
-    const t = createWatchTracker();
-    play(t, 0, 10);
-    play(t, 115, 120); // seek near the end
-    expect(t.coverage(120)).toBeLessThan(REQUIRED_COVERAGE);
-  });
-  it('requires 90% of the video to be played', () => {
-    expect(REQUIRED_COVERAGE).toBe(0.9);
-    const t = createWatchTracker();
-    play(t, 0, 100);
-    expect(t.coverage(120)).toBeLessThan(REQUIRED_COVERAGE);
-  });
-  it('counts double-speed playback', () => {
-    const t = createWatchTracker();
-    play(t, 0, 60, 1);
-    expect(t.coverage(60)).toBeGreaterThanOrEqual(REQUIRED_COVERAGE);
-  });
-});
-
-describe('video links', () => {
-  it('accepts YouTube links in their common forms', () => {
-    for (const u of ['https://www.youtube.com/watch?v=tTdou0A5kEk', 'https://youtu.be/tTdou0A5kEk', 'https://www.youtube.com/embed/tTdou0A5kEk', 'https://youtube.com/shorts/tTdou0A5kEk'])
-      expect(parseVideoSource(u)).toEqual({ kind: 'youtube', id: 'tTdou0A5kEk' });
-  });
-  it('accepts direct video files and rejects other pages', () => {
-    expect(parseVideoSource('https://example.com/lesson.mp4')?.kind).toBe('file');
-    expect(parseVideoSource('https://drive.google.com/file/d/abc/view')).toBeNull();
-    expect(parseVideoSource('http://www.youtube.com/watch?v=tTdou0A5kEk')).toBeNull();
-  });
-});
-````
-
-## File: src/router.tsx
-````typescript
-import { QueryClient } from "@tanstack/react-query";
-import { createRouter } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen";
-
-export const getRouter = () => {
-  // One client per request: a module-level QueryClient leaks cached data between SSR requests.
-  const queryClient = new QueryClient();
-
-  const router = createRouter({
-    routeTree,
-    context: { queryClient },
-    scrollRestoration: true,
-    // Lets Query own freshness; set caching defaults on the QueryClient, not the router.
-    defaultPreloadStaleTime: 0,
-  });
-
-  return router;
-};
-````
-
-## File: src/server.ts
-````typescript
-import "./lib/error-capture";
-
-import { consumeLastCapturedError } from "./lib/error-capture";
-import { renderErrorPage } from "./lib/error-page";
-
-type ServerEntry = {
-  fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
-};
-
-let serverEntryPromise: Promise<ServerEntry> | undefined;
-
-async function getServerEntry(): Promise<ServerEntry> {
-  if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
-  }
-  return serverEntryPromise;
-}
-
-// h3 swallows in-handler throws into a normal 500 Response with body
-// {"unhandled":true,"message":"HTTPError"} — try/catch alone never fires for those.
-async function normalizeCatastrophicSsrResponse(response: Response): Promise<Response> {
-  if (response.status < 500) return response;
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) return response;
-
-  const body = await response.clone().text();
-  if (!isH3SwallowedErrorBody(body)) return response;
-
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
-  return new Response(renderErrorPage(), {
-    status: 500,
-    headers: { "content-type": "text/html; charset=utf-8" },
-  });
-}
-
-function isH3SwallowedErrorBody(body: string): boolean {
-  try {
-    const payload = JSON.parse(body) as { unhandled?: unknown; message?: unknown };
-    return payload.unhandled === true && payload.message === "HTTPError";
-  } catch {
-    return false;
-  }
-}
-
-// Hosting compresses every response at the edge. Never compress a body (gzip, brotli,
-// CompressionStream) or set content-encoding here or in a server route: the body gets encoded
-// twice and renders garbled.
-export default {
-  async fetch(request: Request, env: unknown, ctx: unknown) {
-    try {
-      const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
-    } catch (error) {
-      console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
-    }
-  },
-};
-````
-
-## File: supabase/sql/0007_homework.sql
-````sql
--- Homework with deadlines. Teachers write, every signed-in user can read.
--- Safe to run more than once.
-CREATE TABLE IF NOT EXISTS public.homework (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  math_set text NOT NULL CHECK (math_set IN ('ALL', 'S2M3', 'S2M5')),
-  chapter integer CHECK (chapter IS NULL OR chapter BETWEEN 1 AND 7),
-  title text NOT NULL CHECK (length(trim(title)) BETWEEN 1 AND 200),
-  details text NOT NULL DEFAULT '' CHECK (length(details) <= 2000),
-  link text NOT NULL DEFAULT '' CHECK (link = '' OR link ~ '^https://'),
-  due_at timestamptz NOT NULL,
-  created_by uuid NOT NULL DEFAULT auth.uid(),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.homework TO authenticated;
-GRANT ALL ON public.homework TO service_role;
-ALTER TABLE public.homework ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS homework_read ON public.homework;
-CREATE POLICY homework_read ON public.homework
-  FOR SELECT TO authenticated USING (true);
-
-DROP POLICY IF EXISTS homework_teacher_write ON public.homework;
-CREATE POLICY homework_teacher_write ON public.homework
-  FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'teacher'))
-  WITH CHECK (public.has_role(auth.uid(), 'teacher'));
-
-CREATE INDEX IF NOT EXISTS homework_due_idx ON public.homework (due_at);
-````
-
-## File: supabase/sql/0008_demo_student_data.sql
-````sql
--- Realistic marks for demo.student@hlc.edu.hk so the demo dashboard is not all zeros.
--- Only touches the demo student's own rows. Safe to run more than once.
--- Run after 0005 (it uses daily_marks.note and daily_marks.batch_id).
-DO $$
-DECLARE
-  demo_email constant text := 'demo.student@hlc.edu.hk';
-  demo_batch constant uuid := 'b1d3d3d3-0000-4000-8000-00000000d3e0';
-  demo_user uuid;
-  teacher_user uuid;
-  sid uuid;
-BEGIN
-  SELECT u.id INTO demo_user FROM auth.users u WHERE lower(u.email) = demo_email;
-  SELECT u.id INTO teacher_user FROM auth.users u WHERE lower(u.email) = 'yhtang@hlc.edu.hk';
-
-  -- Only link the login if it has a profile row and is not linked to another student.
-  IF demo_user IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = demo_user) THEN
-    demo_user := NULL;
-  END IF;
-  IF demo_user IS NOT NULL AND EXISTS (
-    SELECT 1 FROM public.students s WHERE s.user_id = demo_user AND s.email <> demo_email
-  ) THEN
-    demo_user := NULL;
-  END IF;
-
-  INSERT INTO public.students (email, name, math_set, class_name, class_no, last_month_avg, user_id)
-  VALUES (demo_email, 'Demo Student', 'S2M3', 'Demo', '1', 66, demo_user)
-  ON CONFLICT (email) DO UPDATE SET
-    name = EXCLUDED.name,
-    math_set = EXCLUDED.math_set,
-    class_name = EXCLUDED.class_name,
-    class_no = EXCLUDED.class_no,
-    last_month_avg = EXCLUDED.last_month_avg,
-    user_id = COALESCE(public.students.user_id, EXCLUDED.user_id)
-  RETURNING id INTO sid;
-
-  -- Chapter scores come from the assessment marks below, not from typed overrides.
-  DELETE FROM public.chapter_scores WHERE student_id = sid;
-
-  DELETE FROM public.assessment_scores WHERE student_id = sid;
-  INSERT INTO public.assessment_scores
-    (student_id, term, kind, category, label, score, absent, full_marks, position)
-  VALUES
-    (sid, 1, 'item', 'homework', 'HW1.1', 9, false, 10, 6),
-    (sid, 1, 'item', 'homework', 'HW1.2', 8, false, 10, 7),
-    (sid, 1, 'item', 'homework', 'HW2.1', 7, false, 10, 8),
-    (sid, 1, 'item', 'homework', 'HW2.2', 9, false, 10, 9),
-    (sid, 1, 'item', 'homework', 'HW3.1', 6, false, 10, 10),
-    (sid, 1, 'item', 'homework', 'HW4.1', 8, false, 10, 11),
-    (sid, 1, 'item', 'short_quiz', 'SQ1.1', 11, false, 14, 13),
-    (sid, 1, 'item', 'short_quiz', 'SQ1.2', 12, false, 13, 14),
-    (sid, 1, 'item', 'short_quiz', 'SQ2.1', 9, false, 15, 15),
-    (sid, 1, 'item', 'short_quiz', 'SQ2.2', NULL, true, 15, 16),
-    (sid, 1, 'item', 'short_quiz', 'SQ3.1', 7, false, 14, 17),
-    (sid, 1, 'item', 'chapter_quiz', 'CQ1', 41, false, 50, 19),
-    (sid, 1, 'item', 'chapter_quiz', 'CQ2', 33, false, 50, 20),
-    (sid, 1, 'item', 'chapter_quiz', 'CQ3', 24, false, 50, 21),
-    (sid, 1, 'item', 'mock', 'Mock 1', 72, false, 100, 23),
-    (sid, 1, 'summary', 'daily', 'Daily (10%)', 8, false, 10, 25);
-
-  DELETE FROM public.daily_marks WHERE student_id = sid AND batch_id = demo_batch;
-  INSERT INTO public.daily_marks
-    (student_id, awarded_by, lesson_date, marks, reason, note, batch_id, created_at)
-  VALUES
-    (sid, COALESCE(teacher_user, sid), (now() - interval '15 days')::date, 2, 'classwork', 'Ex 1A Q1-8', demo_batch, now() - interval '15 days'),
-    (sid, COALESCE(teacher_user, sid), (now() - interval '12 days')::date, 1, 'correct_answer', 'Lucky draw', demo_batch, now() - interval '12 days'),
-    (sid, COALESCE(teacher_user, sid), (now() - interval '9 days')::date, 2, 'participation', 'Group work', demo_batch, now() - interval '9 days'),
-    (sid, COALESCE(teacher_user, sid), (now() - interval '6 days')::date, 3, 'classwork', 'Ex 2B', demo_batch, now() - interval '6 days'),
-    (sid, COALESCE(teacher_user, sid), (now() - interval '3 days')::date, 1, 'correct_answer', 'Lucky draw', demo_batch, now() - interval '3 days'),
-    (sid, COALESCE(teacher_user, sid), (now() - interval '1 day')::date, 2, 'participation', 'Board work', demo_batch, now() - interval '1 day');
-END $$;
-````
-
-## File: .gitignore
-````
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
-*.local
-
-# Wrangler / Cloudflare
-.wrangler/
-.dev.vars
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-````
-
-## File: .prettierignore
-````
-node_modules
-dist
-.output
-.vinxi
-pnpm-lock.yaml
-package-lock.json
-bun.lock
-routeTree.gen.ts
-````
-
-## File: .prettierrc
-````
-{
-  "printWidth": 100,
-  "semi": true,
-  "singleQuote": false,
-  "trailingComma": "all"
-}
-````
-
-## File: bunfig.toml
-````toml
-[install]
-saveTextLockfile = true
-# 24h supply-chain guard: skip package versions published less than a day ago.
-minimumReleaseAge = 86400
-# Each entry bypasses the 24h guard for one package — confirm with the user
-# before adding any.
-minimumReleaseAgeExcludes = ["@lovable.dev/vite-tanstack-config", "@lovable.dev/mcp-js", "@lovable.dev/ai-gateway", "@lovable.dev/email-js", "@lovable.dev/webhooks-js"]
-````
-
-## File: components.json
-````json
-{
-  "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "new-york",
-  "rsc": false,
-  "tsx": true,
-  "tailwind": {
-    "css": "src/styles.css",
-    "baseColor": "slate",
-    "cssVariables": true,
-    "prefix": ""
-  },
-  "iconLibrary": "lucide",
-  "rtl": false,
-  "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
-  },
-  "registries": {}
-}
-````
-
-## File: dev
-````
-> vite dev
-
-vite.config.ts (10:29) [UNRESOLVED_IMPORT] Could not resolve '@lovabl
-vite.config.ts (10:29) [UNRESOLVED_IMPORT] Could not resolve '@lovable.dev/vite-tanstack-config' in vite.config.ts
-    ╭─[ vite.config.ts:10:30 ]
-    │
- 10 │ import { defineConfig } from "@lovable.dev/vite-tanstack-config
- 10 │ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-    │                              ─────────────────┬────────────────
-    │                              ─────────────────┬─────────────────
-    │                                               ╰────────────────
-    │                                               ╰─────────────────── Module not found, treating it as an external dependency
-────╯
-
-failedable.dev/vite-
-Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms
-Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms.lovable/node_modules/.vite-temp/vite.config.ts.timestamp-17945751434
-Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@lovable.dev/vite-tanstack-config' imported from /Users/yhtang/Documents/GitHub/mathlms.lovable/node_modules/.vite-temp/vite.config.ts.timestamp-1794575143454-59034acd2aa588.mjs
-    at Object.getPackageJSONURL (node:internal/modules/package_json_r
-    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:343:9)
-    at packageResolve (node:internal/modules/esm/resolve:751:25)
-    at moduleResolve (node:internal/modules/esm/resolve:840:18)
-    at defaultResolve (node:internal/modules/esm/resolve:973:11)
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:708:20
-    at #cachedDefaultResolve (node:internal/modules/esm/loader:708:20)
-    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm
-    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:728:38)
-    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:766
-    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:766:56)
-    at #resolve (node:internal/modules/esm/loader:690:17)
-    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/l
-    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:610:35)
-    at ModuleJob.syncLink (node:internal/modules/esm/module_job:277:3
-    at ModuleJob.syncLink (node:internal/modules/esm/module_job:277:33) {
-  code: 'ERR_MODULE_NOT_FOUND'
-````
-
-## File: eslint.config.js
-````javascript
-import js from "@eslint/js";
-import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
-import globals from "globals";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "typescript-eslint";
-
-export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
-  {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              name: "server-only",
-              message:
-                "TanStack Start does not use the Next.js `server-only` package. Rename the module to `*.server.ts` or mark it with `@tanstack/react-start/server-only`.",
-            },
-          ],
-        },
-      ],
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
-    },
-  },
-  eslintPluginPrettier,
-);
-````
-
-## File: vitest.config.ts
-````typescript
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
-import path from "node:path";
-
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: "jsdom",
-    globals: true,
-    setupFiles: ["./src/test/setup.ts"],
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
-  },
-  resolve: {
-    alias: { "@": path.resolve(__dirname, "./src") },
-  },
-});
-````
-
-## File: src/components/ui/button.tsx
-````typescript
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
-
-import { cn } from "@/lib/utils";
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold cursor-pointer transition-all duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-  {
-    variants: {
-      variant: {
-        default:
-          "bg-primary text-primary-foreground btn-edge hover:brightness-105 active:translate-y-[3px] active:shadow-none",
-        destructive:
-          "bg-destructive text-destructive-foreground btn-edge hover:brightness-105 active:translate-y-[3px] active:shadow-none",
-        outline:
-          "border-2 border-input bg-card text-foreground btn-edge-light hover:bg-secondary active:translate-y-[3px] active:shadow-none",
-        secondary:
-          "bg-secondary text-secondary-foreground btn-edge-light hover:bg-secondary/70 active:translate-y-[3px] active:shadow-none",
-        ghost: "hover:bg-secondary hover:text-secondary-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-12 rounded-lg px-8 text-base",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-);
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
-    );
-  },
-);
-Button.displayName = "Button";
-
-export { Button, buttonVariants };
-````
-
-## File: src/components/LessonMarks.tsx
-````typescript
-import { useState } from 'react';
-import { Plus, Shuffle, Check, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { useApp } from '@/lib/app-store';
-import { supabase } from '@/integrations/supabase/client';
-import { answerMarks, awardSchema } from '@/lib/grade-rules';
-
-export function LessonMarks() {
-  const { students, refresh } = useApp();
-  const [set, setSet] = useState<'S2M3' | 'S2M5'>('S2M3');
-  const [selected, select] = useState('');
-  const [picked, pick] = useState('');
-  const [spinning, spin] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [marks, setMarks] = useState(1);
-  const [reason, setReason] = useState<'classwork' | 'participation'>('classwork');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const list = students.filter(s => s.set === set);
-
-  const send = async (
-    id: string,
-    markReason: 'classwork' | 'participation' | 'correct_answer' | 'incorrect_answer',
-    n: number,
-  ) => {
-    setBusy(true);
-    try {
-      const parsed = awardSchema.parse({ studentId: id, reason: markReason, marks: n });
-      const { data: authData } = await supabase.auth.getUser();
-      const userId = authData.user?.id;
-      if (!userId) throw new Error('請先登入老師帳號');
-
-      const { error } = await supabase.from('daily_marks').insert({
-        student_id: parsed.studentId,
-        marks: parsed.marks,
-        reason: parsed.reason,
-        awarded_by: userId,
-      });
-      if (error) throw error;
-
-      await refresh();
-      toast.success(n ? `${n} mark(s) saved` : 'Answer recorded');
-      if (markReason.includes('answer')) pick('');
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Could not save marks');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <section className="mt-6 space-y-6 border-y border-border py-6">
-      <form
-        className="flex flex-wrap items-end gap-3"
-        onSubmit={async e => {
-          e.preventDefault();
-          setBusy(true);
-          try {
-            const { error } = await supabase
-              .from('students')
-              .insert({ name: name.trim(), email: email.trim().toLowerCase(), math_set: set });
-            if (error) throw error;
-            await refresh();
-            setName('');
-            setEmail('');
-            toast.success('Student added');
-          } catch (e) {
-            toast.error(e instanceof Error ? e.message : 'Could not add student');
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <label className="text-sm font-medium">
-          Class set
-          <select
-            aria-label="Class set"
-            value={set}
-            onChange={e => {
-              setSet(e.target.value as 'S2M3' | 'S2M5');
-              select('');
-              pick('');
-            }}
-            className="mt-1 block rounded-md border border-input bg-card p-2"
-          >
-            <option>S2M3</option>
-            <option>S2M5</option>
-          </select>
-        </label>
-        <label className="text-sm font-medium">
-          Student name
-          <input
-            required
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="mt-1 block rounded-md border border-input bg-card p-2"
-          />
-        </label>
-        <label className="text-sm font-medium">
-          School email
-          <input
-            required
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="mt-1 block rounded-md border border-input bg-card p-2"
-          />
-        </label>
-        <Button disabled={busy} type="submit">
-          <Plus />
-          Add student
-        </Button>
-      </form>
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold">Daily lesson marks</h2>
-          <select
-            aria-label="Student for daily marks"
-            value={selected}
-            onChange={e => select(e.target.value)}
-            className="w-full rounded-md border border-input bg-card p-2"
-          >
-            <option value="">Choose student</option>
-            {list.map(s => (
-              <option key={s.id} value={s.id}>
-                {s.name} · {s.dailyMarks ?? 0} marks
-              </option>
-            ))}
-          </select>
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="text-sm">
-              Reason
-              <select
-                aria-label="Mark reason"
-                value={reason}
-                onChange={e => setReason(e.target.value as typeof reason)}
-                className="mt-1 block rounded-md border border-input bg-card p-2"
-              >
-                <option value="classwork">Classwork completed</option>
-                <option value="participation">Good lesson performance</option>
-              </select>
-            </label>
-            <label className="text-sm">
-              Marks
-              <input
-                aria-label="Marks"
-                type="number"
-                min={0}
-                max={100}
-                value={marks}
-                onChange={e => setMarks(Number(e.target.value))}
-                className="mt-1 block w-20 rounded-md border border-input bg-card p-2"
-              />
-            </label>
-            <Button disabled={!selected || busy} onClick={() => send(selected, reason, marks)}>
-              <Plus />
-              Award marks
-            </Button>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold">Random student</h2>
-          <div
-            aria-live="polite"
-            className="flex min-h-20 items-center justify-center border-y border-border font-display text-2xl"
-          >
-            {students.find(s => s.id === picked)?.name ?? '—'}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              disabled={!list.length || spinning || busy || Boolean(picked)}
-              onClick={() => {
-                spin(true);
-                let turns = 0;
-                const timer = setInterval(() => {
-                  pick(list[Math.floor(Math.random() * list.length)]?.id ?? '');
-                  if (++turns === 12) {
-                    clearInterval(timer);
-                    spin(false);
-                  }
-                }, 100);
-              }}
-            >
-              <Shuffle />
-              {spinning ? 'Choosing…' : 'Choose student'}
-            </Button>
-            {picked && !spinning && (
-              <>
-                <Button
-                  disabled={busy}
-                  onClick={() => send(picked, 'correct_answer', answerMarks(true))}
-                >
-                  <Check />
-                  Correct +1
-                </Button>
-                <Button
-                  disabled={busy}
-                  variant="outline"
-                  onClick={() => send(picked, 'incorrect_answer', answerMarks(false))}
-                >
-                  <X />
-                  Incorrect
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-````
+```
 
 ## File: src/components/PageParts.tsx
-````typescript
+```typescript
 import type { ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { TONES, toneForPath, type Tone } from "@/lib/tones";
 import { cn } from "@/lib/utils";
-
 /** Each page has its own colour, shared with its link in the navigation. */
 function useRouteTone(): Tone {
   return useRouterState({ select: (state) => toneForPath(state.location.pathname) });
 }
-
 /** Colour banner used at the top of every page. */
 export function PageHeader({
   title,
@@ -7031,7 +1584,6 @@ export function PageHeader({
     </header>
   );
 }
-
 /** A white section with a coloured marker and an optional title bar. */
 export function Panel({
   title,
@@ -7075,7 +1627,6 @@ export function Panel({
     </section>
   );
 }
-
 /** A short message box for set-up problems or information. */
 export function Notice({
   tone = "warning",
@@ -7099,7 +1650,6 @@ export function Notice({
     </div>
   );
 }
-
 /** A solid coloured number card, used for the main figures on a page. */
 export function StatCard({
   label,
@@ -7125,258 +1675,2199 @@ export function StatCard({
     </div>
   );
 }
-````
+```
 
-## File: src/integrations/supabase/auth-middleware.ts
-````typescript
-import { createMiddleware } from '@tanstack/react-start';
-import { getRequest } from '@tanstack/react-start/server';
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-
-const DEFAULT_SUPABASE_URL = 'https://mbyselvthprrfjioyvhu.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'sb_publishable_6d4BjM4FHDurcIw2BhpeaQ_hsYnu4Ju';
-
-function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+## File: src/lib/gamification/catalog.ts
+```typescript
+import type { Tone } from "@/lib/tones";
+import type { GameProfile, RadarAxis, Strand, Unlocks } from "./types";
+/* ------------------------------------------------------------------ Avatars */
+export interface AvatarDef {
+  id: string;
+  name: string;
+  emoji: string;
+  tone: Tone;
 }
-
-function normalizeSupabaseUrl(rawUrl: string | undefined): string {
-  const cleaned = (rawUrl ?? '').trim().replace(/^['"]|['"]$/g, '');
-  if (!cleaned) return DEFAULT_SUPABASE_URL;
-  try {
-    const parsed = new URL(cleaned.startsWith('http') ? cleaned : `https://${cleaned}`);
-    return parsed.origin;
-  } catch {
-    return DEFAULT_SUPABASE_URL;
-  }
+/** Every avatar is free. Avatars sold in the Shop can be added here later with an unlock rule. */
+export const AVATARS: AvatarDef[] = [
+  { id: "avatar-owl", name: "Math Wizard Owl", emoji: "🦉", tone: "grape" },
+  { id: "avatar-shiba", name: "Cyber Shiba", emoji: "🐕", tone: "sky" },
+  { id: "avatar-fox", name: "Geometry Fox", emoji: "🦊", tone: "flame" },
+  { id: "avatar-cat", name: "Einstein Cat", emoji: "🐱", tone: "gold" },
+  { id: "avatar-robot", name: "Pi Robot", emoji: "🤖", tone: "blue" },
+  { id: "avatar-astronaut", name: "Calculus Astronaut", emoji: "🧑‍🚀", tone: "grape" },
+  { id: "avatar-panda", name: "Prime Panda", emoji: "🐼", tone: "green" },
+  { id: "avatar-penguin", name: "Proof Penguin", emoji: "🐧", tone: "sky" },
+  { id: "avatar-dragon", name: "Fractal Dragon", emoji: "🐉", tone: "green" },
+  { id: "avatar-octopus", name: "Octagon Octopus", emoji: "🐙", tone: "berry" },
+];
+export const DEFAULT_AVATAR_ID = "avatar-owl";
+export function avatarById(id: string | null | undefined): AvatarDef {
+  return (
+    AVATARS.find((a) => a.id === id) ??
+    AVATARS[0] ?? {
+      id: DEFAULT_AVATAR_ID,
+      name: "Math Wizard Owl",
+      emoji: "🦉",
+      tone: "grape",
+    }
+  );
 }
-
-function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
-
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    }
-
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
-    }
-
-    headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
-  };
+/* ------------------------------------------------------------- Unlock rules */
+/** What the unlock rules look at. Worked out from the student's own game profile. */
+export interface UnlockContext {
+  profile: GameProfile;
+  radar: readonly RadarAxis[];
+  /** Average quiz percentage for each chapter (index 0 = Chapter 1); null when no quiz yet. */
+  chapterAverages: readonly (number | null)[];
 }
-
-function readEnv(key: string): string | undefined {
-  const metaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
-  if (metaEnv && metaEnv[key]) return metaEnv[key];
-  if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
-  return undefined;
+function strand(ctx: UnlockContext, s: Strand): number | null {
+  return ctx.radar.find((a) => a.strand === s)?.mine ?? null;
 }
-
-export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
-  async ({ next }) => {
-    const rawUrl = readEnv('VITE_SUPABASE_URL') || readEnv('SUPABASE_URL');
-    const SUPABASE_URL = normalizeSupabaseUrl(rawUrl);
-
-    const rawKey =
-      readEnv('VITE_SUPABASE_PUBLISHABLE_KEY') ||
-      readEnv('SUPABASE_PUBLISHABLE_KEY') ||
-      readEnv('VITE_SUPABASE_ANON_KEY') ||
-      readEnv('SUPABASE_ANON_KEY') ||
-      DEFAULT_SUPABASE_KEY;
-    const SUPABASE_PUBLISHABLE_KEY = rawKey.trim().replace(/^['"]|['"]$/g, '') || DEFAULT_SUPABASE_KEY;
-
-    const request = getRequest();
-
-    if (!request?.headers) {
-      throw new Error('Unauthorized: No request headers available');
-    }
-
-    const authHeader = request.headers.get('authorization');
-
-    if (!authHeader) {
-      throw new Error('Unauthorized: No authorization header provided');
-    }
-
-    if (!authHeader.startsWith('Bearer ')) {
-      throw new Error('Unauthorized: Only Bearer tokens are supported');
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    if (!token) {
-      throw new Error('Unauthorized: No token provided');
-    }
-
-    if (token.split('.').length !== 3) {
-      throw new Error('Unauthorized: Invalid token');
-    }
-
-    const supabase = createClient<Database>(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
-      {
-        global: {
-          fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-        auth: {
-          storage: undefined,
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      },
-    );
-
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims) {
-      throw new Error('Unauthorized: Invalid token');
-    }
-
-    if (!data.claims.sub) {
-      throw new Error('Unauthorized: No user ID found in token');
-    }
-
-    return next({
-      context: {
-        supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
-      },
-    });
+function bestSettledRank(ctx: UnlockContext): number | null {
+  const ranks = ctx.profile.standings
+    .filter((s) => !s.provisional && s.rank !== null)
+    .map((s) => s.rank ?? 99);
+  return ranks.length ? Math.min(...ranks) : null;
+}
+const hasMostImproved = (ctx: UnlockContext) =>
+  ctx.profile.quizHistory.some((q) => q.isMostImproved);
+/* -------------------------------------------------------------------- Frames */
+export type FrameStyle = "default" | "gold" | "neon" | "prism" | "poly";
+export interface FrameDef {
+  id: string;
+  name: string;
+  style: FrameStyle;
+  /** How to unlock it, shown to the student. */
+  requirement: string;
+  isUnlocked: (ctx: UnlockContext) => boolean;
+}
+export const DEFAULT_FRAME_ID = "frame-default";
+export const FRAMES: FrameDef[] = [
+  {
+    id: DEFAULT_FRAME_ID,
+    name: "Classic",
+    style: "default",
+    requirement: "Everyone has this frame.",
+    isUnlocked: () => true,
   },
-);
-````
-
-## File: src/integrations/supabase/client.ts
-````typescript
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-
-const DEFAULT_SUPABASE_URL = 'https://mbyselvthprrfjioyvhu.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'sb_publishable_6d4BjM4FHDurcIw2BhpeaQ_hsYnu4Ju';
-
-function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+  {
+    id: "frame-gold",
+    name: "Golden Compass",
+    style: "gold",
+    requirement: "Reach Level 2 (1,000 EXP), or buy it in the Shop.",
+    isUnlocked: (ctx) => ctx.profile.level >= 2,
+  },
+  {
+    id: "frame-neon",
+    name: "Calculus Master Neon",
+    style: "neon",
+    requirement: "Finish in the top 3 of any quiz in your set, or buy it in the Shop.",
+    isUnlocked: (ctx) => (bestSettledRank(ctx) ?? 99) <= 3,
+  },
+  {
+    id: "frame-prism",
+    name: "Prism Rainbow",
+    style: "prism",
+    requirement: "Win a Most Improved award (+15 points on a chapter quiz).",
+    isUnlocked: hasMostImproved,
+  },
+  {
+    id: "frame-poly",
+    name: "3D Polyhedron",
+    style: "poly",
+    requirement: "Hand in 20 pieces of homework in a row.",
+    isUnlocked: (ctx) => ctx.profile.bestHomeworkStreak >= 20,
+  },
+];
+export function frameById(id: string | null | undefined): FrameDef {
+  return (
+    FRAMES.find((f) => f.id === id) ??
+    FRAMES[0] ?? {
+      id: DEFAULT_FRAME_ID,
+      name: "Classic",
+      style: "default",
+      requirement: "",
+      isUnlocked: () => true,
+    }
+  );
 }
-
-function normalizeSupabaseUrl(rawUrl: string | undefined): string {
-  const cleaned = (rawUrl ?? '').trim().replace(/^['"]|['"]$/g, '');
-  if (!cleaned) return DEFAULT_SUPABASE_URL;
-  try {
-    const parsed = new URL(cleaned.startsWith('http') ? cleaned : `https://${cleaned}`);
-    return parsed.origin;
-  } catch {
-    return DEFAULT_SUPABASE_URL;
+/* -------------------------------------------------------------------- Titles */
+export interface TitleDef {
+  id: string;
+  label: string;
+  requirement: string;
+  isUnlocked: (ctx: UnlockContext) => boolean;
+}
+export const TITLES: TitleDef[] = [
+  {
+    id: "title-pythagoras",
+    label: "Pythagoras' Heir",
+    requirement: "Come 1st in any quiz in your set.",
+    isUnlocked: (ctx) => bestSettledRank(ctx) === 1,
+  },
+  {
+    id: "title-algebra-ace",
+    label: "Algebra Ace",
+    requirement: "Average 80% or more in Number & Algebra quizzes.",
+    isUnlocked: (ctx) => (strand(ctx, "number_algebra") ?? 0) >= 80,
+  },
+  {
+    id: "title-factor-finder",
+    label: "Factor Finder",
+    requirement: "Average 80% or more in Chapter 2 quizzes.",
+    isUnlocked: (ctx) => (ctx.chapterAverages[1] ?? 0) >= 80,
+  },
+  {
+    id: "title-angle-hunter",
+    label: "Angle Hunter",
+    requirement: "Average 80% or more in Geometry quizzes.",
+    isUnlocked: (ctx) => (strand(ctx, "geometry") ?? 0) >= 80,
+  },
+  {
+    id: "title-data-detective",
+    label: "Data Detective",
+    requirement: "Average 80% or more in Data Handling quizzes.",
+    isUnlocked: (ctx) => (strand(ctx, "data_handling") ?? 0) >= 80,
+  },
+  {
+    id: "title-homework-hero",
+    label: "Homework Hero",
+    requirement: "Hand in 10 pieces of homework in a row.",
+    isUnlocked: (ctx) => ctx.profile.bestHomeworkStreak >= 10,
+  },
+  {
+    id: "title-comeback-kid",
+    label: "Comeback Kid",
+    requirement: "Win a Most Improved award.",
+    isUnlocked: hasMostImproved,
+  },
+  {
+    id: "title-curious-mind",
+    label: "Curious Mind",
+    requirement: "Answer or take part in class 10 times.",
+    isUnlocked: (ctx) => ctx.profile.activeVoiceCount >= 10,
+  },
+  {
+    id: "title-rising-star",
+    label: "Rising Star",
+    requirement: "Reach Level 2 (1,000 EXP).",
+    isUnlocked: (ctx) => ctx.profile.level >= 2,
+  },
+  // The Title Pack in the Shop: these can only be bought.
+  {
+    id: "title-formula-fan",
+    label: "Formula Fanatic",
+    requirement: "Buy the Title Pack in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-graph-guru",
+    label: "Graph Guru",
+    requirement: "Buy the Title Pack in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-sigma-scholar",
+    label: "Sigma Scholar",
+    requirement: "Buy the Title Pack in the Shop.",
+    isUnlocked: () => false,
+  },
+];
+/** Finds a title by its id, or by its label (older sandbox data stores the label). */
+export function titleById(id: string | null | undefined): TitleDef | null {
+  if (!id) return null;
+  return TITLES.find((t) => t.id === id || t.label === id) ?? null;
+}
+/** Achievement unlocks plus everything the student has bought in the Shop. */
+export function mergeUnlocks(earned: Unlocks | null, boughtGrants: readonly string[]): Unlocks {
+  const frames = new Set([DEFAULT_FRAME_ID, ...(earned?.frames ?? [])]);
+  const titles = new Set(earned?.titles ?? []);
+  for (const g of boughtGrants) {
+    if (g.startsWith("frame-")) frames.add(g);
+    if (g.startsWith("title-")) titles.add(g);
   }
+  return { frames: [...frames], titles: [...titles] };
 }
-
-function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
-
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    }
-
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
-    }
-
-    headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
+export function computeUnlocks(ctx: UnlockContext): Unlocks {
+  return {
+    frames: FRAMES.filter((f) => f.isUnlocked(ctx)).map((f) => f.id),
+    titles: TITLES.filter((t) => t.isUnlocked(ctx)).map((t) => t.id),
   };
 }
-
-function getEnvVar(key: string): string | undefined {
-  const metaEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
-  if (metaEnv && metaEnv[key]) return metaEnv[key];
-  if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
-  return undefined;
+/* ------------------------------------------------------- Strands and chapters */
+export const STRANDS: { id: Strand; label: string }[] = [
+  { id: "number_algebra", label: "Number & Algebra" },
+  { id: "geometry", label: "Geometry" },
+  { id: "mensuration", label: "Mensuration" },
+  { id: "trigonometry", label: "Trigonometry" },
+  { id: "data_handling", label: "Data Handling" },
+  { id: "attitude", label: "Learning Attitude" },
+];
+/**
+ * Which radar area each chapter's quizzes count towards (OUP S2, Chapters 1–7).
+ * Mensuration and Trigonometry have no S2 chapter in this list yet, so they stay empty
+ * until those chapters are added.
+ */
+export const CHAPTER_STRANDS: Record<number, Strand> = {
+  1: "number_algebra",
+  2: "number_algebra",
+  3: "number_algebra",
+  4: "number_algebra",
+  5: "number_algebra",
+  6: "geometry",
+  7: "data_handling",
+};
+export interface Objective {
+  id: string;
+  chapter: number;
+  text: string;
 }
-
-function createSupabaseClient() {
-  const rawUrl = getEnvVar('VITE_SUPABASE_URL') || getEnvVar('SUPABASE_URL');
-  const SUPABASE_URL = normalizeSupabaseUrl(rawUrl);
-
-  const rawKey =
-    getEnvVar('VITE_SUPABASE_PUBLISHABLE_KEY') ||
-    getEnvVar('SUPABASE_PUBLISHABLE_KEY') ||
-    getEnvVar('VITE_SUPABASE_ANON_KEY') ||
-    getEnvVar('SUPABASE_ANON_KEY') ||
-    DEFAULT_SUPABASE_KEY;
-  const SUPABASE_PUBLISHABLE_KEY = rawKey.trim().replace(/^['"]|['"]$/g, '') || DEFAULT_SUPABASE_KEY;
-
-  return createClient<Database>(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
+/** "I can…" statements for each chapter's self-check. */
+export const CHAPTER_OBJECTIVES: Objective[] = [
+  {
+    id: "ch1-round",
+    chapter: 1,
+    text: "I can round numbers to decimal places and significant figures.",
+  },
+  { id: "ch1-scientific", chapter: 1, text: "I can write numbers in scientific notation." },
+  { id: "ch1-estimate", chapter: 1, text: "I can estimate answers by rounding." },
+  { id: "ch1-limits", chapter: 1, text: "I can find the upper and lower limits of a measurement." },
+  { id: "ch1-errors", chapter: 1, text: "I can find absolute, relative and percentage errors." },
+  {
+    id: "ch2-terms",
+    chapter: 2,
+    text: "I can name the terms, degree and coefficients of a polynomial.",
+  },
+  { id: "ch2-add", chapter: 2, text: "I can add and subtract polynomials." },
+  { id: "ch2-multiply", chapter: 2, text: "I can multiply polynomials." },
+  { id: "ch2-common", chapter: 2, text: "I can factorize by taking out common factors." },
+  { id: "ch2-grouping", chapter: 2, text: "I can factorize by grouping terms." },
+  { id: "ch3-tell", chapter: 3, text: "I can tell an identity from an equation." },
+  {
+    id: "ch3-expand",
+    chapter: 3,
+    text: "I can expand using the difference of squares and perfect square identities.",
+  },
+  { id: "ch3-factorize", chapter: 3, text: "I can factorize using identities." },
+  { id: "ch3-calculate", chapter: 3, text: "I can use identities to make calculations easier." },
+  { id: "ch4-simplify", chapter: 4, text: "I can simplify algebraic fractions." },
+  { id: "ch4-multiply", chapter: 4, text: "I can multiply and divide algebraic fractions." },
+  {
+    id: "ch4-add",
+    chapter: 4,
+    text: "I can add and subtract algebraic fractions with different denominators.",
+  },
+  { id: "ch4-substitute", chapter: 4, text: "I can substitute values into a formula." },
+  { id: "ch4-subject", chapter: 4, text: "I can change the subject of a formula." },
+  {
+    id: "ch5-graph",
+    chapter: 5,
+    text: "I can draw the graph of a linear equation in two unknowns.",
+  },
+  { id: "ch5-graphical", chapter: 5, text: "I can solve simultaneous equations with graphs." },
+  {
+    id: "ch5-substitution",
+    chapter: 5,
+    text: "I can solve simultaneous equations by substitution.",
+  },
+  { id: "ch5-elimination", chapter: 5, text: "I can solve simultaneous equations by elimination." },
+  {
+    id: "ch5-problems",
+    chapter: 5,
+    text: "I can set up and solve word problems with two unknowns.",
+  },
+  { id: "ch6-angles", chapter: 6, text: "I can use corresponding, alternate and interior angles." },
+  { id: "ch6-parallel", chapter: 6, text: "I can prove that two lines are parallel." },
+  { id: "ch6-polygon", chapter: 6, text: "I can find interior and exterior angles of polygons." },
+  {
+    id: "ch6-reasons",
+    chapter: 6,
+    text: "I can give reasons for each step in a geometry problem.",
+  },
+  { id: "ch7-stem", chapter: 7, text: "I can draw and read stem-and-leaf diagrams." },
+  { id: "ch7-polygon", chapter: 7, text: "I can draw frequency polygons and frequency curves." },
+  { id: "ch7-cumulative", chapter: 7, text: "I can draw and read cumulative frequency polygons." },
+  { id: "ch7-choose", chapter: 7, text: "I can choose a suitable diagram for a set of data." },
+  { id: "ch7-misleading", chapter: 7, text: "I can spot misleading graphs." },
+];
+export function objectivesFor(chapter: number): Objective[] {
+  return CHAPTER_OBJECTIVES.filter((o) => o.chapter === chapter);
+}
+/* ------------------------------------------------------ Chapter completion */
+export const COMPLETION_WEIGHTS = { videos: 40, selfCheck: 40, chapterQuiz: 20 } as const;
+export interface CompletionInput {
+  videosTotal: number;
+  videosWatched: number;
+  objectivesTotal: number;
+  objectivesChecked: number;
+  chapterQuizDone: boolean;
+}
+export interface Completion {
+  /** 0 to 100. */
+  percent: number;
+  parts: {
+    id: "videos" | "selfCheck" | "chapterQuiz";
+    label: string;
+    done: number;
+    total: number;
+    weight: number;
+  }[];
+}
+/**
+ * Videos 40%, self-check 40%, chapter quiz 20%. When a chapter has no videos yet, the other
+ * two parts share the whole 100% so the bar can still reach the end.
+ */
+export function chapterCompletion(input: CompletionInput): Completion {
+  const parts = [
     {
-      global: {
-        fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
-      },
-      auth: {
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
+      id: "videos" as const,
+      label: "Videos",
+      done: Math.min(input.videosWatched, input.videosTotal),
+      total: input.videosTotal,
+      weight: COMPLETION_WEIGHTS.videos,
     },
-  );
+    {
+      id: "selfCheck" as const,
+      label: "Self-check",
+      done: Math.min(input.objectivesChecked, input.objectivesTotal),
+      total: input.objectivesTotal,
+      weight: COMPLETION_WEIGHTS.selfCheck,
+    },
+    {
+      id: "chapterQuiz" as const,
+      label: "Chapter quiz",
+      done: input.chapterQuizDone ? 1 : 0,
+      total: 1,
+      weight: COMPLETION_WEIGHTS.chapterQuiz,
+    },
+  ].filter((p) => p.total > 0);
+  const totalWeight = parts.reduce((t, p) => t + p.weight, 0);
+  const earned = parts.reduce((t, p) => t + (p.done / p.total) * p.weight, 0);
+  return { percent: totalWeight ? Math.round((earned / totalWeight) * 100) : 0, parts };
 }
+/** Mastery stars from the chapter score: 50% one star, 70% two, 85% three. */
+export function chapterStars(score: number | null): 0 | 1 | 2 | 3 {
+  if (score === null) return 0;
+  if (score >= 85) return 3;
+  if (score >= 70) return 2;
+  if (score >= 50) return 1;
+  return 0;
+}
+```
 
-let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
+## File: src/lib/gamification/mock-activity.ts
+```typescript
+import { CHAPTER_OBJECTIVES } from "./catalog";
+import type { ActivityEvent } from "./types";
+import type { Mistake } from "./vault";
+/** Small stable hash, so each sandbox student always gets the same pattern. */
+function hash(text: string): number {
+  let h = 2166136261;
+  for (const ch of text) h = Math.imul(h ^ (ch.codePointAt(0) ?? 0), 16777619) >>> 0;
+  return h;
+}
+/** A number from 0 to 1 that depends only on the text. */
+function chance(text: string): number {
+  return (hash(text) % 10000) / 10000;
+}
+/** "YYYY-MM-DD" in the device's local time. */
+export function localDateKey(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+/** The student number at the end of a sandbox id, e.g. 3 for "mock-s2m3-03". */
+function rosterIndex(studentId: string): number {
+  const n = Number(studentId.slice(-2));
+  return Number.isFinite(n) ? n : 8;
+}
+/**
+ * Lesson, homework and video activity on school days over the past `days` days, for the
+ * sandbox students. Stronger students (lower numbers) are more active.
+ */
+export function mockActivity(
+  studentId: string,
+  today: Date = new Date(),
+  days = 182,
+): ActivityEvent[] {
+  const keen = Math.max(0.2, 0.85 - rosterIndex(studentId) * 0.04);
+  const out: ActivityEvent[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    const weekday = d.getDay();
+    if (weekday === 0 || weekday === 6) continue;
+    const date = localDateKey(d);
+    if (chance(`${studentId}|lesson|${date}`) < keen) out.push({ date, kind: "lesson" });
+    if (chance(`${studentId}|lesson2|${date}`) < keen * 0.35) out.push({ date, kind: "lesson" });
+    if (weekday % 2 === 1 && chance(`${studentId}|hw|${date}`) < keen) {
+      out.push({ date, kind: "homework" });
+    }
+    if (chance(`${studentId}|video|${date}`) < keen * 0.25) out.push({ date, kind: "video" });
+  }
+  return out;
+}
+/** Ticked "I can…" statements for a sandbox student (Chapters 1–5 only, like real progress). */
+export function mockSelfChecks(studentId: string): string[] {
+  const keen = Math.max(0.15, 0.95 - rosterIndex(studentId) * 0.05);
+  return CHAPTER_OBJECTIVES.filter(
+    (o) => o.chapter <= 5 && chance(`${studentId}|check|${o.id}`) < keen,
+  ).map((o) => o.id);
+}
+/** Sample Mistake Vault entries for a sandbox student. */
+export function mockMistakes(studentId: string): Mistake[] {
+  const n = rosterIndex(studentId);
+  const samples: Omit<Mistake, "id" | "studentId" | "createdAt">[] = [
+    {
+      chapter: 2,
+      errorType: "careless",
+      question: "Expand $(x - 3)^2$.",
+      imagePath: null,
+      solution: "$(x - 3)^2 = x^2 - 6x + 9$. I wrote $x^2 + 9$ and forgot the middle term $-6x$.",
+      status: "mastered",
+    },
+    {
+      chapter: 3,
+      errorType: "formula",
+      question: "Factorize $4x^2 - 9$.",
+      imagePath: null,
+      solution: "Difference of squares: $$4x^2 - 9 = (2x + 3)(2x - 3)$$",
+      status: "practiced",
+    },
+    {
+      chapter: 4,
+      errorType: "concept",
+      question: "Make $r$ the subject of $A = \\pi r^2$.",
+      imagePath: null,
+      solution:
+        "$r^2 = \\dfrac{A}{\\pi}$, so $r = \\sqrt{\\dfrac{A}{\\pi}}$ (take the positive root for a length).",
+      status: "review",
+    },
+    {
+      chapter: 1,
+      errorType: "misread",
+      question: "Round 0.04567 to 2 significant figures.",
+      imagePath: null,
+      solution: "The first significant figure is 4, so the answer is $0.046$, not $0.05$.",
+      status: n % 2 === 0 ? "mastered" : "review",
+    },
+  ];
+  return samples.slice(0, 2 + (n % 3)).map((m, i) => ({
+    ...m,
+    id: `${studentId}-mistake-${i + 1}`,
+    studentId,
+    createdAt: new Date(2026, 9, 5 + i * 6).toISOString(),
+  }));
+}
+/** Days a sandbox student did the daily check-in (Hong Kong dates, "YYYY-MM-DD"). */
+export function mockCheckinDates(studentId: string, today: Date = new Date()): string[] {
+  const keen = Math.max(0.2, 0.9 - rosterIndex(studentId) * 0.05);
+  const out: string[] = [];
+  for (let i = 1; i <= 40; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    const date = localDateKey(d);
+    if (i <= 3 || chance(`${studentId}|checkin|${date}`) < keen) out.push(date);
+  }
+  return out;
+}
+/** Correct answers after being picked in the lucky draw, for a sandbox student. */
+export function mockLuckyDraws(studentId: string): number {
+  return Math.max(0, 22 - rosterIndex(studentId) * 2);
+}
+```
 
-export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
-  get(_, prop, receiver) {
-    if (!_supabase) _supabase = createSupabaseClient();
-    return Reflect.get(_supabase, prop, receiver);
+## File: src/lib/gamification/mock-data.ts
+```typescript
+import { chapterScoresFromAssessments, termSummary, type Assessment } from "@/lib/assessments";
+import type { MathSet, ScoreSource, Student } from "@/lib/data";
+import { buildGameProfiles } from "./rules";
+import {
+  DEFAULT_SYSTEM_CONFIG,
+  type Cosmetics,
+  type HomeworkStatus,
+  type LedgerEntry,
+} from "./types";
+/**
+ * Sandbox students for the teacher's "Preview student version" bar and for tests.
+ * They live only in the browser and are never saved to the database.
+ */
+export const MOCK_ID_PREFIX = "mock-";
+export function isMockStudentId(id: string): boolean {
+  return id.startsWith(MOCK_ID_PREFIX);
+}
+/** The newest quiz is treated as just synced, so its rewards follow today's 2x setting. */
+export const MOCK_FRESH_QUIZ_ID = "2:CQ5";
+/** When the rest of the sandbox rewards count as given (before any 2x event). */
+export const MOCK_HISTORY_DATE = "2026-11-02T08:00:00.000Z";
+const SETS: readonly MathSet[] = ["S2M3", "S2M5"];
+const SEEDS: Record<MathSet, number> = { S2M3: 2603, S2M5: 2605 };
+/** A small seeded random generator, so the sandbox is the same on every load and in tests. */
+function seededRandom(seed: number): () => number {
+  let t = seed >>> 0;
+  return () => {
+    t = (t + 0x6d2b79f5) >>> 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, n));
+}
+interface MockName {
+  name: string;
+  className: string;
+}
+const NAMES: Record<MathSet, MockName[]> = {
+  S2M3: [
+    { name: "Chan Ho Yin (Kelvin)", className: "2A" },
+    { name: "Wong Tsz Ching (Chloe)", className: "2B" },
+    { name: "Lee Ka Lok (Marcus)", className: "2A" },
+    { name: "Cheung Hiu Tung (Natalie)", className: "2B" },
+    { name: "Lam Chun Hei (Ethan)", className: "2A" },
+    { name: "Ho Wing Sze (Stephanie)", className: "2B" },
+    { name: "Ng Pak Hei (Jayden)", className: "2A" },
+    { name: "Leung Yan Ting (Kelly)", className: "2B" },
+    { name: "Tang Cheuk Hin (Aaron)", className: "2A" },
+    { name: "Yeung Hoi Ching (Bella)", className: "2B" },
+    { name: "Choi Man Kit (Derek)", className: "2A" },
+    { name: "Kwok Sze Wing (Fiona)", className: "2B" },
+    { name: "Mak Tsz Hin (Gabriel)", className: "2A" },
+    { name: "Fung Lok Yi (Hailey)", className: "2B" },
+    { name: "Tse Chi Ho (Ian)", className: "2A" },
+  ],
+  S2M5: [
+    { name: "Lau Ka Ho (Jason)", className: "2C" },
+    { name: "Siu Wing Yan (Karen)", className: "2D" },
+    { name: "Poon Chi Fung (Leo)", className: "2C" },
+    { name: "Yip Hoi Yan (Mandy)", className: "2D" },
+    { name: "Chow Tsz Long (Nathan)", className: "2C" },
+    { name: "Wan Ching Man (Olivia)", className: "2D" },
+    { name: "Kong Ho Lam (Patrick)", className: "2C" },
+    { name: "So Wai Ying (Queenie)", className: "2D" },
+    { name: "Law Chun Kit (Ryan)", className: "2C" },
+    { name: "Hui Sum Yi (Sharon)", className: "2D" },
+    { name: "Tam Ka Chun (Tony)", className: "2C" },
+    { name: "Lui Hoi Lam (Vanessa)", className: "2D" },
+    { name: "Ma Tsz Kin (Wilson)", className: "2C" },
+    { name: "Chu Yan Yu (Yvonne)", className: "2D" },
+    { name: "Wu Ka Wai (Zack)", className: "2C" },
+  ],
+};
+interface PlanItem {
+  term: 1 | 2;
+  label: string;
+  category: "homework" | "short_quiz" | "chapter_quiz";
+  full: number;
+  position: number;
+}
+const QUIZ_PLAN: PlanItem[] = [
+  { term: 1, label: "SQ1.1", category: "short_quiz", full: 14, position: 40 },
+  { term: 1, label: "SQ1.2", category: "short_quiz", full: 13, position: 41 },
+  { term: 1, label: "CQ1", category: "chapter_quiz", full: 50, position: 42 },
+  { term: 1, label: "SQ2.1", category: "short_quiz", full: 15, position: 43 },
+  { term: 1, label: "SQ2.2", category: "short_quiz", full: 15, position: 44 },
+  { term: 1, label: "CQ2", category: "chapter_quiz", full: 50, position: 45 },
+  { term: 1, label: "SQ3.1", category: "short_quiz", full: 14, position: 46 },
+  { term: 1, label: "CQ3", category: "chapter_quiz", full: 50, position: 47 },
+  { term: 2, label: "SQ4.1", category: "short_quiz", full: 15, position: 100 },
+  { term: 2, label: "CQ4", category: "chapter_quiz", full: 50, position: 101 },
+  { term: 2, label: "SQ5.1", category: "short_quiz", full: 14, position: 102 },
+  { term: 2, label: "CQ5", category: "chapter_quiz", full: 50, position: 103 },
+];
+/** 14 homework in Term 1 (Ch1–3) and 10 in Term 2 (Ch4–5), each out of 10. */
+const HOMEWORK_CHAPTERS: { term: 1 | 2; chapter: number; count: number }[] = [
+  { term: 1, chapter: 1, count: 5 },
+  { term: 1, chapter: 2, count: 5 },
+  { term: 1, chapter: 3, count: 4 },
+  { term: 2, chapter: 4, count: 5 },
+  { term: 2, chapter: 5, count: 5 },
+];
+const HOMEWORK_PLAN: PlanItem[] = HOMEWORK_CHAPTERS.flatMap(({ term, chapter, count }) =>
+  Array.from({ length: count }, (_, i) => ({
+    term,
+    label: `HW${chapter}.${i + 1}`,
+    category: "homework" as const,
+    full: 10,
+    position: (term === 2 ? 50 : 10) + chapter * 6 + i,
+  })),
+);
+/** Whole quiz columns set by hand, to test ties at the top-3 and top-10 boundaries. */
+const QUIZ_COLUMNS: Record<MathSet, Record<string, number[]>> = {
+  // Two students tie for 1st and two tie for 3rd.
+  S2M3: { "SQ1.1": [14, 14, 13, 13, 12, 12, 11, 11, 10, 10, 9, 8, 7, 6, 5] },
+  // Three students tie for 9th (all in the top 10); the 12th student needs 1 more mark.
+  S2M5: { "SQ1.1": [14, 13, 13, 12, 12, 11, 11, 10, 9, 9, 9, 8, 7, 6, 5] },
+};
+interface QuizOverride {
+  set: MathSet;
+  index: number;
+  label: string;
+  score: number | "ABS";
+}
+const QUIZ_OVERRIDES: QuizOverride[] = [
+  // Most improved: CQ1 36% to CQ2 60% (+24 points).
+  { set: "S2M3", index: 12, label: "CQ1", score: 18 },
+  { set: "S2M3", index: 12, label: "CQ2", score: 30 },
+  // Just short: CQ3 50% to CQ4 64% (+14 points), so no reward.
+  { set: "S2M5", index: 6, label: "CQ3", score: 25 },
+  { set: "S2M5", index: 6, label: "CQ4", score: 32 },
+  // Most improved across an absence: CQ1 40%, absent for CQ2, CQ3 58%.
+  { set: "S2M5", index: 13, label: "CQ1", score: 20 },
+  { set: "S2M5", index: 13, label: "CQ2", score: "ABS" },
+  { set: "S2M5", index: 13, label: "CQ3", score: 29 },
+];
+interface HomeworkOverride {
+  set: MathSet;
+  index: number;
+  /** Status for every homework not listed in `only`. */
+  rest?: HomeworkStatus;
+  only?: Record<string, HomeworkStatus>;
+}
+const HOMEWORK_OVERRIDES: HomeworkOverride[] = [
+  // Every homework handed in: two streak rewards (at 10 and 20).
+  { set: "S2M3", index: 0, rest: "SUBMITTED" },
+  // An excused absence in the middle does not break the streak.
+  { set: "S2M3", index: 5, rest: "SUBMITTED", only: { "HW2.3": "EXCUSED" } },
+  // Five pieces of missing homework.
+  {
+    set: "S2M5",
+    index: 14,
+    only: {
+      "HW1.2": "MISSING",
+      "HW2.1": "MISSING",
+      "HW3.3": "MISSING",
+      "HW4.4": "MISSING",
+      "HW5.2": "MISSING",
+    },
   },
-});
-````
-
-## File: src/integrations/supabase/cron-auth.ts
-````typescript
-export async function authenticateCronRequest(request: Request): Promise<Response | null> {
-  const currentSecret = process.env["CRON_SECRET"];
-  const previousSecret = process.env["CRON_SECRET_PREVIOUS"];
-
-  if (!currentSecret) {
-    return new Response("Server configuration error", { status: 500 });
+];
+const AVATARS = ["avatar-owl", "avatar-fox", "avatar-panda", "avatar-robot", "avatar-penguin"];
+const FRAMES: (string | null)[] = ["frame-gold", "frame-silver", "frame-bronze", null, null];
+const TITLES: (string | null)[] = [
+  "Algebra Ace",
+  "Factor Finder",
+  "Data Detective",
+  "Angle Hunter",
+  null,
+];
+function itemRow(p: PlanItem, score: number | null, absent: boolean): Assessment {
+  return {
+    term: p.term,
+    kind: "item",
+    category: p.category,
+    label: p.label,
+    score,
+    absent,
+    full_marks: p.full,
+    position: p.position,
+  };
+}
+function summaryRow(
+  term: 1 | 2,
+  label: string,
+  category: Assessment["category"],
+  score: number,
+  full: number,
+  position: number,
+): Assessment {
+  return {
+    term,
+    kind: "summary",
+    category,
+    label,
+    score,
+    absent: false,
+    full_marks: full,
+    position,
+  };
+}
+function homeworkStatus(
+  set: MathSet,
+  index: number,
+  label: string,
+  fallback: HomeworkStatus,
+): HomeworkStatus {
+  const o = HOMEWORK_OVERRIDES.find((x) => x.set === set && x.index === index);
+  if (!o) return fallback;
+  return o.only?.[label] ?? o.rest ?? fallback;
+}
+function quizScore(set: MathSet, index: number, label: string): number | "ABS" | undefined {
+  const column = QUIZ_COLUMNS[set][label];
+  if (column) return column[index];
+  return QUIZ_OVERRIDES.find((o) => o.set === set && o.index === index && o.label === label)?.score;
+}
+function makeStudent(
+  set: MathSet,
+  index: number,
+  who: MockName,
+  classNo: number,
+  rnd: () => number,
+): Student {
+  const ability = clamp(0.93 - index * 0.033 + (rnd() - 0.5) * 0.06, 0.3, 0.98);
+  const diligence = clamp(1.02 - index * 0.012 - rnd() * 0.06, 0.7, 1);
+  const id = `${MOCK_ID_PREFIX}${set.toLowerCase()}-${String(index + 1).padStart(2, "0")}`;
+  const assessments: Assessment[] = [];
+  for (const hw of HOMEWORK_PLAN) {
+    const roll = rnd();
+    const mark = clamp(Math.round(hw.full * (ability + (rnd() - 0.5) * 0.2)), 1, hw.full);
+    const random: HomeworkStatus =
+      roll < diligence ? "SUBMITTED" : roll < diligence + 0.04 ? "EXCUSED" : "MISSING";
+    const status = homeworkStatus(set, index, hw.label, random);
+    assessments.push(itemRow(hw, status === "SUBMITTED" ? mark : null, status === "EXCUSED"));
   }
-
-  const match = /^Bearer ([^\s,]+)$/.exec(request.headers.get("authorization") ?? "");
-  const token = match?.[1];
-  if (!token) {
-    return new Response("Unauthorized", { status: 401 });
+  for (const q of QUIZ_PLAN) {
+    const roll = rnd();
+    const noisy = clamp(
+      Math.round(q.full * clamp(ability + (rnd() - 0.5) * 0.2, 0.08, 1)),
+      0,
+      q.full,
+    );
+    const forced = quizScore(set, index, q.label);
+    if (forced === "ABS" || (forced === undefined && roll < 0.04)) {
+      assessments.push(itemRow(q, null, true));
+    } else {
+      assessments.push(itemRow(q, forced ?? noisy, false));
+    }
   }
-
-  const { createHash, timingSafeEqual } = await import("node:crypto");
-  const digest = (value: string) => createHash("sha256").update(value, "utf8").digest();
-  const providedDigest = digest(token);
-  const currentMatches = timingSafeEqual(providedDigest, digest(currentSecret));
-  const previousMatches = timingSafeEqual(
-    providedDigest,
-    digest(previousSecret ?? currentSecret),
+  // Term results, each out of 200: Term Test (typed), CA = TnA2 (formula), Exam = TnA3 (formula).
+  const outOf200 = () =>
+    clamp(Math.round(200 * clamp(ability + (rnd() - 0.5) * 0.12, 0.05, 1)), 1, 200);
+  const daily = clamp(Math.round(10 * ability + (rnd() - 0.5) * 2), 0, 10);
+  assessments.push(summaryRow(1, "Daily (10%)", "daily", daily, 10, 50));
+  assessments.push(summaryRow(2, "Daily (10%)", "daily", daily, 10, 110));
+  const tt1 = outOf200();
+  const exam1 = outOf200();
+  const tt2 = outOf200();
+  const exam2 = outOf200();
+  assessments.push({ ...summaryRow(1, "1st TT (200)", "term_test", tt1, 200, 52), kind: "item" });
+  assessments.push(
+    summaryRow(1, "T1A2 (200)", "overall", termSummary(assessments, 1).coursework200, 200, 54),
   );
-
-  if (!currentMatches && !previousMatches) {
-    return new Response("Unauthorized", { status: 401 });
+  assessments.push(summaryRow(1, "T1A3 (200)", "exam", exam1, 200, 56));
+  assessments.push({ ...summaryRow(2, "2nd TT (200)", "term_test", tt2, 200, 112), kind: "item" });
+  assessments.push(
+    summaryRow(2, "T2A2 (200)", "overall", termSummary(assessments, 2).coursework200, 200, 114),
+  );
+  assessments.push(summaryRow(2, "T2A3 (200)", "exam", exam2, 200, 116));
+  const scores = chapterScoresFromAssessments(assessments);
+  const scoreSources: ScoreSource[] = scores.map((s) => (s === null ? null : "sheet"));
+  const dailyMarks = 4 + Math.round(rnd() * 24 * ability);
+  const videoMarks = Math.round(rnd() * 12);
+  const coinsSpent = Math.min(dailyMarks + videoMarks, Math.floor(rnd() * 4) * 5);
+  return {
+    id,
+    userId: null,
+    name: who.name,
+    email: `${id}@sandbox.invalid`,
+    set,
+    scores,
+    scoreSources,
+    lastMonthAvg: Math.round(clamp(ability * 100 - 4 + (rnd() - 0.5) * 10, 20, 100)),
+    lastMonthFormRank: 0,
+    xp: 0,
+    streak: 0,
+    dailyMarks,
+    videoMarks,
+    coinsSpent,
+    completedVideos: [],
+    assessments,
+    hlcNo: `SANDBOX${set.slice(-2)}${String(index + 1).padStart(2, "0")}`,
+    className: who.className,
+    classNo: String(classNo),
+  };
+}
+interface Sandbox {
+  students: Student[];
+  cosmetics: Map<string, Cosmetics>;
+  voice: Map<string, number>;
+}
+function buildSandbox(): Sandbox {
+  const students: Student[] = [];
+  const cosmetics = new Map<string, Cosmetics>();
+  const voice = new Map<string, number>();
+  for (const set of SETS) {
+    const rnd = seededRandom(SEEDS[set]);
+    const classCounters = new Map<string, number>();
+    NAMES[set].forEach((who, index) => {
+      const classNo = (classCounters.get(who.className) ?? 0) + 1;
+      classCounters.set(who.className, classNo);
+      const s = makeStudent(set, index, who, classNo, rnd);
+      students.push(s);
+      cosmetics.set(s.id, {
+        avatarId: AVATARS[index % AVATARS.length] ?? "avatar-default",
+        equippedFrameId: FRAMES[index % FRAMES.length] ?? null,
+        equippedTitle: TITLES[index % TITLES.length] ?? null,
+      });
+      voice.set(s.id, Math.round(rnd() * 30 * (1 - index / 25)));
+    });
   }
+  return { students, cosmetics, voice };
+}
+const SANDBOX = buildSandbox();
+export const MOCK_STUDENTS: readonly Student[] = SANDBOX.students;
+export const MOCK_COSMETICS: ReadonlyMap<string, Cosmetics> = SANDBOX.cosmetics;
+export const MOCK_VOICE_COUNTS: ReadonlyMap<string, number> = SANDBOX.voice;
+let seedLedger: LedgerEntry[] | null = null;
+/** Sandbox rewards that count as already given (at 1x). The newest quiz is left out on purpose. */
+export function mockSeedLedger(): LedgerEntry[] {
+  if (seedLedger === null) {
+    const { added } = buildGameProfiles({
+      students: MOCK_STUDENTS,
+      config: DEFAULT_SYSTEM_CONFIG,
+      cosmetics: MOCK_COSMETICS,
+      now: new Date(MOCK_HISTORY_DATE),
+    });
+    seedLedger = added.filter((e) => e.quizId !== MOCK_FRESH_QUIZ_ID);
+  }
+  return seedLedger;
+}
+```
 
+## File: src/lib/gamification/publish.ts
+```typescript
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Json } from "@/integrations/supabase/types";
+import type { Assessment } from "@/lib/assessments";
+import { DEMO_EMAIL, type MathSet, type Student } from "@/lib/data";
+import { MOCK_COSMETICS, MOCK_STUDENTS, MOCK_VOICE_COUNTS, mockSeedLedger } from "./mock-data";
+import { countVoiceMarks } from "./rules";
+import {
+  DEFAULT_SYSTEM_CONFIG,
+  type Cosmetics,
+  type LedgerEntry,
+  type RewardReason,
+  type SystemConfig,
+} from "./types";
+import { buildGameWorld } from "./world";
+type Client = SupabaseClient<Database>;
+type Tables = Database["public"]["Tables"];
+type StudentRow = Tables["students"]["Row"];
+type AssessmentRow = Tables["assessment_scores"]["Row"];
+type MarkRow = Pick<Tables["daily_marks"]["Row"], "student_id" | "reason">;
+type RewardRow = Tables["game_rewards"]["Row"];
+type CosmeticsRow = Tables["student_cosmetics"]["Row"];
+type CoinTotalRow = Database["public"]["Views"]["student_coin_totals"]["Row"];
+const PAGE = 1000;
+const WRITE_CHUNK = 500;
+const REASONS: RewardReason[] = ["quiz_top3", "quiz_top10", "most_improved", "homework_streak"];
+export interface PublishReport {
+  students: number;
+  snapshots: number;
+  boards: number;
+  newRewards: number;
+  publishedAt: string;
+}
+interface Page<T> {
+  data: T[] | null;
+  error: { message: string } | null;
+}
+/** Supabase caps rows per request, so keep paging until a page comes back empty. */
+async function readAll<T>(
+  what: string,
+  fetchPage: (from: number, to: number) => PromiseLike<Page<T>>,
+): Promise<T[]> {
+  const rows: T[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await fetchPage(from, from + PAGE - 1);
+    if (error) throw new Error(`Could not read ${what}: ${error.message}`);
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+function chunk<T>(list: readonly T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
+}
+export function ledgerFromRow(row: RewardRow): LedgerEntry | null {
+  const reason = REASONS.find((r) => r === row.reason);
+  if (!reason) return null;
+  return {
+    sourceKey: row.source_key,
+    studentId: row.student_id,
+    reason,
+    baseMc: row.base_mc,
+    exp: row.exp,
+    description: row.description,
+    quizId: row.quiz_id,
+    multiplier: row.multiplier,
+    mc: row.mc,
+    awardedAt: row.awarded_at,
+  };
+}
+function ledgerToRow(e: LedgerEntry): Tables["game_rewards"]["Insert"] {
+  return {
+    student_id: e.studentId,
+    source_key: e.sourceKey,
+    reason: e.reason,
+    quiz_id: e.quizId,
+    description: e.description.slice(0, 300),
+    base_mc: e.baseMc,
+    multiplier: e.multiplier,
+    mc: e.mc,
+    exp: e.exp,
+    awarded_at: e.awardedAt,
+  };
+}
+export function cosmeticsFromRow(row: CosmeticsRow): Cosmetics {
+  return {
+    avatarId: row.avatar_id,
+    equippedFrameId: row.frame_id,
+    equippedTitle: row.title_id,
+  };
+}
+function toAssessment(row: AssessmentRow): Assessment {
+  return {
+    term: row.term,
+    kind: row.kind === "summary" ? "summary" : "item",
+    category: row.category as Assessment["category"],
+    label: row.label,
+    score: row.score,
+    absent: row.absent,
+    full_marks: row.full_marks,
+    position: row.position,
+  };
+}
+function toStudent(s: StudentRow, assessments: Assessment[], totals?: CoinTotalRow): Student {
+  return {
+    id: s.id,
+    userId: s.user_id,
+    name: s.name,
+    email: s.email,
+    set: s.math_set as MathSet,
+    scores: [],
+    lastMonthAvg: s.last_month_avg,
+    lastMonthFormRank: s.last_month_form_rank,
+    xp: s.xp,
+    streak: s.streak,
+    dailyMarks: totals?.daily_earned ?? 0,
+    videoMarks: totals?.video_earned ?? 0,
+    coinsSpent: totals?.spent ?? 0,
+    rewardCoins: totals?.reward_earned ?? 0,
+    checkinCoins: totals?.checkin_earned ?? 0,
+    shopSpent: totals?.shop_spent ?? 0,
+    assessments,
+    hlcNo: s.hlc_no,
+    className: s.class_name,
+    classNo: s.class_no,
+  };
+}
+/**
+ * Works out the game for every student with the teacher's own access, then saves new rewards,
+ * each student's private snapshot and the public leaderboards. Run after every Google Sheet
+ * sync, or from the teacher bar.
+ */
+export async function publishGame(
+  supabase: Client,
+  now: Date = new Date(),
+): Promise<PublishReport> {
+  const [configResult, totalsResult, cosmeticsResult] = await Promise.all([
+    supabase.from("system_config").select("double_mc_event_active").eq("id", true).maybeSingle(),
+    supabase.from("student_coin_totals").select("*"),
+    supabase.from("student_cosmetics").select("*"),
+  ]);
+  if (cosmeticsResult.error) {
+    throw new Error(
+      `Game tables are not set up yet (${cosmeticsResult.error.message}). Run supabase/sql/0010_game_data.sql in the Supabase SQL Editor.`,
+    );
+  }
+  const config: SystemConfig = configResult.error
+    ? DEFAULT_SYSTEM_CONFIG
+    : { isDoubleMCEventActive: configResult.data?.double_mc_event_active === true };
+  const [studentRows, assessmentRows, markRows, rewardRows] = await Promise.all([
+    readAll<StudentRow>("the class list", (from, to) =>
+      supabase.from("students").select("*").order("id").range(from, to),
+    ),
+    readAll<AssessmentRow>("assessment marks", (from, to) =>
+      supabase
+        .from("assessment_scores")
+        .select("*")
+        .order("student_id")
+        .order("term")
+        .order("kind")
+        .order("label")
+        .range(from, to),
+    ),
+    readAll<MarkRow>("lesson marks", (from, to) =>
+      supabase.from("daily_marks").select("student_id, reason").order("id").range(from, to),
+    ),
+    readAll<RewardRow>("game rewards", (from, to) =>
+      supabase
+        .from("game_rewards")
+        .select("*")
+        .order("student_id")
+        .order("source_key")
+        .range(from, to),
+    ),
+  ]);
+  const assessmentsByStudent = new Map<string, Assessment[]>();
+  for (const row of assessmentRows) {
+    const list = assessmentsByStudent.get(row.student_id);
+    if (list) list.push(toAssessment(row));
+    else assessmentsByStudent.set(row.student_id, [toAssessment(row)]);
+  }
+  const totals = new Map<string, CoinTotalRow>();
+  for (const t of totalsResult.data ?? []) if (t.student_id) totals.set(t.student_id, t);
+  const students = studentRows
+    .filter((s) => s.math_set === "S2M3" || s.math_set === "S2M5")
+    .map((s) => toStudent(s, assessmentsByStudent.get(s.id) ?? [], totals.get(s.id)));
+  const ledger = rewardRows.flatMap((r) => {
+    const e = ledgerFromRow(r);
+    return e ? [e] : [];
+  });
+  const cosmetics = new Map<string, Cosmetics>(
+    (cosmeticsResult.data ?? []).map((r) => [r.student_id, cosmeticsFromRow(r)]),
+  );
+  const voiceCounts = countVoiceMarks(markRows);
+  // The public demo account must never see real students, so it is placed in the sandbox.
+  const real = students.filter((s) => s.email !== DEMO_EMAIL);
+  const demo = students.find((s) => s.email === DEMO_EMAIL);
+  const realIds = new Set(real.map((s) => s.id));
+  const world = buildGameWorld({
+    students: real,
+    config,
+    ledger: ledger.filter((e) => realIds.has(e.studentId)),
+    cosmetics,
+    voiceCounts,
+    rewardsSpendable: false,
+    now,
+  });
+  const newRewards: LedgerEntry[] = [...world.added];
+  const snapshots = [...world.snapshots.values()];
+  if (demo) {
+    const demoCosmetics = cosmetics.get(demo.id);
+    const sandbox = buildGameWorld({
+      students: [...MOCK_STUDENTS, demo],
+      config,
+      ledger: [...mockSeedLedger(), ...ledger.filter((e) => e.studentId === demo.id)],
+      cosmetics: new Map<string, Cosmetics>([
+        ...MOCK_COSMETICS,
+        ...(demoCosmetics ? [[demo.id, demoCosmetics] as [string, Cosmetics]] : []),
+      ]),
+      voiceCounts: new Map<string, number>([
+        ...MOCK_VOICE_COUNTS,
+        [demo.id, voiceCounts.get(demo.id) ?? 0],
+      ]),
+      rewardsSpendable: false,
+      now,
+    });
+    newRewards.push(...sandbox.added.filter((e) => e.studentId === demo.id));
+    const demoSnapshot = sandbox.snapshots.get(demo.id);
+    if (demoSnapshot) snapshots.push(demoSnapshot);
+  }
+  for (const part of chunk(newRewards.map(ledgerToRow), WRITE_CHUNK)) {
+    const { error } = await supabase
+      .from("game_rewards")
+      .upsert(part, { onConflict: "student_id,source_key", ignoreDuplicates: true });
+    if (error) throw new Error(`Could not save game rewards: ${error.message}`);
+  }
+  const publishedAt = now.toISOString();
+  for (const part of chunk(snapshots, WRITE_CHUNK)) {
+    const { error } = await supabase.from("game_snapshots").upsert(
+      part.map((s) => ({
+        student_id: s.studentId,
+        math_set: s.set,
+        payload: s as unknown as Json,
+        generated_at: publishedAt,
+      })),
+      { onConflict: "student_id" },
+    );
+    if (error) throw new Error(`Could not save student game data: ${error.message}`);
+  }
+  const { error: boardError } = await supabase.from("game_leaderboards").upsert(
+    world.boards.map((b) => ({
+      id: b.id,
+      scope: b.scope,
+      metric: b.metric,
+      term: b.term,
+      payload: b as unknown as Json,
+      generated_at: publishedAt,
+    })),
+    { onConflict: "id" },
+  );
+  if (boardError) throw new Error(`Could not save leaderboards: ${boardError.message}`);
+  return {
+    students: real.length,
+    snapshots: snapshots.length,
+    boards: world.boards.length,
+    newRewards: newRewards.length,
+    publishedAt,
+  };
+}
+```
+
+## File: src/lib/gamification/rules.ts
+```typescript
+import { chapterOfLabel, termSummary, type Assessment } from "@/lib/assessments";
+import { coinBalance } from "@/lib/coins";
+import { level, type MathSet, type Student } from "@/lib/data";
+import {
+  DEFAULT_COSMETICS,
+  type Cosmetics,
+  type GameProfile,
+  type HomeworkRecord,
+  type LedgerEntry,
+  type PublicStanding,
+  type QuizKind,
+  type QuizResult,
+  type QuizStanding,
+  type RewardGrant,
+  type SystemConfig,
+  type TermResult,
+} from "./types";
+/** Every number the reward rules use, in one place. */
+export const REWARD_RULES = {
+  top3: { maxRank: 3, mc: 3, exp: 150 },
+  top10: { maxRank: 10, mc: 1, exp: 50 },
+  mostImproved: { minGainPoints: 15, mc: 2, exp: 100 },
+  homeworkStreak: { every: 10, mc: 3, exp: 0 },
+  eventMultiplier: 2,
+  /** Rank rewards wait until this share of the set has a mark or ABS for the quiz. */
+  minQuizCompletion: 0.8,
+} as const;
+/** Lesson-mark reasons that count as the student speaking up in class. */
+const VOICE_REASONS = new Set(["participation", "correct_answer", "incorrect_answer"]);
+/** How a term's academic result is made up (each part is out of 200). */
+export const TERM_WEIGHTS = { tt: 0.2, ca: 0.4, exam: 0.4 } as const;
+const EPSILON = 1e-9;
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+/** Rounds up to one decimal place, so "marks needed" never comes out a little too low. */
+function ceil1(n: number): number {
+  return Math.ceil(n * 10 - EPSILON) / 10;
+}
+/** Percentages are compared to 0.001 so that 2/3 and 4/6 count as a tie. */
+function percentKey(p: number): number {
+  return Math.round(p * 1000);
+}
+interface Timed {
+  term: number;
+  position: number;
+  label: string;
+}
+function byTime(a: Timed, b: Timed): number {
+  return a.term - b.term || a.position - b.position || a.label.localeCompare(b.label);
+}
+/** The same id for a column in every student's record, e.g. "1:SQ1.1". */
+export function itemId(term: number, label: string): string {
+  return `${term}:${label.trim().toUpperCase()}`;
+}
+export function quizKindOf(a: Pick<Assessment, "kind" | "category">): QuizKind | null {
+  if (a.kind !== "item") return null;
+  if (a.category === "short_quiz") return "SQ";
+  if (a.category === "chapter_quiz") return "CQ";
   return null;
 }
-````
+/** All Short Quiz and Chapter Quiz results of one student, oldest first. */
+export function quizResultsFromAssessments(list: readonly Assessment[]): QuizResult[] {
+  const out: QuizResult[] = [];
+  for (const a of list) {
+    const kind = quizKindOf(a);
+    if (kind === null) continue;
+    const fullMarks = a.full_marks !== null && a.full_marks > 0 ? a.full_marks : null;
+    const score = a.absent ? null : a.score;
+    out.push({
+      quizId: itemId(a.term, a.label),
+      term: a.term,
+      kind,
+      label: a.label,
+      chapter: chapterOfLabel(a.label),
+      score,
+      fullMarks,
+      absent: a.absent,
+      percent: score !== null && fullMarks !== null ? (score / fullMarks) * 100 : null,
+      position: a.position,
+      isMostImproved: false,
+    });
+  }
+  return out.sort(byTime);
+}
+export interface RosterQuizzes {
+  studentId: string;
+  quizzes: readonly QuizResult[];
+}
+/**
+ * Ranks every quiz within one set. Ties share a rank and the next rank is skipped (1, 1, 3).
+ * Absent or blank students are not ranked.
+ */
+export function computeSetStandings(
+  roster: readonly RosterQuizzes[],
+  minCompletion: number = REWARD_RULES.minQuizCompletion,
+): Map<string, QuizStanding[]> {
+  const result = new Map<string, QuizStanding[]>();
+  for (const r of roster) result.set(r.studentId, []);
+  const catalogue = new Map<string, QuizResult>();
+  for (const r of roster) {
+    for (const q of r.quizzes) {
+      if (!catalogue.has(q.quizId)) catalogue.set(q.quizId, q);
+    }
+  }
+  for (const quiz of [...catalogue.values()].sort(byTime)) {
+    const rows = roster.map((r) => ({
+      studentId: r.studentId,
+      q: r.quizzes.find((x) => x.quizId === quiz.quizId) ?? null,
+    }));
+    const ranked: number[] = [];
+    let entered = 0;
+    for (const { q } of rows) {
+      if (q === null) continue;
+      if (q.percent !== null) {
+        ranked.push(q.percent);
+        entered++;
+      } else if (q.absent) {
+        entered++;
+      }
+    }
+    ranked.sort((a, b) => b - a);
+    const keys = ranked.map(percentKey);
+    const cutoff = ranked.length >= 10 ? (ranked[9] ?? null) : null;
+    const provisional = roster.length === 0 || entered / roster.length < minCompletion - EPSILON;
+    for (const { studentId, q } of rows) {
+      const percent = q?.percent ?? null;
+      const key = percent === null ? null : percentKey(percent);
+      result.get(studentId)?.push({
+        quizId: quiz.quizId,
+        label: quiz.label,
+        kind: quiz.kind,
+        term: quiz.term,
+        status: percent !== null ? "ranked" : q?.absent ? "absent" : "blank",
+        rank: key === null ? null : 1 + keys.filter((k) => k > key).length,
+        rankedCount: ranked.length,
+        rosterCount: roster.length,
+        provisional,
+        score: q?.score ?? null,
+        fullMarks: q?.fullMarks ?? quiz.fullMarks,
+        percent,
+        top10CutoffPercent: cutoff,
+      });
+    }
+  }
+  return result;
+}
+/** "#1" to "#10" for the top 10, "10+" for everyone below, "—" when there is no rank. */
+export function rankLabel(rank: number | null): string {
+  if (rank === null) return "—";
+  return rank <= REWARD_RULES.top10.maxRank ? `#${rank}` : "10+";
+}
+/** Strips the exact rank of anyone below 10th and adds how far they are from 10th place. */
+export function toPublicStanding(s: QuizStanding): PublicStanding {
+  const base = {
+    quizId: s.quizId,
+    label: s.label,
+    kind: s.kind,
+    term: s.term,
+    provisional: s.provisional,
+  };
+  if (s.status === "absent") {
+    return {
+      ...base,
+      display: "ABS",
+      rank: null,
+      isTop10: false,
+      marksToTop10: null,
+      pointsToTop10: null,
+    };
+  }
+  if (s.rank === null) {
+    return {
+      ...base,
+      display: "—",
+      rank: null,
+      isTop10: false,
+      marksToTop10: null,
+      pointsToTop10: null,
+    };
+  }
+  if (s.rank <= REWARD_RULES.top10.maxRank) {
+    return {
+      ...base,
+      display: rankLabel(s.rank),
+      rank: s.rank,
+      isTop10: true,
+      marksToTop10: null,
+      pointsToTop10: null,
+    };
+  }
+  const gap =
+    s.top10CutoffPercent !== null && s.percent !== null
+      ? Math.max(0, s.top10CutoffPercent - s.percent)
+      : null;
+  return {
+    ...base,
+    display: rankLabel(s.rank),
+    rank: null,
+    isTop10: false,
+    pointsToTop10: gap === null ? null : ceil1(gap),
+    marksToTop10: gap === null || s.fullMarks === null ? null : ceil1((gap / 100) * s.fullMarks),
+  };
+}
+/** Rank rewards for one student: top 3 gets the big reward, 4th to 10th the small one. */
+export function rankRewardGrants(
+  studentId: string,
+  standings: readonly QuizStanding[],
+): RewardGrant[] {
+  const grants: RewardGrant[] = [];
+  for (const s of standings) {
+    if (s.provisional || s.rank === null) continue;
+    const top3 = s.rank <= REWARD_RULES.top3.maxRank;
+    if (!top3 && s.rank > REWARD_RULES.top10.maxRank) continue;
+    const rule = top3 ? REWARD_RULES.top3 : REWARD_RULES.top10;
+    grants.push({
+      sourceKey: `rank:${s.quizId}`,
+      studentId,
+      reason: top3 ? "quiz_top3" : "quiz_top10",
+      baseMc: rule.mc,
+      exp: rule.exp,
+      description: `Rank ${s.rank} in ${s.label}`,
+      quizId: s.quizId,
+    });
+  }
+  return grants;
+}
+/**
+ * Flags each Chapter Quiz that is at least 15 percentage points above the student's
+ * previous Chapter Quiz (absent quizzes are skipped), and returns the matching rewards.
+ */
+export function markMostImproved(
+  studentId: string,
+  quizzes: readonly QuizResult[],
+): { quizzes: QuizResult[]; grants: RewardGrant[] } {
+  const rule = REWARD_RULES.mostImproved;
+  const grants: RewardGrant[] = [];
+  const improved = new Set<string>();
+  let previous: { label: string; percent: number } | null = null;
+  for (const q of [...quizzes].sort(byTime)) {
+    if (q.kind !== "CQ" || q.percent === null) continue;
+    if (previous !== null) {
+      const gain = q.percent - previous.percent;
+      if (gain >= rule.minGainPoints - EPSILON) {
+        improved.add(q.quizId);
+        grants.push({
+          sourceKey: `improved:${q.quizId}`,
+          studentId,
+          reason: "most_improved",
+          baseMc: rule.mc,
+          exp: rule.exp,
+          description: `Most improved: ${q.label} is ${round1(gain)} points above ${previous.label}`,
+          quizId: q.quizId,
+        });
+      }
+    }
+    previous = { label: q.label, percent: q.percent };
+  }
+  return {
+    quizzes: quizzes.map((q) => (improved.has(q.quizId) ? { ...q, isMostImproved: true } : q)),
+    grants,
+  };
+}
+/** Homework columns that at least one student in the set has a mark for, i.e. already collected. */
+export function releasedHomeworkIds(students: readonly Student[]): Set<string> {
+  const ids = new Set<string>();
+  for (const s of students) {
+    for (const a of s.assessments ?? []) {
+      if (a.kind === "item" && a.category === "homework" && a.score !== null) {
+        ids.add(itemId(a.term, a.label));
+      }
+    }
+  }
+  return ids;
+}
+/**
+ * Homework status from the sheet: a mark means SUBMITTED, ABS means EXCUSED, and a blank
+ * means MISSING once the homework has been collected (someone in the set has a mark).
+ */
+export function homeworkFromAssessments(
+  list: readonly Assessment[],
+  released: ReadonlySet<string>,
+): HomeworkRecord[] {
+  const out: HomeworkRecord[] = [];
+  for (const a of list) {
+    if (a.kind !== "item" || a.category !== "homework") continue;
+    const homeworkId = itemId(a.term, a.label);
+    const status = a.absent
+      ? "EXCUSED"
+      : a.score !== null
+        ? "SUBMITTED"
+        : released.has(homeworkId)
+          ? "MISSING"
+          : null;
+    if (status === null) continue;
+    out.push({ homeworkId, term: a.term, label: a.label, position: a.position, status });
+  }
+  return out.sort(byTime);
+}
+/**
+ * Every 10 homework submitted in a row pays a streak reward. Missing homework resets the
+ * streak; excused homework (ABS) neither counts nor breaks it.
+ */
+export function summarizeHomework(
+  studentId: string,
+  records: readonly HomeworkRecord[],
+): { current: number; best: number; missing: number; grants: RewardGrant[] } {
+  const rule = REWARD_RULES.homeworkStreak;
+  let current = 0;
+  let best = 0;
+  let missing = 0;
+  const grants: RewardGrant[] = [];
+  for (const r of [...records].sort(byTime)) {
+    if (r.status === "EXCUSED") continue;
+    if (r.status === "MISSING") {
+      missing++;
+      current = 0;
+      continue;
+    }
+    current++;
+    best = Math.max(best, current);
+    if (current % rule.every === 0) {
+      grants.push({
+        sourceKey: `hw-streak:${r.homeworkId}`,
+        studentId,
+        reason: "homework_streak",
+        baseMc: rule.mc,
+        exp: rule.exp,
+        description: `${current} homework handed in a row (up to ${r.label})`,
+        quizId: null,
+      });
+    }
+  }
+  return { current, best, missing, grants };
+}
+export function eventMultiplier(config: SystemConfig): number {
+  return config.isDoubleMCEventActive ? REWARD_RULES.eventMultiplier : 1;
+}
+export function applyMultiplier(baseMc: number, config: SystemConfig): number {
+  return baseMc * eventMultiplier(config);
+}
+export function ledgerKey(e: Pick<RewardGrant, "studentId" | "sourceKey">): string {
+  return `${e.studentId}|${e.sourceKey}`;
+}
+/**
+ * Gives each reward that is not in the ledger yet, at today's multiplier. Rewards already
+ * given keep the multiplier they were given with, so switching the 2x event on or off never
+ * changes past rewards, and running this again never pays twice.
+ */
+export function reconcileLedger(
+  existing: readonly LedgerEntry[],
+  grants: readonly RewardGrant[],
+  config: SystemConfig,
+  now: Date = new Date(),
+): LedgerEntry[] {
+  const given = new Set(existing.map(ledgerKey));
+  const multiplier = eventMultiplier(config);
+  const added: LedgerEntry[] = [];
+  for (const g of grants) {
+    const key = ledgerKey(g);
+    if (given.has(key)) continue;
+    given.add(key);
+    added.push({ ...g, multiplier, mc: g.baseMc * multiplier, awardedAt: now.toISOString() });
+  }
+  return added;
+}
+/** A mark scaled to /200, or null when absent, blank or 0 (a 0 is a formula waiting for marks). */
+function scaled200(a: Assessment): number | null {
+  if (a.absent || a.score === null || a.score <= 0) return null;
+  const full = a.full_marks !== null && a.full_marks > 0 ? a.full_marks : 200;
+  return round1((a.score / full) * 200);
+}
+/**
+ * A term's result out of 200: 20% Term Test + 40% Continuous Assessment + 40% Exam.
+ * - Term Test: the term's "1st TT" / "2nd TT" (or TnA1) column.
+ * - CA: the sheet's TnA2 column; if the sheet has none, worked out from HW, SQ, CQ, Mock and Daily.
+ * - Exam: the sheet's TnA3 column.
+ * The total stays empty until all three parts have a mark.
+ */
+export function termResult(list: readonly Assessment[], term: 1 | 2): TermResult {
+  const inTerm = list.filter((a) => a.term === term);
+  const byLabel = (re: RegExp) =>
+    inTerm.find((a) => re.test(a.label.trim()) && scaled200(a) !== null) ?? null;
+  const ttRow =
+    byLabel(new RegExp(`^(${term === 1 ? "1st" : "2nd"}\\s*TT|T${term}A1)\\b`, "i")) ??
+    inTerm.find((a) => a.category === "term_test" && scaled200(a) !== null) ??
+    null;
+  const caRow = byLabel(new RegExp(`^T${term}A2\\b`, "i"));
+  const examRow = byLabel(new RegExp(`^T${term}A3\\b`, "i"));
+  const caItems = termSummary([...list], term);
+  const caFromItems = caItems.parts.some((p) => p.value !== null) ? caItems.coursework200 : null;
+  const tt = ttRow ? scaled200(ttRow) : null;
+  const ca = caRow ? scaled200(caRow) : caFromItems;
+  const exam = examRow ? scaled200(examRow) : null;
+  const total =
+    tt !== null && ca !== null && exam !== null
+      ? round1(TERM_WEIGHTS.tt * tt + TERM_WEIGHTS.ca * ca + TERM_WEIGHTS.exam * exam)
+      : null;
+  return { term, tt, ca, exam, total };
+}
+/** How many times each student has answered or taken part, from lesson-mark rows. */
+export function countVoiceMarks(
+  rows: readonly { student_id: string; reason: string }[],
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const r of rows) {
+    if (VOICE_REASONS.has(r.reason)) counts.set(r.student_id, (counts.get(r.student_id) ?? 0) + 1);
+  }
+  return counts;
+}
+export interface GameInput {
+  students: readonly Student[];
+  config: SystemConfig;
+  /** Rewards already given. They keep the multiplier they were given with. */
+  ledger?: readonly LedgerEntry[];
+  cosmetics?: ReadonlyMap<string, Cosmetics>;
+  voiceCounts?: ReadonlyMap<string, number>;
+  /** False while rewards are only worked out in the browser and not saved yet. Default true. */
+  rewardsSpendable?: boolean;
+  now?: Date;
+}
+export interface GameOutput {
+  profiles: Map<string, GameProfile>;
+  /** Rewards given by this run, to be added to the ledger. */
+  added: LedgerEntry[];
+}
+type ProfileBase = Omit<
+  GameProfile,
+  "mathCoins" | "rewardCoins" | "rewardsSpendable" | "exp" | "level" | "rewards"
+>;
+/**
+ * Works out every student's game profile. Ranks are only correct when `students` holds the
+ * whole of each set, so call this with a teacher's full class list, never with one student.
+ */
+export function buildGameProfiles(input: GameInput): GameOutput {
+  const ledger = input.ledger ?? [];
+  const spendable = input.rewardsSpendable ?? true;
+  const bySet = new Map<MathSet, Student[]>();
+  for (const s of input.students) {
+    const list = bySet.get(s.set);
+    if (list) list.push(s);
+    else bySet.set(s.set, [s]);
+  }
+  const grants: RewardGrant[] = [];
+  const bases = new Map<string, ProfileBase>();
+  for (const [set, list] of bySet) {
+    const released = releasedHomeworkIds(list);
+    const quizzesByStudent = new Map<string, QuizResult[]>();
+    for (const s of list) {
+      const improved = markMostImproved(s.id, quizResultsFromAssessments(s.assessments ?? []));
+      grants.push(...improved.grants);
+      quizzesByStudent.set(s.id, improved.quizzes);
+    }
+    const standings = computeSetStandings(
+      list.map((s) => ({ studentId: s.id, quizzes: quizzesByStudent.get(s.id) ?? [] })),
+    );
+    for (const s of list) {
+      const assessments = s.assessments ?? [];
+      const own = standings.get(s.id) ?? [];
+      grants.push(...rankRewardGrants(s.id, own));
+      const homework = summarizeHomework(s.id, homeworkFromAssessments(assessments, released));
+      grants.push(...homework.grants);
+      const terms = [termResult(assessments, 1), termResult(assessments, 2)];
+      bases.set(s.id, {
+        ...DEFAULT_COSMETICS,
+        ...input.cosmetics?.get(s.id),
+        set,
+        t1Total: terms[0]?.total ?? null,
+        t2Total: terms[1]?.total ?? null,
+        termResults: terms,
+        homeworkStreak: homework.current,
+        bestHomeworkStreak: homework.best,
+        missingHomeworkCount: homework.missing,
+        activeVoiceCount: input.voiceCounts?.get(s.id) ?? 0,
+        quizHistory: quizzesByStudent.get(s.id) ?? [],
+        standings: own.map(toPublicStanding),
+      });
+    }
+  }
+  const added = reconcileLedger(ledger, grants, input.config, input.now ?? new Date());
+  const rewardsByStudent = new Map<string, LedgerEntry[]>();
+  for (const e of [...ledger, ...added]) {
+    const list = rewardsByStudent.get(e.studentId);
+    if (list) list.push(e);
+    else rewardsByStudent.set(e.studentId, [e]);
+  }
+  const profiles = new Map<string, GameProfile>();
+  for (const s of input.students) {
+    const base = bases.get(s.id);
+    if (!base) continue;
+    const rewards = rewardsByStudent.get(s.id) ?? [];
+    const rewardCoins = rewards.reduce((t, e) => t + e.mc, 0);
+    const exp = s.xp + rewards.reduce((t, e) => t + e.exp, 0);
+    profiles.set(s.id, {
+      ...base,
+      rewards,
+      rewardCoins,
+      rewardsSpendable: spendable,
+      mathCoins: coinBalance(s) + (spendable ? rewardCoins : 0),
+      exp,
+      level: level(exp),
+    });
+  }
+  return { profiles, added };
+}
+/** Returns the student with their game profile attached, if there is one. */
+export function attachGame(s: Student, profiles: ReadonlyMap<string, GameProfile>): Student {
+  const game = profiles.get(s.id);
+  return game ? { ...s, game } : s;
+}
+/**
+ * The Math Coins figure to show. Real students' balances come from the database (which already
+ * counts saved rewards); sandbox students keep their rewards in the game profile.
+ */
+export function displayCoins(s: Student): number {
+  return s.game?.rewardsSpendable ? s.game.mathCoins : coinBalance(s);
+}
+```
+
+## File: src/lib/gamification/world.ts
+```typescript
+import type { MathSet, Student } from "@/lib/data";
+import { CHAPTER_STRANDS, STRANDS, computeUnlocks } from "./catalog";
+import {
+  buildGameProfiles,
+  homeworkFromAssessments,
+  releasedHomeworkIds,
+  type GameInput,
+} from "./rules";
+import type {
+  BoardMetric,
+  BoardScope,
+  BoardStanding,
+  Distribution,
+  DistributionKind,
+  GameProfile,
+  LedgerEntry,
+  Leaderboard,
+  LeaderboardEntry,
+  RadarAxis,
+  StudentSnapshot,
+} from "./types";
+export const SNAPSHOT_VERSION = 2;
+/** A set's spread for one assessment is only shown when at least this many students sat it. */
+export const MIN_DISTRIBUTION_COUNT = 5;
+export const TOP_N = 10;
+export const BOARD_SCOPES: BoardScope[] = ["S2M3", "S2M5", "S2"];
+export const BOARD_METRICS: BoardMetric[] = ["total", "ca", "exp"];
+export const BOARD_TERMS: (1 | 2)[] = [1, 2];
+const SETS: MathSet[] = ["S2M3", "S2M5"];
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+function ceil1(n: number): number {
+  return Math.ceil(n * 10 - 1e-9) / 10;
+}
+function mean(values: readonly number[]): number | null {
+  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+}
+export function boardId(scope: BoardScope, metric: BoardMetric, term: 1 | 2 | null): string {
+  return `${scope}|${metric}|${term ?? "all"}`;
+}
+export function boardTerm(metric: BoardMetric, term: 1 | 2): 1 | 2 | null {
+  return metric === "exp" ? null : term;
+}
+/** Linear-interpolation quantile of an ascending list (the same method as Excel's QUARTILE.INC). */
+export function quantile(sorted: readonly number[], p: number): number {
+  if (sorted.length === 0) return 0;
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  const a = sorted[lo] ?? 0;
+  const b = sorted[hi] ?? a;
+  return a + (b - a) * (idx - lo);
+}
+/* --------------------------------------------------------------- Metrics */
+function metricValue(profile: GameProfile, metric: BoardMetric, term: 1 | 2): number | null {
+  if (metric === "exp") return profile.exp > 0 ? profile.exp : null;
+  const result = profile.termResults.find((r) => r.term === term);
+  if (!result) return null;
+  return metric === "total" ? result.total : result.ca;
+}
+/* ------------------------------------------------------------- Radar */
+function quizStrandAverages(profile: GameProfile): Map<string, number | null> {
+  const byStrand = new Map<string, number[]>();
+  for (const q of profile.quizHistory) {
+    if (q.percent === null || q.chapter === null) continue;
+    const strand = CHAPTER_STRANDS[q.chapter];
+    if (!strand) continue;
+    const list = byStrand.get(strand);
+    if (list) list.push(q.percent);
+    else byStrand.set(strand, [q.percent]);
+  }
+  const out = new Map<string, number | null>();
+  for (const [k, v] of byStrand) out.set(k, mean(v));
+  return out;
+}
+export function chapterAverages(profile: GameProfile, chapters = 7): (number | null)[] {
+  return Array.from({ length: chapters }, (_, i) =>
+    mean(
+      profile.quizHistory
+        .filter((q) => q.chapter === i + 1 && q.percent !== null)
+        .map((q) => q.percent ?? 0),
+    ),
+  );
+}
+/** Homework handed in, daily lesson mark and class participation, averaged into one 0–100 score. */
+function attitudeScore(
+  student: Student,
+  profile: GameProfile,
+  released: ReadonlySet<string>,
+  maxVoice: number,
+): number | null {
+  const list = student.assessments ?? [];
+  const homework = homeworkFromAssessments(list, released);
+  const counted = homework.filter((h) => h.status !== "EXCUSED");
+  const homeworkRate = counted.length
+    ? (counted.filter((h) => h.status === "SUBMITTED").length / counted.length) * 100
+    : null;
+  const daily = list
+    .filter((a) => a.kind === "summary" && a.category === "daily" && a.score !== null)
+    .sort((a, b) => b.term - a.term)[0];
+  const dailyRate =
+    daily && daily.score !== null ? (daily.score / (daily.full_marks || 10)) * 100 : null;
+  const voiceRate =
+    maxVoice > 0 ? Math.min(100, (profile.activeVoiceCount / maxVoice) * 100) : null;
+  const parts = [homeworkRate, dailyRate, voiceRate].filter((v): v is number => v !== null);
+  return parts.length ? mean(parts) : null;
+}
+/* ------------------------------------------------------- Distributions */
+interface ItemValue {
+  itemId: string;
+  label: string;
+  kind: DistributionKind;
+  term: number;
+  position: number;
+  percent: number | null;
+}
+function studentItemValues(profile: GameProfile): ItemValue[] {
+  const out: ItemValue[] = profile.quizHistory.map((q) => ({
+    itemId: q.quizId,
+    label: q.label,
+    kind: q.kind,
+    term: q.term,
+    position: q.position,
+    percent: q.percent,
+  }));
+  const parts: {
+    key: "tt" | "ca" | "exam" | "total";
+    kind: DistributionKind;
+    label: (t: number) => string;
+    position: number;
+  }[] = [
+    {
+      key: "tt",
+      kind: "TT",
+      label: (t) => `${t === 1 ? "1st" : "2nd"} Term Test`,
+      position: 90000,
+    },
+    { key: "ca", kind: "CA", label: (t) => `CA (T${t}A2)`, position: 90001 },
+    { key: "exam", kind: "EXAM", label: (t) => `Exam (T${t}A3)`, position: 90002 },
+    { key: "total", kind: "TOTAL", label: (t) => `Term ${t} total`, position: 90003 },
+  ];
+  for (const r of profile.termResults) {
+    for (const p of parts) {
+      const value = r[p.key];
+      out.push({
+        itemId: `${r.term}:${p.kind}`,
+        label: p.label(r.term),
+        kind: p.kind,
+        term: r.term,
+        position: p.position,
+        percent: value === null ? null : value / 2,
+      });
+    }
+  }
+  return out;
+}
+function setDistributions(
+  rows: { studentId: string; items: ItemValue[] }[],
+): Map<string, Distribution[]> {
+  const catalogue = new Map<string, ItemValue>();
+  const values = new Map<string, number[]>();
+  for (const r of rows) {
+    for (const it of r.items) {
+      if (!catalogue.has(it.itemId)) catalogue.set(it.itemId, it);
+      if (it.percent === null) continue;
+      const list = values.get(it.itemId);
+      if (list) list.push(it.percent);
+      else values.set(it.itemId, [it.percent]);
+    }
+  }
+  const stats = new Map<string, Omit<Distribution, "mine">>();
+  for (const [id, it] of catalogue) {
+    const sorted = [...(values.get(id) ?? [])].sort((a, b) => a - b);
+    if (sorted.length < MIN_DISTRIBUTION_COUNT) continue;
+    stats.set(id, {
+      itemId: id,
+      label: it.label,
+      kind: it.kind,
+      term: it.term,
+      position: it.position,
+      count: sorted.length,
+      min: round1(sorted[0] ?? 0),
+      q1: round1(quantile(sorted, 0.25)),
+      median: round1(quantile(sorted, 0.5)),
+      q3: round1(quantile(sorted, 0.75)),
+      max: round1(sorted[sorted.length - 1] ?? 0),
+      mean: round1(mean(sorted) ?? 0),
+    });
+  }
+  const out = new Map<string, Distribution[]>();
+  for (const r of rows) {
+    const mine = new Map(r.items.map((it) => [it.itemId, it.percent]));
+    out.set(
+      r.studentId,
+      [...stats.values()]
+        .map((s) => {
+          const p = mine.get(s.itemId) ?? null;
+          return { ...s, mine: p === null ? null : round1(p) };
+        })
+        .sort((a, b) => a.term - b.term || a.position - b.position),
+    );
+  }
+  return out;
+}
+/* -------------------------------------------------------- Leaderboards */
+/** A two-digit code (three when the list is long) that hides who is behind an anonymous card. */
+function anonymousCodes(studentIds: readonly string[], salt: string): Map<string, number> {
+  const width = studentIds.length > 80 ? 900 : 90;
+  const base = width === 900 ? 100 : 10;
+  const used = new Set<number>();
+  const out = new Map<string, number>();
+  for (const id of [...studentIds].sort()) {
+    let h = 2166136261;
+    for (const ch of `${salt}|${id}`) h = Math.imul(h ^ (ch.codePointAt(0) ?? 0), 16777619) >>> 0;
+    let code = base + (h % width);
+    while (used.has(code)) code = base + ((code - base + 1) % width);
+    used.add(code);
+    out.set(id, code);
+  }
+  return out;
+}
+interface BoardBuild {
+  published: Leaderboard;
+  full: Leaderboard;
+  standings: Map<string, BoardStanding>;
+}
+function buildBoard(
+  scope: BoardScope,
+  metric: BoardMetric,
+  term: 1 | 2,
+  members: { student: Student; profile: GameProfile }[],
+  generatedAt: string,
+): BoardBuild {
+  const bTerm = boardTerm(metric, term);
+  const id = boardId(scope, metric, bTerm);
+  const scored = members
+    .map((m) => ({ ...m, score: metricValue(m.profile, metric, term) }))
+    .filter((m): m is typeof m & { score: number } => m.score !== null)
+    .sort((a, b) => b.score - a.score || a.student.name.localeCompare(b.student.name));
+  const keys = scored.map((m) => Math.round(m.score * 10));
+  const entries: LeaderboardEntry[] = scored.map((m, i) => ({
+    rank: 1 + keys.filter((k) => k > (keys[i] ?? 0)).length,
+    studentId: m.student.id,
+    name: m.student.name,
+    set: m.student.set,
+    className: m.student.className ?? "",
+    classNo: m.student.classNo ?? "",
+    score: round1(m.score),
+  }));
+  const top = entries.filter((e) => e.rank <= TOP_N);
+  const rest = entries.filter((e) => e.rank > TOP_N);
+  const cutoff = scored.length >= TOP_N ? (scored[TOP_N - 1]?.score ?? null) : null;
+  const codes = anonymousCodes(
+    rest.map((e) => e.studentId),
+    id,
+  );
+  const base = {
+    id,
+    scope,
+    metric,
+    term: bTerm,
+    unit: metric === "exp" ? "EXP" : "/ 200",
+    rankedCount: entries.length,
+    generatedAt,
+  };
+  const standings = new Map<string, BoardStanding>();
+  for (const m of members) {
+    const entry = entries.find((e) => e.studentId === m.student.id);
+    if (!entry) {
+      standings.set(m.student.id, {
+        boardId: id,
+        display: "—",
+        rank: null,
+        isTop10: false,
+        score: null,
+        gapToTop10: null,
+        anonymousCode: null,
+      });
+      continue;
+    }
+    const inTop = entry.rank <= TOP_N;
+    standings.set(m.student.id, {
+      boardId: id,
+      display: inTop ? `#${entry.rank}` : "10+",
+      rank: inTop ? entry.rank : null,
+      isTop10: inTop,
+      score: entry.score,
+      gapToTop10: inTop || cutoff === null ? null : ceil1(Math.max(0, cutoff - entry.score)),
+      anonymousCode: inTop ? null : (codes.get(entry.studentId) ?? null),
+    });
+  }
+  return {
+    published: { ...base, top, anonymousCodes: [...codes.values()].sort((a, b) => a - b) },
+    full: { ...base, top: entries, anonymousCodes: [] },
+    standings,
+  };
+}
+/* --------------------------------------------------------------- World */
+export interface GameWorld {
+  profiles: Map<string, GameProfile>;
+  /** Rewards given by this run, to be saved to the ledger. */
+  added: LedgerEntry[];
+  snapshots: Map<string, StudentSnapshot>;
+  /** What students may see: top 10 by name, everyone else as anonymous codes. */
+  boards: Leaderboard[];
+  /** Full rankings with every name, for teachers only. Never publish these. */
+  fullBoards: Leaderboard[];
+}
+/**
+ * Works out the whole game for a class list: profiles, rewards, each student's private
+ * snapshot and the public leaderboards. Pass every student of each set (teacher data).
+ */
+export function buildGameWorld(input: GameInput): GameWorld {
+  const now = input.now ?? new Date();
+  const generatedAt = now.toISOString();
+  const { profiles, added } = buildGameProfiles({ ...input, now });
+  const members = input.students.flatMap((student) => {
+    const profile = profiles.get(student.id);
+    return profile ? [{ student, profile }] : [];
+  });
+  // Radar and distributions are worked out within each set.
+  const radarByStudent = new Map<string, RadarAxis[]>();
+  const distributionsByStudent = new Map<string, Distribution[]>();
+  for (const set of SETS) {
+    const list = members.filter((m) => m.student.set === set);
+    if (list.length === 0) continue;
+    const released = releasedHomeworkIds(list.map((m) => m.student));
+    const maxVoice = Math.max(0, ...list.map((m) => m.profile.activeVoiceCount));
+    const raw = list.map((m) => {
+      const strands = quizStrandAverages(m.profile);
+      return {
+        id: m.student.id,
+        values: new Map<string, number | null>([
+          ...STRANDS.filter((s) => s.id !== "attitude").map((s): [string, number | null] => [
+            s.id,
+            strands.get(s.id) ?? null,
+          ]),
+          ["attitude", attitudeScore(m.student, m.profile, released, maxVoice)],
+        ]),
+      };
+    });
+    const averages = new Map<string, number | null>(
+      STRANDS.map((s) => [
+        s.id,
+        mean(
+          raw.flatMap((r) => {
+            const v = r.values.get(s.id);
+            return v === null || v === undefined ? [] : [v];
+          }),
+        ),
+      ]),
+    );
+    for (const r of raw) {
+      radarByStudent.set(
+        r.id,
+        STRANDS.map((s) => {
+          const mine = r.values.get(s.id) ?? null;
+          const avg = averages.get(s.id) ?? null;
+          return {
+            strand: s.id,
+            label: s.label,
+            mine: mine === null ? null : round1(mine),
+            setAverage: avg === null ? null : round1(avg),
+          };
+        }),
+      );
+    }
+    const dist = setDistributions(
+      list.map((m) => ({ studentId: m.student.id, items: studentItemValues(m.profile) })),
+    );
+    for (const [id, d] of dist) distributionsByStudent.set(id, d);
+  }
+  const boards: Leaderboard[] = [];
+  const fullBoards: Leaderboard[] = [];
+  const standingsByStudent = new Map<string, BoardStanding[]>();
+  for (const scope of BOARD_SCOPES) {
+    const scopeMembers = scope === "S2" ? members : members.filter((m) => m.student.set === scope);
+    if (scopeMembers.length === 0) continue;
+    for (const metric of BOARD_METRICS) {
+      const terms: (1 | 2)[] = metric === "exp" ? [1] : BOARD_TERMS;
+      for (const term of terms) {
+        const built = buildBoard(scope, metric, term, scopeMembers, generatedAt);
+        boards.push(built.published);
+        fullBoards.push(built.full);
+        for (const [id, s] of built.standings) {
+          const list = standingsByStudent.get(id);
+          if (list) list.push(s);
+          else standingsByStudent.set(id, [s]);
+        }
+      }
+    }
+  }
+  const snapshots = new Map<string, StudentSnapshot>();
+  for (const { student, profile } of members) {
+    const radar = radarByStudent.get(student.id) ?? [];
+    snapshots.set(student.id, {
+      version: SNAPSHOT_VERSION,
+      studentId: student.id,
+      set: student.set,
+      generatedAt,
+      profile,
+      radar,
+      distributions: distributionsByStudent.get(student.id) ?? [],
+      boards: standingsByStudent.get(student.id) ?? [],
+      unlocks: computeUnlocks({ profile, radar, chapterAverages: chapterAverages(profile) }),
+    });
+  }
+  return { profiles, added, snapshots, boards, fullBoards };
+}
+/* ------------------------------------------------------- Reading saved data */
+function isObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+/** Reads a snapshot saved by the publish step; returns null for anything unexpected. */
+export function parseSnapshot(payload: unknown): StudentSnapshot | null {
+  if (!isObject(payload) || payload["version"] !== SNAPSHOT_VERSION) return null;
+  if (!isObject(payload["profile"]) || !Array.isArray(payload["boards"])) return null;
+  if (!Array.isArray(payload["radar"]) || !Array.isArray(payload["distributions"])) return null;
+  if (!isObject(payload["unlocks"])) return null;
+  return payload as unknown as StudentSnapshot;
+}
+/** Reads a leaderboard saved by the publish step; returns null for anything unexpected. */
+export function parseLeaderboard(payload: unknown): Leaderboard | null {
+  if (!isObject(payload) || typeof payload["id"] !== "string") return null;
+  if (!Array.isArray(payload["top"]) || !Array.isArray(payload["anonymousCodes"])) return null;
+  return payload as unknown as Leaderboard;
+}
+```
+
+## File: src/lib/coins.ts
+```typescript
+import { supabase } from "@/integrations/supabase/client";
+import type { Student } from "./data";
+export const COIN_NAME = "Math Coins";
+export const COIN_NAME_ZH = "數學幣";
+export const COIN_EMOJI = "🪙";
+/** Coins for watching one chapter video to the end. */
+export const VIDEO_COINS = 1;
+export type MarkReason =
+  | "classwork"
+  | "participation"
+  | "correct_answer"
+  | "incorrect_answer"
+  | "homework"
+  | "bonus"
+  | "deduction";
+export interface ReasonInfo {
+  id: MarkReason;
+  label: string;
+  zh: string;
+}
+export const REASONS: ReasonInfo[] = [
+  { id: "correct_answer", label: "Correct answer", zh: "答啱問題" },
+  { id: "incorrect_answer", label: "Tried to answer", zh: "有嘗試作答（0 分紀錄）" },
+  { id: "classwork", label: "Classwork completed", zh: "完成課堂練習" },
+  { id: "participation", label: "Great lesson performance", zh: "課堂表現好" },
+  { id: "homework", label: "Homework on time", zh: "準時交齊功課" },
+  { id: "bonus", label: "Bonus", zh: "其他獎勵" },
+  { id: "deduction", label: "Deduction", zh: "扣分（欠交 / 違規）" },
+];
+export const QUICK_REASONS: ReasonInfo[] = REASONS.filter(
+  (r) => r.id !== "correct_answer" && r.id !== "incorrect_answer",
+);
+export const QUICK_AMOUNTS = [-5, -2, -1, 1, 2, 5];
+export function reasonLabel(id: string): string {
+  return REASONS.find((r) => r.id === id)?.label ?? id;
+}
+type CoinFields = Pick<
+  Student,
+  "dailyMarks" | "videoMarks" | "coinsSpent" | "rewardCoins" | "checkinCoins" | "shopSpent"
+>;
+/** Everything earned: lesson marks, videos, game rewards and daily check-ins. */
+export function coinsEarned(s: Partial<CoinFields>): number {
+  return (
+    (s.dailyMarks ?? 0) +
+    (s.videoMarks ?? 0) * VIDEO_COINS +
+    (s.rewardCoins ?? 0) +
+    (s.checkinCoins ?? 0)
+  );
+}
+/** Everything spent: reward tickets (not rejected) and Shop items. */
+export function coinsSpentTotal(s: Partial<CoinFields>): number {
+  return (s.coinsSpent ?? 0) + (s.shopSpent ?? 0);
+}
+/** The same sum as the database's coin_balance() function. */
+export function coinBalance(s: Partial<CoinFields>): number {
+  return coinsEarned(s) - coinsSpentTotal(s);
+}
+const STATUS = {
+  pending: { label: "⏳ Pending teacher approval", cls: "bg-gold/25 text-gold-deep" },
+  approved: { label: "🎟️ Approved, show your teacher", cls: "bg-primary/10 text-primary" },
+  used: { label: "✅ Redeemed", cls: "bg-success/15 text-success" },
+  rejected: { label: "❌ Rejected, coins returned", cls: "bg-muted text-muted-foreground" },
+} as const;
+export function redemptionStatus(status: string): { label: string; cls: string } {
+  return (
+    STATUS[status as keyof typeof STATUS] ?? {
+      label: status,
+      cls: "bg-muted text-muted-foreground",
+    }
+  );
+}
+/** Saves the same marks for every chosen student in one go and returns the new row ids (for undo). */
+export async function giveCoins(input: {
+  studentIds: string[];
+  marks: number;
+  reason: MarkReason;
+  note: string;
+}): Promise<string[]> {
+  if (!input.studentIds.length) throw new Error("Choose at least one student first");
+  if (!Number.isInteger(input.marks) || input.marks < -100 || input.marks > 100) {
+    throw new Error("Marks must be a whole number from -100 to 100");
+  }
+  const { data: auth } = await supabase.auth.getUser();
+  const userId = auth.user?.id;
+  if (!userId) throw new Error("Please sign in with your teacher account again");
+  const batchId = crypto.randomUUID();
+  const { data, error } = await supabase
+    .from("daily_marks")
+    .insert(
+      input.studentIds.map((studentId) => ({
+        student_id: studentId,
+        marks: input.marks,
+        reason: input.reason,
+        note: input.note.trim().slice(0, 200),
+        awarded_by: userId,
+        batch_id: batchId,
+      })),
+    )
+    .select("id");
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => row.id);
+}
+export async function deleteMarks(ids: string[]): Promise<void> {
+  for (let i = 0; i < ids.length; i += 100) {
+    const { error } = await supabase
+      .from("daily_marks")
+      .delete()
+      .in("id", ids.slice(i, i + 100));
+    if (error) throw new Error(error.message);
+  }
+}
+```
 
 ## File: src/lib/grade-rules.ts
-````typescript
+```typescript
 import { z } from "zod";
 export const scoreSchema = z.number().int().min(0).max(100).nullable();
 export const awardSchema = z.object({
@@ -7406,15 +3897,14 @@ export function parseScoreCsv(text: string) {
     });
   return rows;
 }
-````
+```
 
 ## File: src/lib/math.functions.ts
-````typescript
+```typescript
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { awardSchema, scoreSchema } from "./grade-rules";
-
 export const saveScores = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -7459,17 +3949,15 @@ export const awardMarks = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { saved: true };
   });
-````
+```
 
 ## File: src/lib/video-watch.ts
-````typescript
+```typescript
 /** Share of a video a student must actually play (not skip) before the mark is awarded. */
 export const REQUIRED_COVERAGE = 0.9;
 /** Largest gap between two position samples still counted as continuous playback (allows up to 2x speed). */
 const MAX_STEP_SECONDS = 2.5;
-
 export type VideoSource = { kind: "youtube"; id: string } | { kind: "file"; url: string };
-
 /** Recognise links that can be played and tracked inside the app: YouTube or a direct video file. */
 export function parseVideoSource(raw: string): VideoSource | null {
   let url: URL;
@@ -7497,7 +3985,6 @@ export function parseVideoSource(raw: string): VideoSource | null {
   if (/\.(mp4|webm|ogg|m4v)$/i.test(url.pathname)) return { kind: "file", url: url.toString() };
   return null;
 }
-
 /**
  * Records which whole seconds of a video were actually played. Jumps (seeking ahead)
  * are not counted, so a student cannot skip to the end to earn the mark.
@@ -7528,10 +4015,10 @@ export function createWatchTracker() {
     },
   };
 }
-````
+```
 
 ## File: src/routes/_authenticated/activity.tsx
-````typescript
+```typescript
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Check, RotateCcw, Search, Undo2, Volume2, VolumeX, X } from "lucide-react";
@@ -7552,7 +4039,6 @@ import {
 } from "@/lib/coins";
 import { sortByClass, type MathSet, type Student } from "@/lib/data";
 import { cn } from "@/lib/utils";
-
 export const Route = createFileRoute("/_authenticated/activity")({
   head: () => ({
     meta: [
@@ -7566,7 +4052,6 @@ export const Route = createFileRoute("/_authenticated/activity")({
   }),
   component: ActivityPage,
 });
-
 const SETS: MathSet[] = ["S2M3", "S2M5"];
 const BALL_COLORS = [
   "var(--primary)",
@@ -7579,7 +4064,6 @@ const BALL_COLORS = [
 const PILE_ROWS = [5, 4, 3, 2];
 const BALL_SIZE = 30;
 const BALL_COUNT = 14;
-
 const ANIMATION_CSS = `
 .hlc-ball { position: absolute; left: 50%; top: 50%; width: ${BALL_SIZE}px; height: ${BALL_SIZE}px; margin: -${BALL_SIZE / 2}px 0 0 -${BALL_SIZE / 2}px; border-radius: 9999px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: white; box-shadow: inset -4px -4px 6px rgb(0 0 0 / 0.25), inset 3px 3px 5px rgb(255 255 255 / 0.45); transition: transform 0.4s ease; }
 .hlc-ball[data-spin="true"] { animation: hlc-orbit var(--d) linear infinite; animation-delay: var(--delay); }
@@ -7594,14 +4078,12 @@ const ANIMATION_CSS = `
 @keyframes hlc-flick { from { opacity: 0.6; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hlc-ball[data-spin="true"], .hlc-machine[data-spin="true"], .hlc-winner, .hlc-ticker, .hlc-confetti { animation: none; } }
 `;
-
 function randomIndex(n: number): number {
   if (n <= 1) return 0;
   const buf = new Uint32Array(1);
   crypto.getRandomValues(buf);
   return (buf[0] ?? 0) % n;
 }
-
 /** Where each ball rests at the bottom of the machine when it is not spinning. */
 function pilePosition(i: number): { x: number; y: number } {
   let index = i;
@@ -7614,7 +4096,6 @@ function pilePosition(i: number): { x: number; y: number } {
   }
   return { x: 0, y: 0 };
 }
-
 function ActivityPage() {
   const { students, coinsError } = useApp();
   const [set, setSet] = useState<MathSet>("S2M3");
@@ -7658,9 +4139,7 @@ function ActivityPage() {
     </AppShell>
   );
 }
-
 type Phase = "idle" | "spinning" | "revealed";
-
 function LuckyDraw({ list }: { list: Student[] }) {
   const { refresh } = useApp();
   const [phase, setPhase] = useState<Phase>("idle");
@@ -7675,7 +4154,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
   const [burst, setBurst] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audio = useRef<AudioContext | null>(null);
-
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -7683,11 +4161,9 @@ function LuckyDraw({ list }: { list: Student[] }) {
     },
     [],
   );
-
   const spinning = phase === "spinning";
   const pool = noRepeat ? list.filter((s) => !drawn.includes(s.id)) : list;
   const live = winner ? (list.find((s) => s.id === winner.id) ?? winner) : null;
-
   const balls = useMemo(
     () =>
       Array.from({ length: BALL_COUNT }, (_, i) => ({
@@ -7702,7 +4178,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
       })),
     [list],
   );
-
   const confetti = useMemo(
     () =>
       Array.from({ length: burst ? 32 : 0 }, (_, i) => {
@@ -7718,7 +4193,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
       }),
     [burst],
   );
-
   const beep = (freq: number, seconds: number, volume = 0.05) => {
     if (!sound) return;
     try {
@@ -7738,13 +4212,11 @@ function LuckyDraw({ list }: { list: Student[] }) {
       // Sound is optional; some browsers block it.
     }
   };
-
   const fanfare = () => {
     [523, 659, 784, 1047].forEach((f, i) => {
       setTimeout(() => beep(f, 0.35, 0.07), i * 120);
     });
   };
-
   const draw = () => {
     if (spinning) return;
     if (!pool.length) {
@@ -7780,14 +4252,12 @@ function LuckyDraw({ list }: { list: Student[] }) {
     };
     step();
   };
-
   const reset = () => {
     setDrawn([]);
     setWinner(null);
     setSaved(null);
     setPhase("idle");
   };
-
   const undo = async (ids: string[]) => {
     try {
       await deleteMarks(ids);
@@ -7798,7 +4268,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
       toast.error(e instanceof Error ? e.message : "Could not undo");
     }
   };
-
   const answer = async (correct: boolean) => {
     if (!winner) return;
     setBusy(true);
@@ -7821,7 +4290,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
       setBusy(false);
     }
   };
-
   return (
     <Panel
       className="mt-6"
@@ -7891,7 +4359,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
               : `${list.length} students in the draw`}
           </p>
         </div>
-
         <div className="relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-md border border-border bg-muted/40 p-6 text-center">
           {phase === "idle" && (
             <p className="text-lg text-muted-foreground">Press Draw a student to begin.</p>
@@ -7962,7 +4429,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
           )}
         </div>
       </div>
-
       {noRepeat && drawn.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-1.5 text-xs">
           <span className="font-semibold text-muted-foreground">Already drawn:</span>
@@ -7976,7 +4442,6 @@ function LuckyDraw({ list }: { list: Student[] }) {
     </Panel>
   );
 }
-
 function QuickPoints({ list }: { list: Student[] }) {
   const { refresh } = useApp();
   const [query, setQuery] = useState("");
@@ -7985,7 +4450,6 @@ function QuickPoints({ list }: { list: Student[] }) {
   const [reason, setReason] = useState<MarkReason>("classwork");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
-
   const q = query.trim().toLowerCase();
   const shown = q
     ? list.filter((s) =>
@@ -7994,23 +4458,19 @@ function QuickPoints({ list }: { list: Student[] }) {
           .includes(q),
       )
     : list;
-
   const toggle = (id: string) =>
     setSelected((sel) => (sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id]));
-
   const chooseAmount = (n: number) => {
     const value = Number.isFinite(n) ? Math.max(-100, Math.min(100, Math.trunc(n))) : 0;
     setAmount(value);
     if (value < 0) setReason("deduction");
     else if (reason === "deduction") setReason("classwork");
   };
-
   const chooseReason = (r: MarkReason) => {
     setReason(r);
     if (r === "deduction" && amount > 0) setAmount(-amount);
     if (r !== "deduction" && amount < 0) setAmount(-amount);
   };
-
   const undo = async (ids: string[]) => {
     try {
       await deleteMarks(ids);
@@ -8020,7 +4480,6 @@ function QuickPoints({ list }: { list: Student[] }) {
       toast.error(e instanceof Error ? e.message : "Could not undo");
     }
   };
-
   const save = async () => {
     if (amount === 0) {
       toast.error("Choose an amount other than 0");
@@ -8043,7 +4502,6 @@ function QuickPoints({ list }: { list: Student[] }) {
       setBusy(false);
     }
   };
-
   return (
     <Panel
       className="mt-6"
@@ -8113,7 +4571,6 @@ function QuickPoints({ list }: { list: Student[] }) {
           })}
         </div>
       )}
-
       <div className="sticky bottom-3 mt-4 flex flex-wrap items-end gap-3 rounded-md border border-border bg-card p-3 shadow-lg">
         <div>
           <p className="mb-1 text-xs font-semibold text-muted-foreground">Amount</p>
@@ -8186,7 +4643,6 @@ function QuickPoints({ list }: { list: Student[] }) {
     </Panel>
   );
 }
-
 interface LogGroup {
   key: string;
   ids: string[];
@@ -8196,7 +4652,6 @@ interface LogGroup {
   note: string;
   at: string;
 }
-
 function RecentActivity() {
   const { markLog, students, refresh } = useApp();
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -8226,7 +4681,6 @@ function RecentActivity() {
     }
     return out.slice(0, 12);
   }, [markLog]);
-
   const undo = async (g: LogGroup) => {
     const who = g.studentIds.map((id) => names.get(id) ?? "?").join(", ");
     if (
@@ -8246,7 +4700,6 @@ function RecentActivity() {
       setBusyKey(null);
     }
   };
-
   return (
     <Panel className="mt-6" title="Recent activity" bodyClassName="px-5 py-2">
       {groups.length === 0 ? (
@@ -8300,1023 +4753,317 @@ function RecentActivity() {
     </Panel>
   );
 }
-````
-
-## File: src/routes/_authenticated/awards.tsx
-````typescript
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Check, Plus, Save, X } from "lucide-react";
-import { toast } from "sonner";
-import { AppShell } from "@/components/AppShell";
-import { Notice, PageHeader, Panel } from "@/components/PageParts";
-import { Button } from "@/components/ui/button";
-import { useApp, type Redemption, type Reward } from "@/lib/app-store";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  COIN_NAME,
-  REASONS,
-  VIDEO_COINS,
-  coinBalance,
-  coinsEarned,
-  reasonLabel,
-  redemptionStatus,
-} from "@/lib/coins";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/awards")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Awards — HLC Math" },
-      { name: "description", content: "Exchange Math Coins for class rewards." },
-      { property: "og:title", content: "Awards — HLC Math" },
-      {
-        property: "og:description",
-        content: "Earn Math Coins in lessons and exchange them for rewards.",
-      },
-    ],
-  }),
-  component: AwardsPage,
-});
-
-const DAY_MS = 86_400_000;
-
-function AwardsPage() {
-  const { role } = useApp();
-  return <AppShell>{role === "teacher" ? <TeacherAwards /> : <StudentAwards />}</AppShell>;
-}
-
-function formatDate(value: string | Date) {
-  return new Date(value).toLocaleDateString("en-HK", { day: "numeric", month: "short" });
-}
-
-function coins(n: number) {
-  return `${n} coin${n === 1 ? "" : "s"}`;
-}
-
-function StudentAwards() {
-  const { me, rewards, redemptions, markLog, refresh, coinsError } = useApp();
-  const [confirming, setConfirming] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const balance = coinBalance(me);
-  const mine = redemptions.filter((r) => r.student_id === me.id);
-  const history = markLog.filter((m) => m.student_id === me.id).slice(0, 15);
-  const shop = rewards.filter((r) => r.active);
-
-  const nextAvailable = (reward: Reward): Date | null => {
-    if (!reward.cooldown_days) return null;
-    const last = mine.find((r) => r.reward_id === reward.id && r.status !== "rejected");
-    if (!last) return null;
-    const next = new Date(new Date(last.created_at).getTime() + reward.cooldown_days * DAY_MS);
-    return next.getTime() > Date.now() ? next : null;
-  };
-
-  const redeem = async (reward: Reward) => {
-    setBusy(true);
-    try {
-      const { error } = await supabase.rpc("redeem_reward", { _reward_id: reward.id });
-      if (error) throw new Error(error.message);
-      await refresh();
-      setConfirming(null);
-      toast.success(`${reward.name} requested. Your teacher will confirm it.`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not request the reward");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <>
-      <PageHeader
-        title="Awards"
-        description={`Earn ${COIN_NAME} in lessons and exchange them for class rewards.`}
-      />
-      {coinsError && (
-        <div className="mt-4">
-          <Notice tone="error">{coinsError}</Notice>
-        </div>
-      )}
-
-      <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
-        <section className="rounded-lg border border-border border-l-4 border-l-gold bg-card p-5 shadow-chunky">
-          <p className="text-sm text-muted-foreground">Your balance</p>
-          <p className="mt-1 text-4xl font-semibold tabular-nums">{balance}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {coins(coinsEarned(me))} earned, {coins(me.coinsSpent ?? 0)} spent
-          </p>
-        </section>
-        <Panel title={`How to earn ${COIN_NAME}`}>
-          <ul className="grid list-disc gap-1 pl-5 text-sm sm:grid-cols-2">
-            {REASONS.filter((r) => r.id !== "deduction" && r.id !== "incorrect_answer").map((r) => (
-              <li key={r.id}>{r.label}</li>
-            ))}
-            <li>Watching a chapter video to the end (+{VIDEO_COINS})</li>
-          </ul>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Missing homework or breaking class rules can lose coins.
-          </p>
-        </Panel>
-      </div>
-
-      <h2 className="mt-8 text-lg font-semibold">Rewards</h2>
-      {shop.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">No rewards have been added yet.</p>
-      ) : (
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {shop.map((r) => {
-            const next = nextAvailable(r);
-            const short = r.cost - balance;
-            return (
-              <div
-                key={r.id}
-                className="flex flex-col rounded-lg border border-border bg-card p-4 shadow-chunky"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-muted text-xl">
-                    {r.emoji}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold leading-tight">{r.name}</h3>
-                    <p className="text-sm text-muted-foreground">{coins(r.cost)}</p>
-                  </div>
-                </div>
-                <p className="mt-3 flex-1 text-sm">{r.description}</p>
-                {r.cooldown_days && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Once every {r.cooldown_days} days
-                  </p>
-                )}
-                <div className="mt-4">
-                  {next ? (
-                    <Button disabled variant="outline" className="w-full">
-                      Available again {formatDate(next)}
-                    </Button>
-                  ) : short > 0 ? (
-                    <Button disabled variant="outline" className="w-full">
-                      {short} more needed
-                    </Button>
-                  ) : confirming === r.id ? (
-                    <div className="flex gap-2">
-                      <Button disabled={busy} className="flex-1" onClick={() => void redeem(r)}>
-                        <Check /> Spend {r.cost}
-                      </Button>
-                      <Button variant="outline" disabled={busy} onClick={() => setConfirming(null)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button className="w-full" onClick={() => setConfirming(r.id)}>
-                      Request
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        <Panel title="My requests">
-          {mine.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No rewards requested yet.</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {mine.map((r) => {
-                const st = redemptionStatus(r.status);
-                return (
-                  <li key={r.id} className="flex items-center gap-3 py-2 text-sm">
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-medium">{r.reward_name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(r.created_at)}, {coins(r.cost)}
-                      </span>
-                    </span>
-                    <span className={cn("rounded px-2 py-0.5 text-xs font-semibold", st.cls)}>
-                      {st.label}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Panel>
-        <Panel title="Coin history">
-          {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No lesson coins yet.</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {history.map((m) => (
-                <li key={m.id} className="flex items-center gap-3 py-2 text-sm">
-                  <span className="w-16 shrink-0 text-xs text-muted-foreground">
-                    {formatDate(m.created_at)}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate">
-                    {reasonLabel(m.reason)}
-                    {m.note ? <span className="text-muted-foreground">, {m.note}</span> : null}
-                  </span>
-                  <span
-                    className={cn(
-                      "font-semibold tabular-nums",
-                      m.marks > 0
-                        ? "text-success"
-                        : m.marks < 0
-                          ? "text-destructive"
-                          : "text-muted-foreground",
-                    )}
-                  >
-                    {m.marks > 0 ? `+${m.marks}` : m.marks}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
-      </div>
-    </>
-  );
-}
-
-function TeacherAwards() {
-  const { redemptions, students, refresh, coinsError } = useApp();
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const names = useMemo(
-    () =>
-      new Map(
-        students.map((s) => [
-          s.id,
-          `${s.name}, ${s.set}${s.classNo ? `, ${s.className ?? ""} ${s.classNo}` : ""}`,
-        ]),
-      ),
-    [students],
-  );
-  const pending = redemptions.filter((r) => r.status === "pending");
-  const approved = redemptions.filter((r) => r.status === "approved");
-  const done = redemptions
-    .filter((r) => r.status === "used" || r.status === "rejected")
-    .slice(0, 15);
-
-  const decide = async (r: Redemption, status: "approved" | "used" | "rejected") => {
-    setBusyId(r.id);
-    try {
-      const { data: auth } = await supabase.auth.getUser();
-      const { error } = await supabase
-        .from("reward_redemptions")
-        .update({ status, decided_at: new Date().toISOString(), decided_by: auth.user?.id ?? null })
-        .eq("id", r.id);
-      if (error) throw new Error(error.message);
-      await refresh();
-      toast.success(
-        status === "rejected"
-          ? "Rejected and coins returned"
-          : status === "used"
-            ? "Marked as used"
-            : "Approved",
-      );
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update the request");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const row = (r: Redemption, actions: "pending" | "approved" | "none") => {
-    const st = redemptionStatus(r.status);
-    return (
-      <li key={r.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
-        <span className="min-w-0 flex-1">
-          <span className="block font-medium">{r.reward_name}</span>
-          <span className="text-xs text-muted-foreground">
-            {names.get(r.student_id) ?? "Unknown student"}, {formatDate(r.created_at)},{" "}
-            {coins(r.cost)}
-          </span>
-        </span>
-        {actions === "pending" && (
-          <>
-            <Button size="sm" disabled={busyId === r.id} onClick={() => void decide(r, "approved")}>
-              <Check /> Approve
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={busyId === r.id}
-              onClick={() => void decide(r, "rejected")}
-            >
-              <X /> Reject
-            </Button>
-          </>
-        )}
-        {actions === "approved" && (
-          <>
-            <Button size="sm" disabled={busyId === r.id} onClick={() => void decide(r, "used")}>
-              <Check /> Mark used
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={busyId === r.id}
-              onClick={() => void decide(r, "rejected")}
-            >
-              Cancel and refund
-            </Button>
-          </>
-        )}
-        {actions === "none" && (
-          <span className={cn("rounded px-2 py-0.5 text-xs font-semibold", st.cls)}>
-            {st.label}
-          </span>
-        )}
-      </li>
-    );
-  };
-
-  return (
-    <>
-      <PageHeader
-        title="Awards"
-        description={`Students spend ${COIN_NAME} here. Approve a request, mark it used, or reject it to return the coins.`}
-      />
-      {coinsError && (
-        <div className="mt-4">
-          <Notice tone="error">{coinsError}</Notice>
-        </div>
-      )}
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Panel title={`Waiting for approval (${pending.length})`}>
-          {pending.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No new requests.</p>
-          ) : (
-            <ul className="divide-y divide-border">{pending.map((r) => row(r, "pending"))}</ul>
-          )}
-        </Panel>
-        <Panel title={`Approved, not used yet (${approved.length})`}>
-          {approved.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nothing waiting to be used.</p>
-          ) : (
-            <ul className="divide-y divide-border">{approved.map((r) => row(r, "approved"))}</ul>
-          )}
-        </Panel>
-      </div>
-
-      {done.length > 0 && (
-        <Panel className="mt-6" title="Recently finished">
-          <ul className="divide-y divide-border">{done.map((r) => row(r, "none"))}</ul>
-        </Panel>
-      )}
-
-      <RewardEditor />
-    </>
-  );
-}
-
-interface Draft {
-  id: string;
-  emoji: string;
-  name: string;
-  description: string;
-  cost: string;
-  cooldown: string;
-  active: boolean;
-  position: number;
-}
-
-function toDraft(r: Reward): Draft {
-  return {
-    id: r.id,
-    emoji: r.emoji,
-    name: r.name,
-    description: r.description,
-    cost: String(r.cost),
-    cooldown: r.cooldown_days === null ? "" : String(r.cooldown_days),
-    active: r.active,
-    position: r.position,
-  };
-}
-
-const field =
-  "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-primary";
-
-function RewardEditor() {
-  const { rewards, refresh } = useApp();
-  const [edits, setEdits] = useState<Record<string, Draft>>({});
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const rows = [
-    ...rewards.map((r) => edits[r.id] ?? toDraft(r)),
-    ...Object.values(edits).filter((d) => !rewards.some((r) => r.id === d.id)),
-  ];
-
-  const change = (d: Draft, patch: Partial<Draft>) =>
-    setEdits((e) => ({ ...e, [d.id]: { ...d, ...patch } }));
-
-  const add = () => {
-    const position = Math.max(0, ...rows.map((d) => d.position)) + 1;
-    const draft: Draft = {
-      id: crypto.randomUUID(),
-      emoji: "🎁",
-      name: "",
-      description: "",
-      cost: "10",
-      cooldown: "",
-      active: true,
-      position,
-    };
-    setEdits((e) => ({ ...e, [draft.id]: draft }));
-  };
-
-  const save = async (d: Draft) => {
-    const cost = Number(d.cost);
-    const cooldown = d.cooldown.trim() === "" ? null : Number(d.cooldown);
-    if (!d.name.trim()) {
-      toast.error("Give the reward a name");
-      return;
-    }
-    if (!Number.isInteger(cost) || cost < 1 || cost > 1000) {
-      toast.error("Cost must be a whole number from 1 to 1000");
-      return;
-    }
-    if (cooldown !== null && (!Number.isInteger(cooldown) || cooldown < 1 || cooldown > 365)) {
-      toast.error("Limit must be 1 to 365 days, or blank for no limit");
-      return;
-    }
-    setBusyId(d.id);
-    try {
-      const { error } = await supabase.from("rewards").upsert({
-        id: d.id,
-        emoji: d.emoji.trim() || "🎁",
-        name: d.name.trim(),
-        description: d.description.trim(),
-        cost,
-        cooldown_days: cooldown,
-        active: d.active,
-        position: d.position,
-      });
-      if (error) throw new Error(error.message);
-      await refresh();
-      setEdits(({ [d.id]: _saved, ...rest }) => rest);
-      toast.success(`${d.name.trim()} saved`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not save the reward");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  return (
-    <Panel
-      className="mt-6"
-      title="Reward list"
-      description="Untick Shown to hide a reward. Limit means once every N days for each student; leave it blank for no limit."
-      actions={
-        <Button variant="outline" size="sm" onClick={add}>
-          <Plus /> Add reward
-        </Button>
-      }
-    >
-      <div className="hidden grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] gap-2 px-1 text-xs font-semibold text-muted-foreground md:grid">
-        <span>Icon</span>
-        <span>Name</span>
-        <span>Description</span>
-        <span>Cost</span>
-        <span>Limit</span>
-        <span>Shown</span>
-        <span />
-      </div>
-      <div className="mt-1 space-y-2">
-        {rows.map((d) => {
-          const dirty = edits[d.id] !== undefined;
-          return (
-            <div
-              key={d.id}
-              className={cn(
-                "grid gap-2 rounded-md border p-2 md:grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] md:items-center",
-                dirty ? "border-primary/60 bg-primary/5" : "border-border",
-              )}
-            >
-              <input
-                aria-label="Icon"
-                value={d.emoji}
-                onChange={(e) => change(d, { emoji: e.target.value })}
-                className={cn(field, "text-center text-lg")}
-              />
-              <input
-                aria-label="Name"
-                value={d.name}
-                placeholder="Reward name"
-                onChange={(e) => change(d, { name: e.target.value })}
-                className={field}
-              />
-              <input
-                aria-label="Description"
-                value={d.description}
-                placeholder="What the student gets"
-                onChange={(e) => change(d, { description: e.target.value })}
-                className={field}
-              />
-              <input
-                aria-label="Cost"
-                type="number"
-                min={1}
-                max={1000}
-                value={d.cost}
-                onChange={(e) => change(d, { cost: e.target.value })}
-                className={field}
-              />
-              <input
-                aria-label="Limit in days"
-                type="number"
-                min={1}
-                max={365}
-                value={d.cooldown}
-                placeholder="—"
-                onChange={(e) => change(d, { cooldown: e.target.value })}
-                className={field}
-              />
-              <label className="flex items-center gap-2 text-sm md:justify-center">
-                <input
-                  type="checkbox"
-                  checked={d.active}
-                  onChange={(e) => change(d, { active: e.target.checked })}
-                  className="h-4 w-4 accent-[var(--primary)]"
-                />
-                <span className="md:hidden">Shown</span>
-              </label>
-              <Button size="sm" disabled={!dirty || busyId === d.id} onClick={() => void save(d)}>
-                <Save /> Save
-              </Button>
-            </div>
-          );
-        })}
-      </div>
-    </Panel>
-  );
-}
-````
-
-## File: src/routes/_authenticated/route.tsx
-````typescript
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
-export const Route = createFileRoute("/_authenticated")({
-  ssr: false,
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) throw redirect({ to: "/" });
-  },
-  component: Outlet,
-});
-````
-
-## File: src/routes/README.md
-````markdown
-# Routes
-
-TanStack Start uses **file-based routing**. Every `.tsx` file in this directory
-defines a route. Do **not** create `src/pages/`, `src/routes/_app/index.tsx`, or
-`app/layout.tsx` — those are Next.js / Remix conventions. The only root layout
-is `src/routes/__root.tsx`.
-
-## Conventions
-
-| File                     | URL                                                     |
-| ------------------------ | ------------------------------------------------------- |
-| `index.tsx`              | `/`                                                     |
-| `about.tsx`              | `/about`                                                |
-| `users/index.tsx`        | `/users`                                                |
-| `users/$id.tsx`          | `/users/:id` (dynamic — bare `$`, no curly braces)      |
-| `posts/{-$category}.tsx` | `/posts/:category?` (optional segment)                  |
-| `files/$.tsx`            | `/files/*` (splat — read via `_splat` param, never `*`) |
-| `_layout.tsx`            | layout route (renders children via `<Outlet />`)        |
-| `__root.tsx`             | app shell — wraps every page; preserve `<Outlet />`     |
-
-`routeTree.gen.ts` is auto-generated. Don't edit it by hand.
-````
-
-## File: src/routes/reset-password.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-export const Route = createFileRoute("/reset-password")({
-  head: () => ({
-    meta: [
-      { title: "Reset password — HLC Math" },
-      { name: "description", content: "Recover your HLC Math account password." },
-      { property: "og:title", content: "Reset password — HLC Math" },
-      { property: "og:description", content: "Secure password recovery for your school account." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: Reset,
-});
-function Reset() {
-  const [recovery, setRecovery] = useState(false);
-  const [value, setValue] = useState("");
-  const [message, setMessage] = useState("");
-  useEffect(() => {
-    setRecovery(window.location.hash.includes("type=recovery"));
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setRecovery(true);
-    });
-    return () => data.subscription.unsubscribe();
-  }, []);
-  return (
-    <main className="mx-auto max-w-sm space-y-5 px-4 py-16">
-      <h1 className="text-2xl font-semibold">
-        {recovery ? "Set a new password" : "Reset password"}
-      </h1>
-      <form
-        className="space-y-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const r = recovery
-            ? await supabase.auth.updateUser({ password: value })
-            : await supabase.auth.resetPasswordForEmail(value, {
-                redirectTo: `${window.location.origin}/reset-password`,
-              });
-          setMessage(
-            r.error?.message ??
-              (recovery ? "Password updated." : "Check your email for a reset link."),
-          );
-        }}
-      >
-        <label className="block">
-          {recovery ? "New password" : "School email"}
-          <input
-            className="mt-2 w-full rounded-md border border-input p-3"
-            required
-            type={recovery ? "password" : "email"}
-            minLength={recovery ? 8 : undefined}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-          />
-        </label>
-        <Button type="submit">{recovery ? "Update password" : "Send reset link"}</Button>
-      </form>
-      <p role="status">{message}</p>
-      <Link to="/">Back to sign in</Link>
-    </main>
-  );
-}
-````
-
-## File: supabase/config.toml
-````toml
-project_id = "mbyselvthprrfjioyvhu"
-````
-
-## File: AGENTS.md
-````markdown
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-
-## What Lovable manages
-
-Rules outside this block are the project's own. Change the pieces below in
-Lovable, not by hand. With the [Lovable MCP](https://mcp.lovable.dev)
-connected, `send_message` asks Lovable to do it; otherwise ask the user to
-use the editor.
-
-- **Database.** Do not add or edit `supabase/migrations/` or `drizzle/`.
-  Ask Lovable to change the schema.
-- **Generated files.** Do not edit a file whose header says it is automatically
-  generated.
-- **AI gateway.** Keep model calls on Lovable's gateway, and keep
-  `LOVABLE_API_KEY` out of browser code.
-- **Connectors.** Lovable provides native connectors. `list_connectors` shows
-  which are enabled; `add_connector` only returns the dashboard link. When a
-  connector is enabled, calls go through the connector gateway and need
-  `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
-  own key and store it in Secrets.
-- **Secrets.** Lovable manages them. Do not put secret values in the repo.
-<!-- LOVABLE:END -->
-
-## Application rules
-- Cloud Auth supplies verified identity; roles live in protected user_roles, never browser storage or profile metadata, to prevent privilege escalation.
-- Private records are read through RLS-scoped Cloud clients; students receive only their own records and peer leaderboard is teacher-only to protect grades.
-- Authenticated pages live under the client-only _authenticated layout; the public sign-in and recovery pages remain SSR-enabled to avoid session redirect loops.
-- Use authenticated server functions for score and lesson-mark writes, and database uniqueness for video rewards, so refreshes and repeated completions cannot duplicate a reward.
-````
-
-## File: drizzle.config.ts
-````typescript
-import { defineConfig } from "drizzle-kit";
-
-const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
-
-export default defineConfig({
-  dialect: "postgresql",
-  schema: "./drizzle/schema.ts",
-  out: "./drizzle/migrations",
-  dbCredentials: {
-    url: env?.["DATABASE_URL"] ?? "",
-  },
-});
-````
-
-## File: README.md
-````markdown
-# Math LMS
-
-Implement exactly the screenshot and nothing else
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://math-lms.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/cb544cd6-b485-4ea3-bb65-9a9cf0db1070).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
 ```
-````
 
-## File: tsconfig.json
-````json
-{
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "drizzle.config.ts",
-    "eslint.config.js"
-  ],
-  "compilerOptions": {
-    "target": "ES2022",
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client", "vitest/globals", "node"],
-
-    "moduleResolution": "Bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": false,
-    "noEmit": true,
-
-    "skipLibCheck": true,
-    "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedSideEffectImports": true,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+## File: src/lib/gamification/types.ts
+```typescript
+import type { MathSet } from "@/lib/data";
+/** The two quiz types that take part in rank rewards. */
+export type QuizKind = "SQ" | "CQ";
+/** One Short Quiz or Chapter Quiz result for one student. */
+export interface QuizResult {
+  /** The same for every student who sat the quiz, e.g. "1:SQ1.1". */
+  quizId: string;
+  term: number;
+  kind: QuizKind;
+  label: string;
+  chapter: number | null;
+  /** Null when the student was absent or has no mark yet. */
+  score: number | null;
+  fullMarks: number | null;
+  absent: boolean;
+  /** 0 to 100, not rounded. Null when absent, blank, or the full marks are unknown. */
+  percent: number | null;
+  /** Column order in the Google Sheet, used to put quizzes in time order. */
+  position: number;
+  /** True when this Chapter Quiz is at least 15 percentage points above the previous one. */
+  isMostImproved: boolean;
 }
-````
-
-## File: src/components/AssessmentReport.tsx
-````typescript
-import { useState } from "react";
-import { ITEM_CATEGORIES, percent, termSummary, termsOf, type Assessment } from "@/lib/assessments";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { scoreTone } from "@/components/AppShell";
-import { Panel } from "@/components/PageParts";
-import { cn } from "@/lib/utils";
-
-export function AssessmentReport({ assessments }: { assessments: Assessment[] }) {
-  const terms = termsOf(
-    assessments.filter((a) => a.kind === "item" && (a.score !== null || a.absent)),
-  );
-  const [term, setTerm] = useState(terms.at(-1) ?? 1);
-  if (!assessments.length) {
-    return (
-      <Panel title="Assessment record">
-        <p className="text-sm text-muted-foreground">No assessment marks have been released yet.</p>
-      </Panel>
-    );
-  }
-  const { parts, coursework200 } = termSummary(assessments, term);
-  const items = assessments
-    .filter((a) => a.term === term && a.kind === "item")
-    .sort((a, b) => a.position - b.position);
-  const cats = ITEM_CATEGORIES.filter((c) => items.some((i) => i.category === c.id));
-  return (
-    <Panel
-      title="Assessment record"
-      description="Weighted coursework from the class mark sheet"
-      actions={
-        terms.length > 1 ? (
-          <div className="flex rounded-md border border-border p-0.5">
-            {terms.map((t) => (
-              <button
-                type="button"
-                key={t}
-                onClick={() => setTerm(t)}
-                className={cn(
-                  "rounded px-2.5 py-1 text-xs font-semibold",
-                  t === term
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                Term {t}
-              </button>
-            ))}
-          </div>
-        ) : null
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-[190px_minmax(0,1fr)]">
-        <div className="rounded-md border border-border bg-muted/50 p-4">
-          <p className="text-sm text-muted-foreground">Term {term} coursework</p>
-          <p className="mt-1 text-3xl font-semibold tabular-nums">
-            {coursework200}
-            <span className="text-base font-normal text-muted-foreground"> / 200</span>
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            Homework 30%, short quizzes 20%, chapter quizzes 30%, mock 10%, daily work 10%
-          </p>
-        </div>
-        <ul className="grid grid-cols-2 gap-2 md:grid-cols-5">
-          {parts.map((p) => (
-            <li key={p.id} className="rounded-md border border-border p-3">
-              <p className="text-xs text-muted-foreground">{p.label}</p>
-              <p className="text-lg font-semibold tabular-nums">
-                {p.value ?? "—"}
-                <span className="text-xs font-normal text-muted-foreground"> / {p.weight}</span>
-              </p>
-              <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${Math.min(100, ((p.value ?? 0) / p.weight) * 100)}%` }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-      {cats.length > 0 && (
-        <Tabs defaultValue={cats[0]?.id ?? "homework"} key={term} className="mt-5">
-          <TabsList className="h-auto flex-wrap">
-            {cats.map((c) => (
-              <TabsTrigger key={c.id} value={c.id}>
-                {c.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {cats.map((c) => (
-            <TabsContent key={c.id} value={c.id}>
-              <ul className="divide-y divide-border">
-                {items
-                  .filter((i) => i.category === c.id)
-                  .map((i) => {
-                    const pct = percent(i);
-                    return (
-                      <li key={i.label} className="flex items-center gap-3 py-2 text-sm">
-                        <span className="w-28 shrink-0 font-medium">{i.label}</span>
-                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                          <div
-                            className={cn(
-                              "h-full rounded-full",
-                              pct !== null && pct < 50 ? "bg-destructive" : "bg-success",
-                            )}
-                            style={{ width: `${pct ?? 0}%` }}
-                          />
-                        </div>
-                        <span className="w-24 text-right tabular-nums text-muted-foreground">
-                          {i.absent
-                            ? "Absent"
-                            : i.score === null
-                              ? "Not yet"
-                              : `${i.score}${i.full_marks ? ` / ${i.full_marks}` : ""}`}
-                        </span>
-                        <span
-                          className={cn(
-                            "w-14 rounded text-center text-xs font-semibold leading-6",
-                            scoreTone(pct),
-                          )}
-                        >
-                          {pct === null ? "—" : `${pct}%`}
-                        </span>
-                      </li>
-                    );
-                  })}
-              </ul>
-            </TabsContent>
-          ))}
-        </Tabs>
-      )}
-    </Panel>
-  );
+export type HomeworkStatus = "SUBMITTED" | "MISSING" | "EXCUSED";
+export interface HomeworkRecord {
+  homeworkId: string;
+  term: number;
+  label: string;
+  position: number;
+  status: HomeworkStatus;
 }
-````
-
-## File: src/integrations/supabase/client.server.ts
-````typescript
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-
-const DEFAULT_SUPABASE_URL = 'https://mbyselvthprrfjioyvhu.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'sb_publishable_6d4BjM4FHDurcIw2BhpeaQ_hsYnu4Ju';
-
-function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+export type RewardReason = "quiz_top3" | "quiz_top10" | "most_improved" | "homework_streak";
+/** A reward the rules say a student has earned, before the 2x event is applied. */
+export interface RewardGrant {
+  /** Unique for each student, so the same quiz or streak can never pay twice. */
+  sourceKey: string;
+  studentId: string;
+  reason: RewardReason;
+  baseMc: number;
+  exp: number;
+  /** What the student sees, e.g. "Rank 2 in SQ1.1". */
+  description: string;
+  /** The quiz that earned it; null for homework streaks. */
+  quizId: string | null;
 }
-
-function normalizeSupabaseUrl(rawUrl: string | undefined): string {
-  const cleaned = (rawUrl ?? '').trim().replace(/^['"]|['"]$/g, '');
-  if (!cleaned) return DEFAULT_SUPABASE_URL;
-  try {
-    const parsed = new URL(cleaned.startsWith('http') ? cleaned : `https://${cleaned}`);
-    return parsed.origin;
-  } catch {
-    return DEFAULT_SUPABASE_URL;
-  }
+/** A reward once it has been given. The 2x multiplier is fixed at that moment. */
+export interface LedgerEntry extends RewardGrant {
+  multiplier: number;
+  mc: number;
+  awardedAt: string;
 }
-
-function createSupabaseFetch(supabaseKey: string): typeof fetch {
-  return (input, init) => {
-    const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
-    );
-
-    if (init?.headers) {
-      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    }
-
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
-    }
-
-    headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
-  };
+export interface SystemConfig {
+  isDoubleMCEventActive: boolean;
 }
-
-function createSupabaseAdminClient() {
-  const rawUrl = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL'];
-  const SUPABASE_URL = normalizeSupabaseUrl(rawUrl);
-  const rawServiceKey =
-    process.env['SUPABASE_SERVICE_ROLE_KEY'] ||
-    process.env['SUPABASE_PUBLISHABLE_KEY'] ||
-    process.env['VITE_SUPABASE_PUBLISHABLE_KEY'] ||
-    DEFAULT_SUPABASE_KEY;
-  const SUPABASE_KEY = rawServiceKey.trim().replace(/^['"]|['"]$/g, '') || DEFAULT_SUPABASE_KEY;
-
-  return createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
-    global: {
-      fetch: createSupabaseFetch(SUPABASE_KEY),
-    },
-    auth: {
-      storage: undefined,
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+export const DEFAULT_SYSTEM_CONFIG: SystemConfig = { isDoubleMCEventActive: false };
+/**
+ * A student's full standing in one quiz, including the exact rank.
+ * Only teacher views and the server may hold this; students get a PublicStanding.
+ */
+export interface QuizStanding {
+  quizId: string;
+  label: string;
+  kind: QuizKind;
+  term: number;
+  status: "ranked" | "absent" | "blank";
+  rank: number | null;
+  rankedCount: number;
+  rosterCount: number;
+  /** True until enough of the set has a mark or ABS. No rank rewards are given while provisional. */
+  provisional: boolean;
+  score: number | null;
+  fullMarks: number | null;
+  percent: number | null;
+  /** The lowest percentage that still places in the top 10; null when fewer than 10 sat the quiz. */
+  top10CutoffPercent: number | null;
 }
+/** What a student may see about a quiz standing. Exact ranks below 10th are never included. */
+export interface PublicStanding {
+  quizId: string;
+  label: string;
+  kind: QuizKind;
+  term: number;
+  /** "#1" to "#10", "10+", "ABS" or "—". */
+  display: string;
+  /** The exact rank, only when it is 1 to 10. */
+  rank: number | null;
+  isTop10: boolean;
+  provisional: boolean;
+  /** Marks still needed to reach 10th place; null when already in the top 10. */
+  marksToTop10: number | null;
+  /** Percentage points still needed to reach 10th place. */
+  pointsToTop10: number | null;
+}
+export interface Cosmetics {
+  avatarId: string;
+  equippedFrameId: string | null;
+  equippedTitle: string | null;
+}
+export const DEFAULT_COSMETICS: Cosmetics = {
+  avatarId: "avatar-default",
+  equippedFrameId: null,
+  equippedTitle: null,
+};
+/**
+ * One term's academic result, every part out of 200:
+ * total = 20% Term Test (TT) + 40% Continuous Assessment (CA, TnA2) + 40% Exam (TnA3).
+ */
+export interface TermResult {
+  term: 1 | 2;
+  tt: number | null;
+  ca: number | null;
+  exam: number | null;
+  /** Null until the term test, CA and exam all have a mark. */
+  total: number | null;
+}
+export interface GameProfile extends Cosmetics {
+  set: MathSet;
+  /** Term 1 total academic score out of 200; null until TT, CA and exam are all in. */
+  t1Total: number | null;
+  /** Term 2 total academic score out of 200. */
+  t2Total: number | null;
+  termResults: TermResult[];
+  /** Balance the student can spend. Includes game rewards only when rewardsSpendable is true. */
+  mathCoins: number;
+  /** Math Coins earned from game rewards (quiz ranks, most improved, homework streaks). */
+  rewardCoins: number;
+  /** False while game rewards are worked out in the browser and not saved to the database yet. */
+  rewardsSpendable: boolean;
+  exp: number;
+  level: number;
+  homeworkStreak: number;
+  bestHomeworkStreak: number;
+  missingHomeworkCount: number;
+  /** Times the student answered or took part in class (from lesson marks). */
+  activeVoiceCount: number;
+  quizHistory: QuizResult[];
+  standings: PublicStanding[];
+  rewards: LedgerEntry[];
+}
+/** The six areas on the competency radar. */
+export type Strand =
+  "number_algebra" | "geometry" | "mensuration" | "trigonometry" | "data_handling" | "attitude";
+export interface RadarAxis {
+  strand: Strand;
+  label: string;
+  /** 0 to 100; null when there is no mark in this area yet. */
+  mine: number | null;
+  setAverage: number | null;
+}
+/**
+ * "SQ" short quiz, "CQ" chapter quiz, "TT" term test, "CA" continuous assessment,
+ * "EXAM" exam, "TOTAL" term total.
+ */
+export type DistributionKind = "SQ" | "CQ" | "TT" | "CA" | "EXAM" | "TOTAL";
+/** How the set did on one assessment, in percentages. Never lists individual students. */
+export interface Distribution {
+  itemId: string;
+  label: string;
+  kind: DistributionKind;
+  term: number;
+  position: number;
+  count: number;
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  mean: number;
+  /** This student's percentage; null when absent or not sat. */
+  mine: number | null;
+}
+/** "S2" means both sets of the form together. */
+export type BoardScope = MathSet | "S2";
+/** "total" term academic score, "ca" continuous assessment (TnA2), "exp" EXP. */
+export type BoardMetric = "total" | "ca" | "exp";
+export interface LeaderboardEntry {
+  rank: number;
+  studentId: string;
+  name: string;
+  set: MathSet;
+  className: string;
+  classNo: string;
+  score: number;
+}
+/**
+ * A leaderboard. In the published version `top` holds ranks 1 to 10 only, and everyone below
+ * appears only as an anonymous code, with no name, score or rank.
+ */
+export interface Leaderboard {
+  id: string;
+  scope: BoardScope;
+  metric: BoardMetric;
+  /** Null for boards that cover the whole year (EXP). */
+  term: 1 | 2 | null;
+  unit: string;
+  top: LeaderboardEntry[];
+  anonymousCodes: number[];
+  rankedCount: number;
+  generatedAt: string;
+}
+/** One student's place on one leaderboard. */
+export interface BoardStanding {
+  boardId: string;
+  /** "#1" to "#10", "10+", or "—" when the student has no score on this board. */
+  display: string;
+  /** Only when 1 to 10. */
+  rank: number | null;
+  isTop10: boolean;
+  score: number | null;
+  /** How much more is needed to reach 10th place; null when already in the top 10. */
+  gapToTop10: number | null;
+  /** The code shown on the student's anonymous card when they are below 10th. */
+  anonymousCode: number | null;
+}
+export interface Unlocks {
+  frames: string[];
+  titles: string[];
+}
+/** Everything one student may see about their own game data, saved by the teacher's publish. */
+export interface StudentSnapshot {
+  version: 2;
+  studentId: string;
+  set: MathSet;
+  generatedAt: string;
+  profile: GameProfile;
+  radar: RadarAxis[];
+  distributions: Distribution[];
+  boards: BoardStanding[];
+  unlocks: Unlocks;
+}
+/** A dated thing the student did, for the activity heatmap. */
+export interface ActivityEvent {
+  /** Local date, "YYYY-MM-DD". */
+  date: string;
+  kind: "lesson" | "homework" | "video";
+}
+```
 
-let _supabaseAdmin: ReturnType<typeof createSupabaseAdminClient> | undefined;
-
-export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdminClient>, {
-  get(_, prop, receiver) {
-    if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
-    return Reflect.get(_supabaseAdmin, prop, receiver);
-  },
-});
-````
-
-## File: src/lib/lovable-error-reporting.ts
-````typescript
-export function reportLovableError(_error: unknown, _context: Record<string, unknown> = {}) {
-    // No-op: Lovable error reporting has been removed.
-  }
-````
+## File: src/lib/nav.ts
+```typescript
+import {
+  Archive,
+  BookOpen,
+  ClipboardList,
+  Dices,
+  Gift,
+  LayoutDashboard,
+  Medal,
+  Sparkles,
+  Store,
+  Timer,
+  Trophy,
+  Upload,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+/** Pages that exist today. Add a path here when its route file is created. */
+export type LiveRoute =
+  | "/dashboard"
+  | "/courses"
+  | "/homework"
+  | "/awards"
+  | "/teacher"
+  | "/activity"
+  | "/upload"
+  | "/leaderboard"
+  | "/profile"
+  | "/shop"
+  | "/badges"
+  | "/mistake-vault"
+  | "/gacha";
+/**
+ * A navigation entry. "soon" entries are pages planned for the next steps: real students
+ * never see them, a teacher previewing the student site sees them greyed out.
+ */
+export type NavItem =
+  | { status: "live"; to: LiveRoute; label: string; icon: LucideIcon }
+  | { status: "soon"; path: string; label: string; icon: LucideIcon };
+export const STUDENT_NAV: NavItem[] = [
+  { status: "live", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { status: "live", to: "/courses", label: "Chapters", icon: BookOpen },
+  { status: "live", to: "/homework", label: "Homework", icon: ClipboardList },
+  { status: "live", to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { status: "live", to: "/mistake-vault", label: "Mistake Vault", icon: Archive },
+  { status: "live", to: "/badges", label: "Badges", icon: Medal },
+  { status: "live", to: "/shop", label: "Shop", icon: Store },
+  { status: "live", to: "/gacha", label: "Gacha", icon: Sparkles },
+];
+export const TEACHER_NAV: NavItem[] = [
+  { status: "live", to: "/teacher", label: "Analytics", icon: Users },
+  { status: "live", to: "/homework", label: "Homework", icon: ClipboardList },
+  { status: "live", to: "/activity", label: "Class activity", icon: Dices },
+  { status: "live", to: "/upload", label: "Content", icon: Upload },
+  { status: "live", to: "/mistake-vault", label: "Exam dates", icon: Timer },
+  { status: "live", to: "/awards", label: "Awards", icon: Gift },
+  { status: "live", to: "/leaderboard", label: "Rankings", icon: Trophy },
+];
+export function navKey(item: NavItem): string {
+  return item.status === "live" ? item.to : item.path;
+}
+/** Real students only see pages that exist; a teacher previewing also sees what is coming. */
+export function visibleNav(items: readonly NavItem[], showSoon: boolean): NavItem[] {
+  return showSoon ? [...items] : items.filter((i) => i.status === "live");
+}
+```
 
 ## File: src/lib/sheet-parse.ts
-````typescript
+```typescript
 // Pure rules for turning the teacher's Google Sheet tab into student records.
 export type Category =
   | "homework"
@@ -9329,7 +5076,6 @@ export type Category =
   | "overall"
   | "other";
 export type MathSet = "S2M3" | "S2M5";
-
 export interface ParsedScore {
   term: 1 | 2;
   kind: "item" | "summary";
@@ -9340,7 +5086,6 @@ export interface ParsedScore {
   full_marks: number | null;
   position: number;
 }
-
 export interface ParsedStudent {
   hlcNo: string;
   email: string;
@@ -9350,9 +5095,7 @@ export interface ParsedStudent {
   set: MathSet;
   scores: ParsedScore[];
 }
-
 type Cell = string | number | boolean | null | undefined;
-
 const text = (c: Cell) => (c === null || c === undefined ? "" : String(c)).trim();
 const isFormula = (c: Cell) => typeof c === "string" && c.trim().startsWith("=");
 const HLC_NO = /^HLC\d+$/i;
@@ -9361,7 +5104,6 @@ const FULL_MARKS_HEADING = /^(full\s*marks?|max\.?\s*marks?|滿分)$/i;
 const WEIGHT_HEADER = /\(\s*\d+(?:\.\d+)?\s*%\s*\)\s*$/;
 // Column G. A = HLC no., B = Class, C = No., D = Name in English, E = 姓名, F = Sex.
 const FIRST_SCORE_COLUMN = 6;
-
 export function toNumber(c: Cell): number | null {
   if (typeof c === "number") return Number.isFinite(c) ? c : null;
   const t = text(c).replace(/%$/, "").replace(/,/g, "");
@@ -9369,23 +5111,19 @@ export function toNumber(c: Cell): number | null {
   const n = Number(t);
   return Number.isFinite(n) ? n : null;
 }
-
 export function isAbsent(c: Cell) {
   const t = text(c).toUpperCase().replace(/\.$/, "");
   return t === "ABS" || t === "ABSENT";
 }
-
 /** "Homework (30%)" -> 30, "1st TT (200)" -> 200, "HW(30)" -> 30. */
 export function bracketMarks(header: string): number | null {
   const m = header.match(/\(\s*(\d+(?:\.\d+)?)\s*%?\s*\)\s*$/);
   return m ? Number(m[1]) : null;
 }
-
 export function itemCategory(label: string, group = ""): Category {
   const l = label.toLowerCase().trim();
   const g = group.toLowerCase().trim();
   const combined = `${g} ${l}`;
-
   if (/^hw|\bhw\b|homework|assignment|worksheet|\bws\b|\bex\b|\bch\d*\s*hw/i.test(combined)) {
     return "homework";
   }
@@ -9406,7 +5144,6 @@ export function itemCategory(label: string, group = ""): Category {
   }
   return "other";
 }
-
 export function summaryCategory(header: string): Category {
   const h = header.toLowerCase().trim();
   if (/^t\da2|annual|overall|coursework/i.test(h)) return "overall";
@@ -9419,9 +5156,7 @@ export function summaryCategory(header: string): Category {
   if (/daily/i.test(h)) return "daily";
   return "other";
 }
-
 const round1 = (n: number | null) => (n === null ? null : Math.round(n * 10) / 10);
-
 function isSummaryHeaderName(h: string): boolean {
   const clean = h.trim();
   if (!clean) return false;
@@ -9435,14 +5170,12 @@ function isSummaryHeaderName(h: string): boolean {
   }
   return WEIGHT_HEADER.test(clean);
 }
-
 /** A weighted coursework column such as "Homework (30%)" or "Daily (10%)". */
 function isWeightHeader(h: string): boolean {
   const clean = h.trim();
   if (!clean) return false;
   return /^daily/i.test(clean) || WEIGHT_HEADER.test(clean);
 }
-
 /**
  * formulas: the tab read with formulas kept (tells typed marks apart from calculated columns).
  * values: the same tab read as calculated values.
@@ -9452,7 +5185,6 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
   const gridV = values.length ? values : formulas;
   // Only trust "is this cell a formula?" when the source really kept formulas.
   const hasFormulaInfo = gridF.some((r) => r?.some((c) => isFormula(c)));
-
   let itemRow = gridF.findIndex((r) => HLC_HEADING.test(text(r?.[0])));
   if (itemRow < 0) {
     itemRow = gridF.findIndex((r) => r?.some((c) => HLC_HEADING.test(text(c))));
@@ -9464,45 +5196,35 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
   if (itemRow < 0) {
     throw new Error(`${set}: could not find the "HLC no." heading in column A`);
   }
-
   const groupRow = itemRow > 0 ? itemRow - 1 : itemRow;
-
   const fullRow = gridF.findIndex(
     (r, idx) => idx !== itemRow && r?.some((c) => FULL_MARKS_HEADING.test(text(c))),
   );
-
   const studentRows = gridF
     .map((r, i) => ({ r, i }))
     .filter((x) => x.i > itemRow && HLC_NO.test(text(x.r?.[0])));
-
   const width = Math.max(
     0,
     ...gridF.map((r) => r?.length ?? 0),
     ...gridV.map((r) => r?.length ?? 0),
   );
   const header = (row: number, c: number) => (row >= 0 ? text(gridF[row]?.[c]) : "");
-
   const emailCol =
     [groupRow, itemRow]
       .map((row) => (gridF[row] ?? []).findIndex((c) => /e-?mail/i.test(text(c))))
       .find((i) => i >= 0) ?? -1;
-
   type Col = Omit<ParsedScore, "score" | "absent"> & { col: number };
   const cols: Col[] = [];
   const usedLabels = new Map<string, number>();
   let term: 1 | 2 = 1;
   let activeGroup = "";
-
   for (let c = FIRST_SCORE_COLUMN; c < width; c++) {
     if (c === emailCol) continue;
-
     const rawGroup = header(groupRow, c);
     const name = header(itemRow, c);
-
     // Merged group headings only fill their first cell, so carry them to the right.
     if (rawGroup) activeGroup = isSummaryHeaderName(rawGroup) ? "" : rawGroup;
     const group = rawGroup || activeGroup;
-
     let formulaCells = 0;
     let typedCells = 0;
     for (const s of studentRows) {
@@ -9514,9 +5236,7 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
     const computed = hasFormulaInfo
       ? computedByFormula || isWeightHeader(name) || (!name && isWeightHeader(rawGroup))
       : isSummaryHeaderName(name) || (!name && isSummaryHeaderName(rawGroup));
-
     if (/^t2|2nd/i.test(name) || /^t2|2nd/i.test(rawGroup)) term = 2;
-
     if (name && !computed && !name.includes("_%") && !name.startsWith("#")) {
       const fullFromRow = fullRow >= 0 ? toNumber(gridV[fullRow]?.[c]) : null;
       const full = fullFromRow ?? bracketMarks(name);
@@ -9550,10 +5270,8 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
         });
       }
     }
-
     if (/^t1a3/i.test(rawGroup) || /^t1a3/i.test(name)) term = 2;
   }
-
   return studentRows.map(({ r, i }) => {
     const hlcNo = text(r[0]).toUpperCase();
     const typedEmail = emailCol >= 0 ? text(r[emailCol]).toLowerCase() : "";
@@ -9575,92 +5293,18 @@ export function parseSetTab(set: MathSet, formulas: Cell[][], values: Cell[][]):
     };
   });
 }
-````
+```
 
-## File: src/start.ts
-````typescript
-import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
-
-import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
-  try {
-    return await next();
-  } catch (error) {
-    if (error != null && typeof error === "object" && "statusCode" in error) {
-      throw error;
-    }
-    console.error(error);
-    return new Response(renderErrorPage(), {
-      status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
+## File: src/lib/lovable-error-reporting.ts
+```typescript
+export function reportLovableError(_error: unknown, _context: Record<string, unknown> = {}) {
+    // No-op: Lovable error reporting has been removed.
   }
-});
-
-const csrfMiddleware = createCsrfMiddleware({
-  filter: (ctx) => ctx.handlerType === "serverFn",
-});
-
-export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
-}));
-````
-
-## File: vite.config.ts
-````typescript
-import { fileURLToPath } from "node:url";
-import tailwindcss from "@tailwindcss/vite";
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
-import { nitro } from "nitro/vite";
-import { defineConfig } from "vite";
-
-// Local Google sign-in redirect URL stays stable.
-const DEV_PORT = 5199;
-
-export default defineConfig(({ command }) => ({
-  server: { port: DEV_PORT, strictPort: true },
-  preview: { port: DEV_PORT, strictPort: true },
-  resolve: {
-    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
-    tsconfigPaths: true,
-  },
-  plugins: [
-    tanstackStart({
-      // src/server.ts SSR error wrapper
-      server: { entry: "server" },
-    }),
-    // Nitro emits Vercel Functions so routes are not served as missing static files.
-    ...(command === "build" ? [nitro()] : []),
-    viteReact(),
-    tailwindcss(),
-  ],
-}));
-````
-
-## File: src/integrations/supabase/previewAuthStorage.ts
-````typescript
-// This file is automatically generated. Do not edit it directly.
-
-export interface PreviewAuthStorage {
-    getItem: (key: string) => string | null | Promise<string | null>;
-    setItem: (key: string, value: string) => void | Promise<void>;
-    removeItem: (key: string) => void | Promise<void>;
-  }
-  
-  export function brokeredPreviewStorage(): PreviewAuthStorage | undefined {
-    if (typeof window === 'undefined') return undefined;
-    return window.localStorage;
-  }
-````
+```
 
 ## File: src/lib/assessments.ts
-````typescript
+```typescript
 import type { Category } from "./sheet-parse";
-
 export interface Assessment {
   term: number;
   kind: "item" | "summary";
@@ -9671,7 +5315,6 @@ export interface Assessment {
   full_marks: number | null;
   position: number;
 }
-
 export const ITEM_CATEGORIES: { id: Category; label: string }[] = [
   { id: "homework", label: "Homework" },
   { id: "short_quiz", label: "Short Quiz" },
@@ -9680,7 +5323,6 @@ export const ITEM_CATEGORIES: { id: Category; label: string }[] = [
   { id: "mock", label: "Mock Exam" },
   { id: "exam", label: "Exam" },
 ];
-
 /** Coursework weights from the teacher's sheet: total out of 100, doubled to /200 (T1A2). */
 export const WEIGHTS = [
   { id: "homework", label: "Homework", weight: 30 },
@@ -9689,11 +5331,8 @@ export const WEIGHTS = [
   { id: "mock", label: "Mock Exam", weight: 10 },
   { id: "daily", label: "Daily", weight: 10 },
 ] as const satisfies readonly { id: Category; label: string; weight: number }[];
-
 const round1 = (n: number) => Math.round(n * 10) / 10;
-
 const QUIZ_CATEGORIES: Category[] = ["short_quiz", "chapter_quiz"];
-
 /** Ways a column heading can name its chapter. The first pattern that matches wins. */
 const CHAPTER_PATTERNS: RegExp[] = [
   /\bch(?:apter)?\s*\.?\s*(\d{1,2})(?!\d)/i, // "Ch1", "Ch.1", "Chapter 1", "SQ Ch2"
@@ -9701,7 +5340,6 @@ const CHAPTER_PATTERNS: RegExp[] = [
   /^(?:SQ|CQ|QUIZ|Q)\s*[-_.]?\s*(\d{1,2})$/i, // "SQ1", "CQ 2", "Quiz 3"
   /^(\d{1,2})\s*\.\s*\d+$/, // "1.1" under an SQ / CQ group heading
 ];
-
 export function percent(a: Pick<Assessment, "score" | "full_marks">) {
   if (a.score === null) return null;
   if (a.full_marks && a.full_marks > 0) {
@@ -9709,11 +5347,9 @@ export function percent(a: Pick<Assessment, "score" | "full_marks">) {
   }
   return a.score >= 0 && a.score <= 100 ? Math.round(a.score) : null;
 }
-
 export function termsOf(list: Assessment[]) {
   return [...new Set(list.map((a) => a.term))].sort();
 }
-
 export function chapterOfLabel(label: string, maxChapter = 7): number | null {
   const t = label.trim();
   for (const re of CHAPTER_PATTERNS) {
@@ -9722,12 +5358,10 @@ export function chapterOfLabel(label: string, maxChapter = 7): number | null {
   }
   return null;
 }
-
 function markedPercent(a: Assessment): number | null {
   if (a.absent || a.score === null || a.full_marks === null || a.full_marks <= 0) return null;
   return (a.score / a.full_marks) * 100;
 }
-
 function chapterAverage(
   list: Assessment[],
   categories: Category[],
@@ -9745,7 +5379,6 @@ function chapterAverage(
     .filter((p): p is number => p !== null);
   return values.length ? Math.round(values.reduce((x, y) => x + y, 0) / values.length) : null;
 }
-
 /**
  * Chapter score from the Google Sheet: the average percentage of that chapter's short quizzes
  * and chapter quizzes; if a chapter has no quiz yet, its homework average is used instead.
@@ -9758,7 +5391,6 @@ export function chapterScoresFromAssessments(list: Assessment[], chapters = 7): 
       chapterAverage(list, ["homework"], i + 1, chapters),
   );
 }
-
 /** Quiz columns whose heading does not name a chapter, so they cannot count towards Ch1–Ch7. */
 export function unmatchedChapterLabels(list: Assessment[], chapters = 7): string[] {
   return [
@@ -9774,7 +5406,6 @@ export function unmatchedChapterLabels(list: Assessment[], chapters = 7): string
     ),
   ].sort();
 }
-
 /** Average of marked items (absent and blank ignored, like the sheet's AVERAGE) times the category weight. */
 export function contribution(
   list: Assessment[],
@@ -9786,7 +5417,6 @@ export function contribution(
     const d = list.find((a) => a.term === term && a.kind === "summary" && a.category === "daily");
     return d?.score ?? null;
   }
-
   const withFull = list.filter(
     (a) =>
       a.term === term &&
@@ -9801,1205 +5431,27 @@ export function contribution(
     const ratios = withFull.map((a) => (a.score as number) / (a.full_marks as number));
     return round1((ratios.reduce((x, y) => x + y, 0) / ratios.length) * weight);
   }
-
   const summaryItem = list.find(
     (a) => a.term === term && a.kind === "summary" && a.category === category && a.score !== null,
   );
   if (summaryItem && summaryItem.score !== null) {
     return round1(summaryItem.score);
   }
-
   return null;
 }
-
 export function termSummary(list: Assessment[], term: number) {
   const parts = WEIGHTS.map((w) => ({ ...w, value: contribution(list, term, w.id, w.weight) }));
   const sum = parts.reduce((t, p) => t + (p.value ?? 0), 0);
   return { parts, coursework200: round1(sum * 2) };
 }
-````
-
-## File: src/styles.css
-````css
-/*
- * Tailwind v4 entry: config lives here, with no tailwind.config.js or PostCSS plugin.
- * - Keep every @import in this top block, above @theme and the rest of the file. Install an
- *   npm package before @importing its CSS. Never @import a remote URL (web fonts, CDN CSS): the
- *   build resolves @import from the filesystem. Load those with a <link> in the head() of
- *   src/routes/__root.tsx and name the family in a --font-* token in @theme inline below.
- */
-@import "tailwindcss" source(none);
-@source "../src";
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
-/*
- * Design system.
- * A bright, game-like look (think Kahoot! and Duolingo) that still works as a school site:
- *  - white working surfaces with 2px borders and a solid "chunky" bottom edge
- *  - one deep violet navigation rail, flat colour everywhere else (no gradients)
- *  - seven tones (blue, green, gold, flame, berry, grape, sky) that colour the pages and the
- *    seven chapters; the tone map lives in src/lib/tones.ts
- *  - every tone has a "-deep" partner, used for the bottom edge and for text on pale fills
- * All colours use oklch. To add a colour: define it in :root, then register it in @theme inline.
- */
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-deep: var(--primary-deep);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-edge: var(--edge);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-ring-offset-background: var(--background);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-success: var(--success);
-  --color-success-deep: var(--success-deep);
-  --color-gold: var(--gold);
-  --color-gold-deep: var(--gold-deep);
-  --color-flame: var(--flame);
-  --color-flame-deep: var(--flame-deep);
-  --color-berry: var(--berry);
-  --color-berry-deep: var(--berry-deep);
-  --color-grape: var(--grape);
-  --color-grape-deep: var(--grape-deep);
-  --color-sky: var(--sky);
-  --color-sky-deep: var(--sky-deep);
-  --color-silver: var(--silver);
-  --color-bronze: var(--bronze);
-  --color-nav: var(--nav);
-  --color-nav-foreground: var(--nav-foreground);
-  --font-display: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-:root {
-  --radius: 0.75rem;
-  --background: oklch(0.973 0.011 250);
-  --foreground: oklch(0.27 0.045 275);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.27 0.045 275);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.27 0.045 275);
-  --primary: oklch(0.58 0.19 252);
-  --primary-deep: oklch(0.46 0.17 254);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.025 250);
-  --secondary-foreground: oklch(0.32 0.09 265);
-  --muted: oklch(0.956 0.012 255);
-  --muted-foreground: oklch(0.5 0.03 265);
-  --accent: oklch(0.84 0.16 88);
-  --accent-foreground: oklch(0.3 0.07 70);
-  --success: oklch(0.57 0.17 146);
-  --success-deep: oklch(0.45 0.15 146);
-  --gold: oklch(0.84 0.16 88);
-  --gold-deep: oklch(0.58 0.14 72);
-  --flame: oklch(0.67 0.19 48);
-  --flame-deep: oklch(0.53 0.17 45);
-  --berry: oklch(0.62 0.21 355);
-  --berry-deep: oklch(0.5 0.2 355);
-  --grape: oklch(0.52 0.2 295);
-  --grape-deep: oklch(0.42 0.18 295);
-  --sky: oklch(0.65 0.14 225);
-  --sky-deep: oklch(0.5 0.12 230);
-  --silver: oklch(0.8 0.015 255);
-  --bronze: oklch(0.66 0.12 55);
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.91 0.02 255);
-  --edge: oklch(0.86 0.03 255);
-  --input: oklch(0.87 0.025 255);
-  --ring: oklch(0.58 0.19 252);
-  --nav: oklch(0.31 0.12 292);
-  --nav-foreground: oklch(0.98 0.01 290);
-  --chart-1: oklch(0.58 0.19 252);
-  --chart-2: oklch(0.57 0.17 146);
-  --chart-3: oklch(0.84 0.16 88);
-  --chart-4: oklch(0.62 0.21 355);
-  --chart-5: oklch(0.52 0.2 295);
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.27 0.045 275);
-  --sidebar-primary: oklch(0.58 0.19 252);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.95 0.025 250);
-  --sidebar-accent-foreground: oklch(0.32 0.09 265);
-  --sidebar-border: oklch(0.91 0.02 255);
-  --sidebar-ring: oklch(0.58 0.19 252);
-}
-
-@layer base {
-  * {
-    border-color: var(--color-border);
-  }
-
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  h1,
-  h2,
-  h3 {
-    font-family: var(--font-display);
-    letter-spacing: -0.01em;
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--color-ring);
-    outline-offset: 2px;
-  }
-}
-
-/* "Chunky" solid bottom edges. The names are used all over the app, so they stay the same. */
-@utility shadow-chunky {
-  box-shadow: 0 4px 0 var(--edge);
-}
-@utility shadow-chunky-primary {
-  box-shadow: 0 4px 0 var(--primary-deep);
-}
-@utility shadow-chunky-success {
-  box-shadow: 0 4px 0 var(--success-deep);
-}
-@utility shadow-chunky-gold {
-  box-shadow: 0 4px 0 var(--gold-deep);
-}
-@utility shadow-chunky-flame {
-  box-shadow: 0 4px 0 var(--flame-deep);
-}
-@utility shadow-chunky-berry {
-  box-shadow: 0 4px 0 var(--berry-deep);
-}
-@utility shadow-chunky-grape {
-  box-shadow: 0 4px 0 var(--grape-deep);
-}
-@utility shadow-chunky-sky {
-  box-shadow: 0 4px 0 var(--sky-deep);
-}
-@utility shadow-coin {
-  box-shadow: 0 2px 0 var(--gold-deep);
-}
-@utility shadow-pop {
-  box-shadow: 0 6px 0 oklch(0 0 0 / 0.25);
-}
-/* Buttons: a darker edge under any fill colour, and a light edge for white buttons. */
-@utility btn-edge {
-  box-shadow: 0 3px 0 oklch(0 0 0 / 0.22);
-}
-@utility btn-edge-light {
-  box-shadow: 0 3px 0 var(--input);
-}
-@utility bg-hero {
-  background: var(--background);
-}
-
-.google-auth {
-  background: #ffffff;
-  border: 1px solid #747775;
-  color: #1f1f1f;
-  font-weight: 500;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-  }
-}
-````
-
-## File: drizzle/migrations/meta/_journal.json
-````json
-{
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1794207959028,
-      "tag": "0000_private_math_records",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1794207995286,
-      "tag": "0001_chapter_notes_access",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1794282352006,
-      "tag": "0002_restrict_math_function_grants",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1794364838779,
-      "tag": "0003_assessment_gradebook",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1794450463152,
-      "tag": "0004_chapter_videos",
-      "breakpoints": true
-    }
-  ]
-}
-````
-
-## File: src/components/AppShell.tsx
-````typescript
-import { Link, useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import {
-  BookOpen,
-  CheckCircle2,
-  Circle,
-  ClipboardList,
-  Dices,
-  Gift,
-  GraduationCap,
-  LayoutDashboard,
-  LogOut,
-  PlayCircle,
-  Trophy,
-  Upload,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
-import { useApp } from "@/lib/app-store";
-import { coinBalance } from "@/lib/coins";
-import { TONES, toneForPath } from "@/lib/tones";
-import { cn } from "@/lib/utils";
-
-interface NavLink {
-  to:
-    | "/dashboard"
-    | "/courses"
-    | "/homework"
-    | "/awards"
-    | "/teacher"
-    | "/activity"
-    | "/upload"
-    | "/leaderboard";
-  label: string;
-  icon: LucideIcon;
-}
-
-const STUDENT_LINKS: NavLink[] = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/courses", label: "Chapters", icon: BookOpen },
-  { to: "/homework", label: "Homework", icon: ClipboardList },
-  { to: "/awards", label: "Awards", icon: Gift },
-];
-
-const TEACHER_LINKS: NavLink[] = [
-  { to: "/teacher", label: "Analytics", icon: Users },
-  { to: "/homework", label: "Homework", icon: ClipboardList },
-  { to: "/activity", label: "Class activity", icon: Dices },
-  { to: "/upload", label: "Content", icon: Upload },
-  { to: "/awards", label: "Awards", icon: Gift },
-  { to: "/leaderboard", label: "Rankings", icon: Trophy },
-];
-
-/** The student's Math Coins balance, shown in the top bar. */
-function CoinChip({ amount }: { amount: number }) {
-  return (
-    <Link
-      to="/awards"
-      title="Math Coins"
-      className="flex items-center gap-1.5 rounded-full bg-gold/30 py-1 pl-1 pr-3 text-sm font-bold text-gold-deep transition-transform hover:-translate-y-0.5"
-    >
-      <span
-        aria-hidden="true"
-        className="grid h-6 w-6 place-items-center rounded-full bg-gold text-xs font-bold text-accent-foreground shadow-coin"
-      >
-        M
-      </span>
-      <span className="tabular-nums">{amount}</span>
-      <span className="sr-only">Math Coins</span>
-    </Link>
-  );
-}
-
-export function AppShell({ children }: { children: ReactNode }) {
-  const { session, role, logout, ready, error, me } = useApp();
-  const navigate = useNavigate();
-  const links = role === "student" ? STUDENT_LINKS : TEACHER_LINKS;
-  const home = role === "teacher" ? "/teacher" : "/dashboard";
-  const context = role === "teacher" ? "Teacher" : me.id ? `${me.set}` : "Student";
-  const showCoins = role === "student" && Boolean(me.id);
-  const coins = coinBalance(me);
-
-  const signOut = async () => {
-    await logout();
-    await navigate({ to: "/", replace: true });
-  };
-
-  return (
-    <div className="min-h-screen bg-background md:pl-[88px]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[88px] flex-col bg-nav text-nav-foreground md:flex">
-        <Link
-          to={home}
-          aria-label="HLC Math home"
-          className="flex h-[72px] shrink-0 items-center justify-center"
-        >
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold text-accent-foreground shadow-chunky-gold">
-            <GraduationCap className="h-6 w-6" />
-          </span>
-        </Link>
-        <nav aria-label="Main" className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-1">
-          {links.map((l) => {
-            const tone = TONES[toneForPath(l.to)];
-            return (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="group flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-bold leading-tight"
-              >
-                {({ isActive }) => (
-                  <>
-                    <span
-                      className={cn(
-                        "grid h-10 w-10 place-items-center rounded-xl transition-transform group-hover:-translate-y-0.5",
-                        isActive ? tone.solid : cn(tone.dim, "text-nav-foreground"),
-                      )}
-                    >
-                      <l.icon className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <span
-                      className={
-                        isActive
-                          ? "text-nav-foreground"
-                          : "text-nav-foreground/70 group-hover:text-nav-foreground"
-                      }
-                    >
-                      {l.label}
-                    </span>
-                  </>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="group mx-2 mb-3 flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-bold text-nav-foreground/70 transition-colors hover:text-nav-foreground"
-        >
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 group-hover:bg-white/20">
-            <LogOut className="h-5 w-5" aria-hidden="true" />
-          </span>
-          Sign out
-        </button>
-      </aside>
-
-      <header className="sticky top-0 z-30 bg-nav text-nav-foreground md:hidden">
-        <div className="flex items-center gap-3 px-4 py-2.5">
-          <Link to={home} className="flex items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-gold text-accent-foreground">
-              <GraduationCap className="h-5 w-5" aria-hidden="true" />
-            </span>
-            HLC Mathematics
-          </Link>
-          <div className="ml-auto flex items-center gap-2">
-            {showCoins ? <CoinChip amount={coins} /> : null}
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              aria-label="Sign out"
-              className="rounded-lg p-2 text-nav-foreground/80 hover:bg-white/10"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-        <nav aria-label="Main" className="flex gap-1.5 overflow-x-auto px-3 pb-3">
-          {links.map((l) => {
-            const tone = TONES[toneForPath(l.to)];
-            return (
-              <Link key={l.to} to={l.to} className="shrink-0">
-                {({ isActive }) => (
-                  <span
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-bold",
-                      isActive ? tone.flat : "bg-white/10 text-nav-foreground/85",
-                    )}
-                  >
-                    <l.icon className="h-4 w-4" aria-hidden="true" />
-                    {l.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </header>
-
-      <div className="hidden h-14 items-center gap-3 border-b-2 border-border bg-card px-8 md:flex">
-        <p className="flex items-center gap-2 text-sm">
-          <span className="font-bold">HLC Mathematics</span>
-          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary-deep">
-            {context}
-          </span>
-        </p>
-        <div className="ml-auto flex items-center gap-3">
-          {showCoins ? <CoinChip amount={coins} /> : null}
-          <p className="truncate text-sm text-muted-foreground">{session?.email}</p>
-        </div>
-      </div>
-
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
-        {!ready ? (
-          <p className="text-sm text-muted-foreground">Loading your records…</p>
-        ) : error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        ) : !session ? (
-          <Link to="/" className="text-primary underline">
-            Sign in
-          </Link>
-        ) : role === "student" && !me.id ? (
-          <p className="text-sm">
-            Your school account is not linked to a student record yet. Please contact your
-            Mathematics teacher.
-          </p>
-        ) : (
-          children
-        )}
-      </main>
-    </div>
-  );
-}
-
-export function TeacherOnly({ children }: { children: ReactNode }) {
-  const { role } = useApp();
-  return role === "teacher" ? children : <p>Teacher access required.</p>;
-}
-
-export function scoreTone(s: number | null) {
-  return s === null
-    ? "bg-muted text-muted-foreground"
-    : s >= 85
-      ? "bg-success/15 text-success-deep"
-      : s >= 60
-        ? "bg-primary/10 text-primary-deep"
-        : "bg-destructive/12 text-destructive";
-}
-
-export const CHAPTER_STATUS = {
-  Completed: { cls: "bg-success/15 text-success-deep", icon: CheckCircle2 },
-  "In Progress": { cls: "bg-gold/30 text-gold-deep", icon: PlayCircle },
-  "Not Started": { cls: "bg-muted text-muted-foreground", icon: Circle },
-};
-````
-
-## File: src/integrations/supabase/types.ts
-````typescript
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
-
-export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.18";
-  };
-  public: {
-    Tables: {
-      assessment_scores: {
-        Row: {
-          absent: boolean;
-          category: string;
-          full_marks: number | null;
-          kind: string;
-          label: string;
-          position: number;
-          score: number | null;
-          student_id: string;
-          synced_at: string;
-          term: number;
-        };
-        Insert: {
-          absent?: boolean;
-          category: string;
-          full_marks?: number | null;
-          kind: string;
-          label: string;
-          position?: number;
-          score?: number | null;
-          student_id: string;
-          synced_at?: string;
-          term: number;
-        };
-        Update: {
-          absent?: boolean;
-          category?: string;
-          full_marks?: number | null;
-          kind?: string;
-          label?: string;
-          position?: number;
-          score?: number | null;
-          student_id?: string;
-          synced_at?: string;
-          term?: number;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "assessment_scores_student_id_fkey";
-            columns: ["student_id"];
-            isOneToOne: false;
-            referencedRelation: "students";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      chapter_content: {
-        Row: {
-          chapter: number;
-          notes: string;
-          quiz: string;
-          updated_at: string;
-          video: string;
-        };
-        Insert: {
-          chapter: number;
-          notes?: string;
-          quiz?: string;
-          updated_at?: string;
-          video?: string;
-        };
-        Update: {
-          chapter?: number;
-          notes?: string;
-          quiz?: string;
-          updated_at?: string;
-          video?: string;
-        };
-        Relationships: [];
-      };
-      chapter_scores: {
-        Row: {
-          chapter: number;
-          score: number | null;
-          student_id: string;
-        };
-        Insert: {
-          chapter: number;
-          score?: number | null;
-          student_id: string;
-        };
-        Update: {
-          chapter?: number;
-          score?: number | null;
-          student_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "chapter_scores_student_id_fkey";
-            columns: ["student_id"];
-            isOneToOne: false;
-            referencedRelation: "students";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      chapter_video_completions: {
-        Row: {
-          chapter: number;
-          completed_at: string;
-          id: string;
-          marks: number;
-          student_id: string;
-          video_id: string | null;
-          video_title: string;
-        };
-        Insert: {
-          chapter: number;
-          completed_at?: string;
-          id?: string;
-          marks?: number;
-          student_id: string;
-          video_id?: string | null;
-          video_title: string;
-        };
-        Update: {
-          chapter?: number;
-          completed_at?: string;
-          id?: string;
-          marks?: number;
-          student_id?: string;
-          video_id?: string | null;
-          video_title?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "chapter_video_completions_student_id_fkey";
-            columns: ["student_id"];
-            isOneToOne: false;
-            referencedRelation: "students";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chapter_video_completions_video_id_fkey";
-            columns: ["video_id"];
-            isOneToOne: false;
-            referencedRelation: "chapter_videos";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      chapter_videos: {
-        Row: {
-          chapter: number;
-          created_at: string;
-          id: string;
-          position: number;
-          title: string;
-          url: string;
-        };
-        Insert: {
-          chapter: number;
-          created_at?: string;
-          id?: string;
-          position?: number;
-          title: string;
-          url: string;
-        };
-        Update: {
-          chapter?: number;
-          created_at?: string;
-          id?: string;
-          position?: number;
-          title?: string;
-          url?: string;
-        };
-        Relationships: [];
-      };
-      daily_marks: {
-        Row: {
-          awarded_by: string;
-          batch_id: string | null;
-          created_at: string;
-          id: string;
-          lesson_date: string;
-          marks: number;
-          note: string;
-          reason: string;
-          student_id: string;
-        };
-        Insert: {
-          awarded_by: string;
-          batch_id?: string | null;
-          created_at?: string;
-          id?: string;
-          lesson_date?: string;
-          marks: number;
-          note?: string;
-          reason: string;
-          student_id: string;
-        };
-        Update: {
-          awarded_by?: string;
-          batch_id?: string | null;
-          created_at?: string;
-          id?: string;
-          lesson_date?: string;
-          marks?: number;
-          note?: string;
-          reason?: string;
-          student_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "daily_marks_student_id_fkey";
-            columns: ["student_id"];
-            isOneToOne: false;
-            referencedRelation: "students";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      homework: {
-        Row: {
-          chapter: number | null;
-          created_at: string;
-          created_by: string;
-          details: string;
-          due_at: string;
-          id: string;
-          link: string;
-          math_set: string;
-          title: string;
-          updated_at: string;
-        };
-        Insert: {
-          chapter?: number | null;
-          created_at?: string;
-          created_by?: string;
-          details?: string;
-          due_at: string;
-          id?: string;
-          link?: string;
-          math_set: string;
-          title: string;
-          updated_at?: string;
-        };
-        Update: {
-          chapter?: number | null;
-          created_at?: string;
-          created_by?: string;
-          details?: string;
-          due_at?: string;
-          id?: string;
-          link?: string;
-          math_set?: string;
-          title?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      profiles: {
-        Row: {
-          display_name: string;
-          id: string;
-          preferences: Json;
-        };
-        Insert: {
-          display_name?: string;
-          id: string;
-          preferences?: Json;
-        };
-        Update: {
-          display_name?: string;
-          id?: string;
-          preferences?: Json;
-        };
-        Relationships: [];
-      };
-      reward_redemptions: {
-        Row: {
-          cost: number;
-          created_at: string;
-          decided_at: string | null;
-          decided_by: string | null;
-          id: string;
-          reward_id: string | null;
-          reward_name: string;
-          status: string;
-          student_id: string;
-        };
-        Insert: {
-          cost: number;
-          created_at?: string;
-          decided_at?: string | null;
-          decided_by?: string | null;
-          id?: string;
-          reward_id?: string | null;
-          reward_name: string;
-          status?: string;
-          student_id: string;
-        };
-        Update: {
-          cost?: number;
-          created_at?: string;
-          decided_at?: string | null;
-          decided_by?: string | null;
-          id?: string;
-          reward_id?: string | null;
-          reward_name?: string;
-          status?: string;
-          student_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "reward_redemptions_reward_id_fkey";
-            columns: ["reward_id"];
-            isOneToOne: false;
-            referencedRelation: "rewards";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "reward_redemptions_student_id_fkey";
-            columns: ["student_id"];
-            isOneToOne: false;
-            referencedRelation: "students";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      rewards: {
-        Row: {
-          active: boolean;
-          cooldown_days: number | null;
-          cost: number;
-          created_at: string;
-          description: string;
-          emoji: string;
-          id: string;
-          name: string;
-          position: number;
-        };
-        Insert: {
-          active?: boolean;
-          cooldown_days?: number | null;
-          cost: number;
-          created_at?: string;
-          description?: string;
-          emoji?: string;
-          id?: string;
-          name: string;
-          position?: number;
-        };
-        Update: {
-          active?: boolean;
-          cooldown_days?: number | null;
-          cost?: number;
-          created_at?: string;
-          description?: string;
-          emoji?: string;
-          id?: string;
-          name?: string;
-          position?: number;
-        };
-        Relationships: [];
-      };
-      sheet_syncs: {
-        Row: {
-          created_at: string;
-          id: string;
-          scores: number;
-          students: number;
-          synced_by: string;
-        };
-        Insert: {
-          created_at?: string;
-          id?: string;
-          scores?: number;
-          students?: number;
-          synced_by: string;
-        };
-        Update: {
-          created_at?: string;
-          id?: string;
-          scores?: number;
-          students?: number;
-          synced_by?: string;
-        };
-        Relationships: [];
-      };
-      students: {
-        Row: {
-          class_name: string;
-          class_no: string;
-          email: string;
-          hlc_no: string | null;
-          id: string;
-          last_month_avg: number;
-          last_month_form_rank: number;
-          math_set: string;
-          name: string;
-          streak: number;
-          user_id: string | null;
-          xp: number;
-        };
-        Insert: {
-          class_name?: string;
-          class_no?: string;
-          email: string;
-          hlc_no?: string | null;
-          id?: string;
-          last_month_avg?: number;
-          last_month_form_rank?: number;
-          math_set: string;
-          name: string;
-          streak?: number;
-          user_id?: string | null;
-          xp?: number;
-        };
-        Update: {
-          class_name?: string;
-          class_no?: string;
-          email?: string;
-          hlc_no?: string | null;
-          id?: string;
-          last_month_avg?: number;
-          last_month_form_rank?: number;
-          math_set?: string;
-          name?: string;
-          streak?: number;
-          user_id?: string | null;
-          xp?: number;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "students_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: true;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      user_roles: {
-        Row: {
-          id: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
-        Insert: {
-          id?: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
-        Update: {
-          id?: string;
-          role?: Database["public"]["Enums"]["app_role"];
-          user_id?: string;
-        };
-        Relationships: [];
-      };
-      video_completions: {
-        Row: {
-          chapter: number;
-          completed_at: string;
-          marks: number;
-          student_id: string;
-          video_url: string;
-        };
-        Insert: {
-          chapter: number;
-          completed_at?: string;
-          marks?: number;
-          student_id: string;
-          video_url: string;
-        };
-        Update: {
-          chapter?: number;
-          completed_at?: string;
-          marks?: number;
-          student_id?: string;
-          video_url?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "video_completions_chapter_fkey";
-            columns: ["chapter"];
-            isOneToOne: false;
-            referencedRelation: "chapter_content";
-            referencedColumns: ["chapter"];
-          },
-          {
-            foreignKeyName: "video_completions_student_id_fkey";
-            columns: ["student_id"];
-            isOneToOne: false;
-            referencedRelation: "students";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-    };
-    Views: {
-      student_coin_totals: {
-        Row: {
-          daily_earned: number | null;
-          spent: number | null;
-          student_id: string | null;
-          video_earned: number | null;
-        };
-        Relationships: [];
-      };
-    };
-    Functions: {
-      claim_student: { Args: never; Returns: undefined };
-      complete_chapter_video: { Args: { _video_id: string }; Returns: boolean };
-      complete_video: { Args: { _chapter: number }; Returns: undefined };
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"];
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
-      redeem_reward: { Args: { _reward_id: string }; Returns: string };
-    };
-    Enums: {
-      app_role: "teacher" | "student";
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
-};
-
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
-      }
-      ? R
-      : never
-    : never;
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
-      }
-      ? I
-      : never
-    : never;
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
-      }
-      ? U
-      : never
-    : never;
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never;
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never;
-
-export const Constants = {
-  public: {
-    Enums: {
-      app_role: ["teacher", "student"],
-    },
-  },
-} as const;
-````
+```
 
 ## File: src/lib/sheets.functions.ts
-````typescript
+```typescript
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { publishGame, type PublishReport } from "./gamification/publish";
 import { parseSetTab, type MathSet, type ParsedStudent } from "./sheet-parse";
-
 const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
 const GOOGLE_SHEETS_API_URL = "https://sheets.googleapis.com/v4";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -11012,12 +5464,9 @@ const MAX_ROWS = 1000;
 const MAX_COLS = 400;
 const WRITE_CHUNK = 500;
 const DELETE_CHUNK = 100;
-
 type Cell = string | number | boolean | null;
 type Grid = Cell[][];
-
 export type SheetSource = "service_account" | "api_key" | "public_xlsx";
-
 export interface TabReport {
   set: MathSet;
   students: number;
@@ -11025,7 +5474,6 @@ export interface TabReport {
   term2Items: number;
   scores: number;
 }
-
 export interface SyncReport {
   source: SheetSource;
   students: number;
@@ -11033,28 +5481,27 @@ export interface SyncReport {
   syncedAt: string;
   tabs: TabReport[];
   duplicates: string[];
+  /** Ranks, charts and leaderboards published for students after the sync. */
+  game: PublishReport | null;
+  /** Why publishing game data failed; the marks themselves were still saved. */
+  gameError: string | null;
 }
-
 interface SheetGrids {
   formulas: Grid[];
   values: Grid[];
   source: SheetSource;
 }
-
 interface XlsxCell {
   t?: string;
   v?: unknown;
   w?: string;
   f?: string;
 }
-
 type XlsxSheet = Record<string, unknown>;
-
 interface XlsxRange {
   s: { r: number; c: number };
   e: { r: number; c: number };
 }
-
 interface XlsxModule {
   read: (
     data: Uint8Array,
@@ -11065,23 +5512,18 @@ interface XlsxModule {
     encode_cell: (cell: { r: number; c: number }) => string;
   };
 }
-
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
-
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
-
 function cleanEnv(raw: string | undefined): string {
   return (raw ?? "").trim().replace(/^['"]|['"]$/g, "");
 }
-
 function chunk<T>(list: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
   return out;
 }
-
 function normalizePrivateKey(raw: string): string {
   let cleaned = raw.trim();
   if (cleaned.startsWith("{")) {
@@ -11094,7 +5536,6 @@ function normalizePrivateKey(raw: string): string {
   }
   return cleaned.replace(/^['"]|['"]$/g, "").replace(/\\n/g, "\n");
 }
-
 function extractClientEmail(emailRaw: string | undefined, keyRaw: string | undefined): string {
   if (keyRaw && keyRaw.trim().startsWith("{")) {
     try {
@@ -11106,7 +5547,6 @@ function extractClientEmail(emailRaw: string | undefined, keyRaw: string | undef
   }
   return cleanEnv(emailRaw);
 }
-
 async function getServiceAccountAccessToken(
   clientEmail: string,
   privateKeyRaw: string,
@@ -11115,11 +5555,9 @@ async function getServiceAccountAccessToken(
   if (cachedAccessToken && cachedAccessToken.expiresAt - 60 > now) {
     return cachedAccessToken.token;
   }
-
   const { createSign } = await import("node:crypto");
   const privateKey = normalizePrivateKey(privateKeyRaw);
   const cleanEmail = extractClientEmail(clientEmail, privateKeyRaw);
-
   const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");
   const claimSet = Buffer.from(
     JSON.stringify({
@@ -11130,14 +5568,12 @@ async function getServiceAccountAccessToken(
       iat: now,
     }),
   ).toString("base64url");
-
   const unsignedJwt = `${header}.${claimSet}`;
   const signer = createSign("RSA-SHA256");
   signer.update(unsignedJwt);
   signer.end();
   const signature = signer.sign(privateKey, "base64url");
   const assertion = `${unsignedJwt}.${signature}`;
-
   const res = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -11146,14 +5582,12 @@ async function getServiceAccountAccessToken(
       assertion,
     }).toString(),
   });
-
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(
       `Service account (${cleanEmail}) could not sign in [${res.status}]: ${errText.slice(0, 200)}`,
     );
   }
-
   const tokenData = (await res.json()) as { access_token: string; expires_in?: number };
   cachedAccessToken = {
     token: tokenData.access_token,
@@ -11161,7 +5595,6 @@ async function getServiceAccountAccessToken(
   };
   return tokenData.access_token;
 }
-
 async function readTabsViaApi(
   render: "FORMULA" | "UNFORMATTED_VALUE",
   headers: Record<string, string>,
@@ -11179,14 +5612,12 @@ async function readTabsViaApi(
   const json = (await res.json()) as { valueRanges?: { values?: Grid }[] };
   return TABS.map((_, i) => json.valueRanges?.[i]?.values ?? []);
 }
-
 async function loadXlsx(): Promise<XlsxModule> {
   const mod = (await import("xlsx")) as unknown as Partial<XlsxModule> & { default?: XlsxModule };
   if (typeof mod.read === "function" && mod.utils) return mod as XlsxModule;
   if (mod.default && typeof mod.default.read === "function") return mod.default;
   throw new Error("The xlsx reader could not be loaded. Run npm install and try again.");
 }
-
 function cellValue(cell: XlsxCell | undefined): Cell {
   if (!cell) return null;
   if (cell.t === "e") return typeof cell.w === "string" ? cell.w : "#ERROR";
@@ -11195,7 +5626,6 @@ function cellValue(cell: XlsxCell | undefined): Cell {
   if (v instanceof Date) return v.toISOString();
   return null;
 }
-
 function sheetToGrids(XLSX: XlsxModule, sheet: XlsxSheet): { formulas: Grid; values: Grid } {
   const ref = sheet["!ref"];
   if (typeof ref !== "string" || ref === "") return { formulas: [], values: [] };
@@ -11219,7 +5649,6 @@ function sheetToGrids(XLSX: XlsxModule, sheet: XlsxSheet): { formulas: Grid; val
   }
   return { formulas, values };
 }
-
 async function readPublicWorkbook(): Promise<{ formulas: Grid[]; values: Grid[] }> {
   const res = await fetch(PUBLIC_XLSX_URL, { redirect: "follow" });
   if (!res.ok) {
@@ -11251,7 +5680,6 @@ async function readPublicWorkbook(): Promise<{ formulas: Grid[]; values: Grid[] 
   }
   return { formulas, values };
 }
-
 async function loadAllSheetGrids(): Promise<SheetGrids> {
   const failures: string[] = [];
   const serviceEmail =
@@ -11260,7 +5688,6 @@ async function loadAllSheetGrids(): Promise<SheetGrids> {
   const sheetsApiKey = cleanEnv(
     process.env["GOOGLE_SHEETS_API_KEY"] || process.env["VITE_GOOGLE_SHEETS_API_KEY"],
   );
-
   if (serviceEmail && privateKey) {
     try {
       const accessToken = await getServiceAccountAccessToken(serviceEmail, privateKey);
@@ -11274,7 +5701,6 @@ async function loadAllSheetGrids(): Promise<SheetGrids> {
       failures.push(`Service account: ${errorMessage(err)}`);
     }
   }
-
   if (sheetsApiKey) {
     try {
       const query = `&key=${encodeURIComponent(sheetsApiKey)}`;
@@ -11287,17 +5713,14 @@ async function loadAllSheetGrids(): Promise<SheetGrids> {
       failures.push(`API key: ${errorMessage(err)}`);
     }
   }
-
   try {
     const grids = await readPublicWorkbook();
     return { ...grids, source: "public_xlsx" };
   } catch (err) {
     failures.push(`Public link: ${errorMessage(err)}`);
   }
-
   throw new Error(`Could not read the Google Sheet. ${failures.join("; ")}`);
 }
-
 export const syncGoogleSheet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<SyncReport> => {
@@ -11308,13 +5731,11 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
     });
     if (roleError) throw new Error(`Could not check teacher access: ${roleError.message}`);
     if (!allowed) throw new Error("Only teacher accounts can sync marks");
-
     const { formulas, values, source } = await loadAllSheetGrids();
     const perTab = TABS.map((set, i) => ({
       set,
       students: parseSetTab(set, formulas[i] ?? [], values[i] ?? []),
     }));
-
     // The same email twice in one upsert makes Postgres reject the whole batch.
     const byEmail = new Map<string, ParsedStudent>();
     const duplicates: string[] = [];
@@ -11328,7 +5749,6 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
     if (!parsed.length) {
       throw new Error("No students with an HLC no. were found in the S2M3 or S2M5 tabs");
     }
-
     const tabs: TabReport[] = perTab.map(({ set, students }) => {
       const term1 = new Set<string>();
       const term2 = new Set<string>();
@@ -11347,14 +5767,12 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
         scores: filled,
       };
     });
-
     // Never wipe the saved marks because of a sheet that could not be read properly.
     if (tabs.every((t) => t.scores === 0)) {
       throw new Error(
         'The class list was read but no marks were found, so the sync stopped to keep the saved marks. Check that each tab has an "HLC no." heading row and that marks start in column G.',
       );
     }
-
     const { data: roster, error: rosterError } = await supabase
       .from("students")
       .upsert(
@@ -11371,21 +5789,18 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
       .select("id, email");
     if (rosterError) throw new Error(`Could not save the class list: ${rosterError.message}`);
     const idByEmail = new Map((roster ?? []).map((r) => [r.email, r.id]));
-
     const syncedAt = new Date().toISOString();
     const rows = parsed.flatMap((p) => {
       const studentId = idByEmail.get(p.email);
       if (!studentId) return [];
       return p.scores.map((s) => ({ ...s, student_id: studentId, synced_at: syncedAt }));
     });
-
     for (const part of chunk(rows, WRITE_CHUNK)) {
       const { error } = await supabase
         .from("assessment_scores")
         .upsert(part, { onConflict: "student_id,term,kind,label" });
       if (error) throw new Error(`Could not save marks: ${error.message}`);
     }
-
     for (const ids of chunk([...idByEmail.values()], DELETE_CHUNK)) {
       const { error } = await supabase
         .from("assessment_scores")
@@ -11394,1225 +5809,37 @@ export const syncGoogleSheet = createServerFn({ method: "POST" })
         .lt("synced_at", syncedAt);
       if (error) throw new Error(`Could not remove old marks: ${error.message}`);
     }
-
     const { error: logError } = await supabase.from("sheet_syncs").insert({
       synced_by: userId,
       students: parsed.length,
       scores: rows.length,
     });
     if (logError) console.warn("[Google Sheets] Could not record the sync time:", logError.message);
-
-    return { source, students: parsed.length, scores: rows.length, syncedAt, tabs, duplicates };
-  });
-````
-
-## File: src/routes/_authenticated/courses.$chapter.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import {
-  ArrowLeft,
-  CalendarClock,
-  CheckCircle2,
-  ExternalLink,
-  FileText,
-  ListChecks,
-  PlayCircle,
-  Video,
-} from "lucide-react";
-import { toast } from "sonner";
-import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
-import { ChapterVideoPlayer } from "@/components/ChapterVideoPlayer";
-import { PageHeader, Panel, StatCard } from "@/components/PageParts";
-import { useApp } from "@/lib/app-store";
-import { CHAPTERS, chapterStatus } from "@/lib/data";
-import { percent } from "@/lib/assessments";
-import { isWebLink, notesPreviewUrl } from "@/lib/drive-link";
-import {
-  DUE_LABEL,
-  DUE_TONE,
-  dueStatus,
-  formatDue,
-  homeworkForSet,
-  splitByDue,
-} from "@/lib/homework";
-import { chapterTone } from "@/lib/tones";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/courses/$chapter")({
-  head: ({ params }) => {
-    const c = CHAPTERS.find((x) => String(x.id) === params.chapter);
-    const title = c ? `Chapter ${c.id}: ${c.title} — HLC Math` : "Chapter — HLC Math";
-    return {
-      meta: [
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-        { title },
-        {
-          name: "description",
-          content: c
-            ? `Videos, notes, exercise and progress for ${c.title}.`
-            : "Mathematics chapter.",
-        },
-        { property: "og:title", content: title },
-        { property: "og:description", content: "Lesson videos, notes and practice." },
-      ],
-    };
-  },
-  component: ChapterPage,
-});
-
-function ChapterPage() {
-  const { chapter } = Route.useParams();
-  const { me, role, videos, content, homework, refresh } = useApp();
-  const c = CHAPTERS.find((x) => String(x.id) === chapter);
-  const list = videos.filter((v) => v.chapter === c?.id);
-  const done = (id: string) => Boolean(me.completedVideos?.includes(id));
-  const [activeId, setActiveId] = useState<string | null>(null);
-  if (!c) {
-    return (
-      <AppShell>
-        <p>Chapter not found.</p>
-        <Link to="/courses" className="text-primary underline">
-          Back to chapters
-        </Link>
-      </AppShell>
-    );
-  }
-
-  const tone = chapterTone(c.id);
-  const active = list.find((v) => v.id === activeId) ?? list.find((v) => !done(v.id)) ?? list[0];
-  const materials = content.find((m) => m.chapter === c.id);
-  const notes = materials?.notes.trim() ?? "";
-  const preview = notesPreviewUrl(notes);
-  const idx = c.id - 1;
-  const score = me.scores[idx] ?? null;
-  const st = chapterStatus(score, idx, me.scores);
-  const S = STATUS[st];
-  const watched = list.filter((v) => done(v.id)).length;
-  const canEarn = role === "student" && Boolean(me.id);
-  const quizzes = (me.assessments ?? []).filter(
-    (a) =>
-      a.kind === "item" && new RegExp(`^(SQ|CQ)\\s*${c.id}(\\.\\d+)?$`, "i").test(a.label.trim()),
-  );
-  const { upcoming: dueHomework } = splitByDue(
-    (role === "teacher" ? homework : homeworkForSet(homework, me.set)).filter(
-      (h) => h.chapter === c.id,
-    ),
-  );
-
-  const complete = async (videoId: string) => {
-    const { data, error } = await supabase.rpc("complete_chapter_video", { _video_id: videoId });
-    if (error) throw error;
-    await refresh();
-    if (data) toast.success("Video completed. 1 Math Coin added.");
-  };
-
-  const openOldPdf = async (path: string) => {
-    const { data, error } = await supabase.storage.from("chapter-notes").createSignedUrl(path, 300);
-    if (error) toast.error(error.message);
-    else window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-  };
-
-  return (
-    <AppShell>
-      <Link
-        to="/courses"
-        className="inline-flex items-center gap-1 text-sm font-bold text-muted-foreground hover:text-primary"
-      >
-        <ArrowLeft className="h-4 w-4" /> All chapters
-      </Link>
-      <div className="mt-3">
-        <PageHeader
-          tone={tone}
-          eyebrow={`Chapter ${c.id}`}
-          title={c.title}
-          actions={
-            <span className="rounded-full bg-card">
-              <span
-                className={cn(
-                  "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold",
-                  S.cls,
-                )}
-              >
-                <S.icon className="h-3.5 w-3.5" /> {st}
-              </span>
-            </span>
-          }
-        />
-      </div>
-
-      <section aria-label="Progress" className="mt-6 grid gap-4 sm:grid-cols-3">
-        <StatCard
-          tone="green"
-          label="Videos watched"
-          value={String(watched)}
-          suffix={`/ ${list.length}`}
-          note={
-            <span className="mt-1 block h-2 overflow-hidden rounded-full bg-white/30">
-              <span
-                className="block h-full rounded-full bg-white"
-                style={{ width: `${list.length ? (watched / list.length) * 100 : 0}%` }}
-              />
-            </span>
-          }
-        />
-        <StatCard
-          tone="gold"
-          label="Math Coins from videos"
-          value={String(watched)}
-          note="One for each video watched to the end"
-        />
-        <StatCard
-          tone="blue"
-          label="Chapter score"
-          value={score === null ? "—" : `${score}%`}
-          note={score === null ? "No mark yet" : null}
-        />
-      </section>
-
-      {dueHomework.length > 0 && (
-        <Panel
-          tone="flame"
-          className="mt-6"
-          title="Homework for this chapter"
-          actions={
-            <Link to="/homework" className="text-sm font-bold text-primary hover:underline">
-              All homework
-            </Link>
-          }
-          bodyClassName="px-5 py-1"
-        >
-          <ul className="divide-y-2 divide-border">
-            {dueHomework.map((h) => {
-              const status = dueStatus(h.due_at);
-              return (
-                <li key={h.id} className="flex items-start gap-3 py-3">
-                  <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{h.title}</p>
-                    <p className="text-xs text-muted-foreground">Due {formatDue(h.due_at)}</p>
-                  </div>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold",
-                      DUE_TONE[status],
-                    )}
-                  >
-                    {DUE_LABEL[status]}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </Panel>
-      )}
-
-      <Panel
-        tone={tone}
-        className="mt-6"
-        title={
-          <span className="flex items-center gap-2">
-            <Video className="h-4 w-4 text-primary" /> Videos
-          </span>
-        }
-      >
-        {!active ? (
-          <p className="text-sm text-muted-foreground">
-            No videos have been added for this chapter yet.
-          </p>
-        ) : (
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-            <ChapterVideoPlayer
-              key={active.id}
-              video={active}
-              completed={done(active.id)}
-              canEarn={canEarn}
-              onComplete={complete}
-            />
-            <ol className="space-y-2">
-              {list.map((v, i) => (
-                <li key={v.id}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveId(v.id)}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left text-sm transition-colors",
-                      v.id === active.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50",
-                    )}
-                  >
-                    {done(v.id) ? (
-                      <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
-                    ) : (
-                      <PlayCircle className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    )}
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-xs text-muted-foreground">Video {i + 1}</span>
-                      <span className="block font-semibold">{v.title}</span>
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </Panel>
-
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <Panel
-          tone="sky"
-          className={cn(preview && "md:col-span-2")}
-          title={
-            <span className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-sky-deep" /> Notes
-            </span>
-          }
-        >
-          {isWebLink(notes) ? (
-            <>
-              {preview && (
-                <iframe
-                  src={preview}
-                  title={`Chapter ${c.id} notes`}
-                  loading="lazy"
-                  allow="autoplay"
-                  className="h-[70vh] w-full rounded-lg border-2 border-border bg-muted"
-                />
-              )}
-              <a
-                href={notes}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary underline"
-              >
-                Open notes in Google Drive <ExternalLink className="h-4 w-4" />
-              </a>
-              {preview && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  If the notes do not appear, sign in to Google with your school account.
-                </p>
-              )}
-            </>
-          ) : notes ? (
-            <Button variant="outline" onClick={() => void openOldPdf(notes)}>
-              Open chapter notes (PDF)
-            </Button>
-          ) : (
-            <p className="text-sm text-muted-foreground">No notes have been added yet.</p>
-          )}
-        </Panel>
-        <Panel
-          tone="gold"
-          title={
-            <span className="flex items-center gap-2">
-              <ListChecks className="h-4 w-4 text-gold-deep" /> Exercise
-            </span>
-          }
-        >
-          {materials?.quiz ? (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed">{materials.quiz}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">No exercise has been added yet.</p>
-          )}
-        </Panel>
-      </div>
-
-      {quizzes.length > 0 && (
-        <Panel tone="grape" className="mt-6" title="My quiz results for this chapter">
-          <ul className="divide-y-2 divide-border">
-            {quizzes.map((q) => {
-              const p = percent(q);
-              return (
-                <li
-                  key={`${q.term}-${q.label}`}
-                  className="flex items-center justify-between py-2 text-sm"
-                >
-                  <span className="font-semibold">
-                    {q.label.toUpperCase().startsWith("CQ") ? "Chapter quiz" : "Short quiz"}{" "}
-                    {q.label}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-0.5 font-bold tabular-nums",
-                      scoreTone(p),
-                    )}
-                  >
-                    {q.absent
-                      ? "Absent"
-                      : q.score === null
-                        ? "—"
-                        : `${q.score}${q.full_marks ? ` / ${q.full_marks}` : ""}`}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </Panel>
-      )}
-    </AppShell>
-  );
-}
-````
-
-## File: src/routes/_authenticated/courses.index.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
-import { AppShell, CHAPTER_STATUS as STATUS, scoreTone } from "@/components/AppShell";
-import { PageHeader } from "@/components/PageParts";
-import { useApp } from "@/lib/app-store";
-import { CHAPTERS, chapterStatus } from "@/lib/data";
-import { TONES, chapterTone } from "@/lib/tones";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/courses/")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Chapters — HLC Math" },
-      {
-        name: "description",
-        content: "S2 Mathematics chapters 1–7 with videos, notes and exercises.",
-      },
-      { property: "og:title", content: "Chapters — HLC Math" },
-      { property: "og:description", content: "S2 Mathematics chapters 1–7." },
-    ],
-  }),
-  component: Courses,
-});
-
-function Courses() {
-  const { me, videos } = useApp();
-  return (
-    <AppShell>
-      <PageHeader
-        title="Chapters"
-        description="S2 Mathematics. Each chapter has lesson videos, notes and an exercise."
-      />
-      <ul className="mt-6 space-y-3">
-        {CHAPTERS.map((c, i) => {
-          const list = videos.filter((v) => v.chapter === c.id);
-          const watched = list.filter((v) => me.completedVideos?.includes(v.id)).length;
-          const s = me.scores[i] ?? null;
-          const st = chapterStatus(s, i, me.scores);
-          const S = STATUS[st];
-          const tone = TONES[chapterTone(c.id)];
-          return (
-            <li key={c.id}>
-              <Link
-                to="/courses/$chapter"
-                params={{ chapter: String(c.id) }}
-                className="flex flex-wrap items-center gap-4 rounded-xl border-2 border-border bg-card px-4 py-3.5 shadow-chunky transition-transform hover:-translate-y-0.5 sm:flex-nowrap"
-              >
-                <span
-                  className={cn(
-                    "grid h-12 w-12 shrink-0 place-items-center rounded-xl text-lg font-bold",
-                    tone.solid,
-                  )}
-                >
-                  {c.id}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold leading-snug">{c.title}</p>
-                  <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>
-                      {list.length
-                        ? `${watched} of ${list.length} video${list.length === 1 ? "" : "s"} watched`
-                        : "No videos yet"}
-                    </span>
-                    {list.length > 0 && (
-                      <span className="hidden h-2 w-24 overflow-hidden rounded-full bg-muted sm:block">
-                        <span
-                          className={cn("block h-full rounded-full", tone.bar)}
-                          style={{ width: `${(watched / list.length) * 100}%` }}
-                        />
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <span
-                  className={cn(
-                    "flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold",
-                    S.cls,
-                  )}
-                >
-                  <S.icon className="h-3.5 w-3.5" aria-hidden="true" /> {st}
-                </span>
-                <span
-                  className={cn(
-                    "w-16 shrink-0 rounded-full px-2 py-0.5 text-center text-xs font-bold tabular-nums",
-                    scoreTone(s),
-                  )}
-                >
-                  {s === null ? "No mark" : `${s}%`}
-                </span>
-                <ChevronRight className="hidden h-5 w-5 shrink-0 text-muted-foreground sm:block" />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </AppShell>
-  );
-}
-````
-
-## File: src/routes/_authenticated/leaderboard.tsx
-````typescript
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { AppShell, TeacherOnly } from "@/components/AppShell";
-import { PageHeader, Panel } from "@/components/PageParts";
-import { useApp } from "@/lib/app-store";
-import { average, improvement, ranked } from "@/lib/data";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/leaderboard")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Rankings — HLC Math" },
-      { name: "description", content: "Mathematics rankings across S2M3 and S2M5." },
-      { property: "og:title", content: "Rankings — HLC Math" },
-      { property: "og:description", content: "Chapter average rankings for S2 Mathematics." },
-    ],
-  }),
-  component: Leaderboard,
-});
-
-const FILTERS = ["All S2", "S2M3", "S2M5"] as const;
-const PLACES = [
-  { label: "1st", border: "border-l-gold" },
-  { label: "2nd", border: "border-l-silver" },
-  { label: "3rd", border: "border-l-bronze" },
-];
-
-function Leaderboard() {
-  const { students } = useApp();
-  const [f, setF] = useState<(typeof FILTERS)[number]>("All S2");
-  const list = ranked(f === "All S2" ? students : students.filter((s) => s.set === f));
-  const top = list.slice(0, 3);
-
-  return (
-    <AppShell>
-      <TeacherOnly>
-        <PageHeader
-          title="Rankings"
-          description="Ranked by the average of each student's chapter scores. Visible to teachers only."
-          actions={
-            <div className="flex rounded-md border border-border bg-card p-0.5">
-              {FILTERS.map((x) => (
-                <button
-                  type="button"
-                  key={x}
-                  onClick={() => setF(x)}
-                  className={cn(
-                    "rounded px-4 py-1.5 text-sm font-semibold",
-                    f === x
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {x}
-                </button>
-              ))}
-            </div>
-          }
-        />
-
-        {top.length > 0 && (
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {top.map((s, i) => {
-              const p = PLACES[i];
-              if (!p) return null;
-              return (
-                <div
-                  key={s.id}
-                  className={cn(
-                    "rounded-lg border border-border border-l-4 bg-card p-4 shadow-chunky",
-                    p.border,
-                  )}
-                >
-                  <p className="text-sm text-muted-foreground">{p.label}</p>
-                  <p className="mt-1 truncate text-lg font-semibold">{s.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {s.set}
-                    {s.className ? `, ${s.className} ${s.classNo ?? ""}` : ""}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums">{average(s)}%</p>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <Panel className="mt-6" bodyClassName="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
-                <th className="w-14 p-3 text-center">Rank</th>
-                <th className="p-3">Student</th>
-                <th className="hidden p-3 sm:table-cell">Set</th>
-                <th className="hidden p-3 text-right sm:table-cell">Change</th>
-                <th className="p-3 text-right">Average</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((s, i) => {
-                const imp = improvement(s);
-                return (
-                  <tr key={s.id} className="border-b border-border last:border-0">
-                    <td className="p-3 text-center font-semibold tabular-nums text-muted-foreground">
-                      {i + 1}
-                    </td>
-                    <td className="p-3 font-medium">{s.name}</td>
-                    <td className="hidden p-3 text-muted-foreground sm:table-cell">{s.set}</td>
-                    <td
-                      className={cn(
-                        "hidden p-3 text-right font-semibold tabular-nums sm:table-cell",
-                        imp >= 0 ? "text-success" : "text-destructive",
-                      )}
-                    >
-                      {imp >= 0 ? "+" : ""}
-                      {imp}%
-                    </td>
-                    <td className="p-3 text-right font-semibold tabular-nums">{average(s)}%</td>
-                  </tr>
-                );
-              })}
-              {list.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="p-4 text-center text-muted-foreground">
-                    No students yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </Panel>
-      </TeacherOnly>
-    </AppShell>
-  );
-}
-````
-
-## File: src/routes/__root.tsx
-````typescript
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  Link,
-  createRootRouteWithContext,
-  useRouter,
-  HeadContent,
-  Scripts,
-  type ErrorComponentProps,
-} from "@tanstack/react-router";
-import { type ReactNode } from "react";
-
-import { AppProvider } from "../lib/app-store";
-import { Toaster } from "../components/ui/sonner";
-import appCss from "../styles.css?url";
-
-function NotFoundComponent() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error(error);
-  const router = useRouter();
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {error instanceof Error
-            ? error.message
-            : "Something went wrong on our end. You can try refreshing or head back home."}
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "HLC Math — Mathematics" },
-      { name: "description", content: "Mathematics learning and progress for HLC." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap",
-      },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
-});
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppProvider>
-        <Outlet />
-        <Toaster richColors position="top-center" />
-      </AppProvider>
-    </QueryClientProvider>
-  );
-}
-````
-
-## File: package.json
-````json
-{
-  "name": "tanstack_start_ts",
-  "private": true,
-  "sideEffects": false,
-  "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "overrides": {
-    "rolldown": "1.2.1"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
-    "@radix-ui/react-accordion": "^1.2.12",
-    "@radix-ui/react-alert-dialog": "^1.1.15",
-    "@radix-ui/react-aspect-ratio": "^1.1.8",
-    "@radix-ui/react-avatar": "^1.1.11",
-    "@radix-ui/react-checkbox": "^1.3.3",
-    "@radix-ui/react-collapsible": "^1.1.12",
-    "@radix-ui/react-context-menu": "^2.2.16",
-    "@radix-ui/react-dialog": "^1.1.15",
-    "@radix-ui/react-dropdown-menu": "^2.1.16",
-    "@radix-ui/react-hover-card": "^1.1.15",
-    "@radix-ui/react-label": "^2.1.8",
-    "@radix-ui/react-menubar": "^1.1.16",
-    "@radix-ui/react-navigation-menu": "^1.2.14",
-    "@radix-ui/react-popover": "^1.1.15",
-    "@radix-ui/react-progress": "^1.1.8",
-    "@radix-ui/react-radio-group": "^1.3.8",
-    "@radix-ui/react-scroll-area": "^1.2.10",
-    "@radix-ui/react-select": "^2.2.6",
-    "@radix-ui/react-separator": "^1.1.8",
-    "@radix-ui/react-slider": "^1.3.6",
-    "@radix-ui/react-slot": "^1.2.4",
-    "@radix-ui/react-switch": "^1.2.6",
-    "@radix-ui/react-tabs": "^1.1.13",
-    "@radix-ui/react-toggle": "^1.1.10",
-    "@radix-ui/react-toggle-group": "^1.1.11",
-    "@radix-ui/react-tooltip": "^1.2.8",
-    "@supabase/supabase-js": "^2.119.0",
-    "@tailwindcss/vite": "^4.2.1",
-    "@tanstack/react-query": "^5.101.1",
-    "@tanstack/react-router": "1.170.41",
-    "@tanstack/react-start": "1.168.60",
-    "@tanstack/router-plugin": "1.168.42",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "date-fns": "^4.1.0",
-    "embla-carousel-react": "^8.6.0",
-    "input-otp": "^1.4.2",
-    "lucide-react": "^0.575.0",
-    "react": "^19.2.0",
-    "react-day-picker": "^9.14.0",
-    "react-dom": "^19.2.0",
-    "react-hook-form": "^7.71.2",
-    "react-resizable-panels": "^4.6.5",
-    "recharts": "^2.15.4",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.2.1",
-    "tw-animate-css": "^1.3.4",
-    "vaul": "^1.1.2",
-    "vite-tsconfig-paths": "^6.0.2",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@testing-library/jest-dom": "^6.6.0",
-    "@testing-library/react": "^16.0.0",
-    "@types/node": "^22.16.5",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^5.2.0",
-    "drizzle-kit": "0.x",
-    "drizzle-orm": "0.x",
-    "eslint": "^9.32.0",
-    "eslint-config-prettier": "^10.1.1",
-    "eslint-plugin-prettier": "^5.2.6",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^15.15.0",
-    "jsdom": "^20.0.3",
-    "nitro": "3.0.260603-beta",
-    "postgres": "^4.1.0",
-    "prettier": "^3.7.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.56.1",
-    "vite": "8.1.5",
-    "vitest": "^4.1.10"
-  }
-}
-````
-
-## File: roadmap.md
-````markdown
-# Database update
-- [x] Add profiles, protected roles, private student records, chapter scores, daily marks, chapter content and video completions.
-- [x] Replace pretend sign-in and connect teacher edits/imports and student views to saved data.
-- [x] Add daily-mark controls and lesson student selection; save chapter content.
-- [x] Verify persistence and student privacy with temporary teacher and two student accounts.
-- [x] Assign the confirmed teacher account yhtang@hlc.edu.hk.
-- [x] Inspect spreadsheet columns (S2M3 / S2M5 tabs, HW/SQ/CQ/TT/Mock/Exam, full marks row).
-
-# Google Sheet sync + assessment gradebook
-- [ ] Store assessment items and term summaries per student (private, teacher writes).
-- [ ] Teacher "Sync from Google Sheet" button (roster + all assessments, last synced time).
-- [ ] Student dashboard: term summary + category breakdown.
-- [ ] Teacher gradebook filtered by set and category.
-- [ ] Tests for sheet parsing rules; verify sync end-to-end.
-
-# Chapter pages + tracked videos
-- [x] Confirm students sign in with Google as HLC number @hlc.edu.hk (all 40 roster emails match).
-- [ ] Multiple named videos per chapter (teacher editor).
-- [ ] Videos play inside the app; mark awarded only after watching to the end (no skipping).
-- [ ] Chapter detail page: videos, notes, exercise, progress.
-````
-
-## File: src/components/SheetGradebook.tsx
-````typescript
-import { useMemo, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { scoreTone } from "@/components/AppShell";
-import { Panel } from "@/components/PageParts";
-import { useApp } from "@/lib/app-store";
-import { syncGoogleSheet, type SheetSource, type SyncReport } from "@/lib/sheets.functions";
-import { ITEM_CATEGORIES, percent, termSummary, termsOf, WEIGHTS } from "@/lib/assessments";
-import type { Category, MathSet } from "@/lib/sheet-parse";
-import { cn } from "@/lib/utils";
-
-const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
-const TERM_OPTIONS = [1, 2] as const;
-const SOURCE_LABEL: Record<SheetSource, string> = {
-  service_account: "Google service account",
-  api_key: "Google Sheets API key",
-  public_xlsx: "public link (full workbook)",
-};
-const control =
-  "rounded-md border border-input bg-card px-3 py-1.5 text-sm font-medium outline-none focus:border-primary";
-
-export function SheetGradebook() {
-  const { students, refresh, lastSync } = useApp();
-  const serverSync = useServerFn(syncGoogleSheet);
-  const [busy, setBusy] = useState(false);
-  const [report, setReport] = useState<SyncReport | null>(null);
-  const [syncError, setSyncError] = useState<string | null>(null);
-  const [set, setSet] = useState<MathSet>("S2M3");
-  const [term, setTerm] = useState<number>(1);
-  const [view, setView] = useState<Category | "summary">("summary");
-
-  const list = useMemo(
-    () =>
-      students
-        .filter((s) => s.set === set)
-        .sort((a, b) =>
-          `${a.className ?? ""}${(a.classNo ?? "").padStart(3, "0")}`.localeCompare(
-            `${b.className ?? ""}${(b.classNo ?? "").padStart(3, "0")}`,
-          ),
-        ),
-    [students, set],
-  );
-
-  const termsWithScores = useMemo(
-    () =>
-      termsOf(
-        list.flatMap((s) =>
-          (s.assessments ?? []).filter((a) => a.kind === "item" && (a.score !== null || a.absent)),
-        ),
-      ),
-    [list],
-  );
-  // If the chosen term has no marks yet, show the first term that does.
-  const activeTerm =
-    termsWithScores.length === 0 || termsWithScores.includes(term)
-      ? term
-      : (termsWithScores[0] ?? term);
-
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<Category, number>();
-    for (const c of ITEM_CATEGORIES) {
-      const labels = new Set<string>();
-      for (const s of list) {
-        for (const a of s.assessments ?? []) {
-          if (a.kind === "item" && a.term === activeTerm && a.category === c.id) {
-            labels.add(a.label);
-          }
-        }
-      }
-      counts.set(c.id, labels.size);
-    }
-    return counts;
-  }, [list, activeTerm]);
-
-  const columns = useMemo(() => {
-    const seen = new Map<string, { label: string; full: number | null; position: number }>();
-    for (const s of list) {
-      for (const a of s.assessments ?? []) {
-        if (
-          a.kind === "item" &&
-          a.term === activeTerm &&
-          a.category === view &&
-          !seen.has(a.label)
-        ) {
-          seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
-        }
-      }
-    }
-    return [...seen.values()].sort((a, b) => a.position - b.position);
-  }, [list, activeTerm, view]);
-
-  const missingFull = useMemo(
-    () => [
-      ...new Set(
-        students.flatMap((s) =>
-          (s.assessments ?? [])
-            .filter((a) => a.kind === "item" && a.score !== null && !a.full_marks)
-            .map((a) => `${s.set} ${a.label}`),
-        ),
-      ),
-    ],
-    [students],
-  );
-
-  const runSync = async () => {
-    setBusy(true);
-    setSyncError(null);
+    // New marks change ranks and rewards, so publish the game straight away. A failure here
+    // does not undo the sync; the teacher can publish again from the teacher bar.
+    let game: PublishReport | null = null;
+    let gameError: string | null = null;
     try {
-      const result = await serverSync();
-      setReport(result);
-      await refresh();
-      toast.success(`Synced ${result.students} students and ${result.scores} marks`);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Sync failed";
-      setSyncError(message);
-      toast.error(message);
-    } finally {
-      setBusy(false);
+      game = await publishGame(supabase);
+    } catch (err) {
+      gameError = errorMessage(err);
+      console.warn("[Game] Could not publish game data:", gameError);
     }
-  };
-
-  return (
-    <Panel
-      className="mt-6"
-      title="Assessment gradebook"
-      description={
-        <>
-          From{" "}
-          <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">
-            2627 Name list (For LMS)
-          </a>
-          {", "}
-          {lastSync
-            ? `last synced ${new Date(lastSync).toLocaleString("en-HK", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}`
-            : "not synced yet"}
-        </>
-      }
-      actions={
-        <Button onClick={() => void runSync()} disabled={busy}>
-          <RefreshCw className={cn(busy && "animate-spin")} />
-          {busy ? "Syncing…" : "Sync from Google Sheet"}
-        </Button>
-      }
-    >
-      {syncError && (
-        <div
-          role="alert"
-          className="mb-3 flex gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
-        >
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <p className="whitespace-pre-wrap">{syncError}</p>
-        </div>
-      )}
-
-      {report && !syncError && (
-        <div className="mb-3 rounded-md border border-success/30 bg-success/5 p-3 text-sm">
-          <p className="flex items-center gap-2 font-semibold text-success">
-            <CheckCircle2 className="h-4 w-4" />
-            Synced from the {SOURCE_LABEL[report.source]}: {report.students} students,{" "}
-            {report.scores} marks
-          </p>
-          <ul className="mt-1 space-y-0.5 text-muted-foreground">
-            {report.tabs.map((t) => (
-              <li key={t.set}>
-                {t.set}: {t.students} students, {t.term1Items} Term 1 items, {t.term2Items} Term 2
-                items, {t.scores} marks filled in
-              </li>
-            ))}
-          </ul>
-          {report.duplicates.length > 0 && (
-            <p className="mt-1 text-gold-deep">
-              Listed more than once (only the first row was kept): {report.duplicates.join(", ")}
-            </p>
-          )}
-        </div>
-      )}
-
-      {missingFull.length > 0 && (
-        <p className="mb-3 rounded-md border border-gold/50 bg-gold/10 p-2 text-sm">
-          Full marks are missing in the sheet for: {missingFull.join(", ")}. Percentages for these
-          items will appear once the &quot;Full marks&quot; row is filled in.
-        </p>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2">
-        <select
-          aria-label="Set"
-          value={set}
-          onChange={(e) => setSet(e.target.value as MathSet)}
-          className={control}
-        >
-          <option>S2M3</option>
-          <option>S2M5</option>
-        </select>
-        <select
-          aria-label="Term"
-          value={activeTerm}
-          onChange={(e) => setTerm(Number(e.target.value))}
-          className={control}
-        >
-          {TERM_OPTIONS.map((t) => (
-            <option key={t} value={t}>
-              Term {t}
-              {termsWithScores.includes(t) ? "" : " (no marks yet)"}
-            </option>
-          ))}
-        </select>
-        <div className="flex flex-wrap gap-0.5 rounded-md border border-border p-0.5">
-          <button
-            type="button"
-            onClick={() => setView("summary")}
-            className={cn(
-              "rounded px-3 py-1 text-xs font-semibold transition-colors",
-              view === "summary"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Weighted summary
-          </button>
-          {ITEM_CATEGORIES.map((c) => {
-            const count = categoryCounts.get(c.id) ?? 0;
-            return (
-              <button
-                type="button"
-                key={c.id}
-                onClick={() => setView(c.id)}
-                className={cn(
-                  "rounded px-3 py-1 text-xs font-semibold transition-colors",
-                  view === c.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {c.label}
-                {count > 0 ? ` (${count})` : ""}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="mt-4 overflow-x-auto">
-        {list.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No students in {set} yet. Press Sync from Google Sheet to import the class list and
-            marks.
-          </p>
-        ) : view !== "summary" && columns.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">
-            No {ITEM_CATEGORIES.find((c) => c.id === view)?.label ?? ""} marks for Term {activeTerm}{" "}
-            yet.
-          </p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
-                <th className="p-2">Class</th>
-                <th className="p-2">Student</th>
-                {view === "summary" ? (
-                  <>
-                    {WEIGHTS.map((w) => (
-                      <th key={w.id} className="p-2 text-center">
-                        {w.label} ({w.weight})
-                      </th>
-                    ))}
-                    <th className="p-2 text-center">Total /200</th>
-                  </>
-                ) : (
-                  columns.map((c) => (
-                    <th key={c.label} className="p-2 text-center">
-                      {c.label}
-                      {c.full ? ` (${c.full})` : ""}
-                    </th>
-                  ))
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((s) => {
-                const sum = termSummary(s.assessments ?? [], activeTerm);
-                return (
-                  <tr key={s.id} className="border-b border-border last:border-0">
-                    <td className="whitespace-nowrap p-2 text-muted-foreground">
-                      {s.className} {s.classNo}
-                    </td>
-                    <td className="p-2">
-                      <p className="font-medium">{s.name}</p>
-                      <p className="text-xs text-muted-foreground">{s.hlcNo ?? s.email}</p>
-                    </td>
-                    {view === "summary" ? (
-                      <>
-                        {sum.parts.map((p) => (
-                          <td key={p.id} className="p-2 text-center tabular-nums">
-                            {p.value ?? "—"}
-                          </td>
-                        ))}
-                        <td className="p-2 text-center font-semibold tabular-nums">
-                          {sum.coursework200}
-                        </td>
-                      </>
-                    ) : (
-                      columns.map((c) => {
-                        const a = s.assessments?.find(
-                          (x) => x.kind === "item" && x.term === activeTerm && x.label === c.label,
-                        );
-                        const pct = a ? percent(a) : null;
-                        return (
-                          <td key={c.label} className="p-1 text-center">
-                            <span
-                              title={pct === null ? "" : `${pct}%`}
-                              className={cn(
-                                "inline-block min-w-12 rounded px-1 py-0.5 text-xs font-semibold tabular-nums",
-                                a?.absent ? "bg-muted text-muted-foreground" : scoreTone(pct),
-                              )}
-                            >
-                              {!a || (a.score === null && !a.absent)
-                                ? "—"
-                                : a.absent
-                                  ? "ABS"
-                                  : a.score}
-                            </span>
-                          </td>
-                        );
-                      })
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </Panel>
-  );
-}
-````
+    return {
+      source,
+      students: parsed.length,
+      scores: rows.length,
+      syncedAt,
+      tabs,
+      duplicates,
+      game,
+      gameError,
+    };
+  });
+```
 
 ## File: src/routes/_authenticated/teacher.tsx
-````typescript
+```typescript
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Eraser, FileUp, Plus, Search } from "lucide-react";
@@ -12635,7 +5862,6 @@ import {
   weakTopics,
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
-
 export const Route = createFileRoute("/_authenticated/teacher")({
   head: () => ({
     meta: [
@@ -12652,18 +5878,15 @@ export const Route = createFileRoute("/_authenticated/teacher")({
   }),
   component: Teacher,
 });
-
 const SETS: MathSet[] = ["S2M3", "S2M5"];
 const control =
   "rounded-md border border-input bg-card px-3 py-1.5 text-sm outline-none focus:border-primary";
-
 function Teacher() {
   const { students, refresh } = useApp();
   const [q, setQ] = useState("");
   const [setF, setSetF] = useState<"All" | MathSet>("All");
   const [editing, setEditing] = useState<{ id: string; ch: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
   const stats = SETS.map((set) => {
     const list = students.filter((s) => s.set === set);
     const chAvg = CHAPTERS.map((_, i) => {
@@ -12686,7 +5909,6 @@ function Teacher() {
       weakest,
     };
   });
-
   const rows = useMemo(
     () =>
       students
@@ -12695,7 +5917,6 @@ function Teacher() {
         .sort((a, b) => formRank(a, students) - formRank(b, students)),
     [students, q, setF],
   );
-
   const manualStudents = students.filter((s) => (s.scoreSources ?? []).includes("manual"));
   const manualCount = students.reduce(
     (n, s) => n + (s.scoreSources ?? []).filter((x) => x === "manual").length,
@@ -12705,7 +5926,6 @@ function Teacher() {
     () => unmatchedChapterLabels(students.flatMap((s) => s.assessments ?? [])),
     [students],
   );
-
   const updateScore = async (id: string, ch: number, val: string) => {
     try {
       const parsedScore = scoreSchema.parse(val.trim() === "" ? null : Number(val));
@@ -12722,7 +5942,6 @@ function Teacher() {
       toast.error(e instanceof Error ? e.message : "Could not save the score");
     }
   };
-
   const clearManual = async () => {
     const ids = manualStudents.map((s) => s.id);
     if (!ids.length) return;
@@ -12747,7 +5966,6 @@ function Teacher() {
       toast.error(e instanceof Error ? e.message : "Could not clear the scores");
     }
   };
-
   const importCsv = async (file: File) => {
     try {
       const map = parseScoreCsv(await file.text());
@@ -12772,7 +5990,6 @@ function Teacher() {
       toast.error(e instanceof Error ? e.message : "Import failed");
     }
   };
-
   return (
     <AppShell>
       <TeacherOnly>
@@ -12781,7 +5998,6 @@ function Teacher() {
           description="Marks from the class Google Sheet, chapter averages and the master score table."
         />
         <SheetGradebook />
-
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {stats.map((st) => (
             <Panel key={st.set} title={st.set} description={`${st.n} students`}>
@@ -12823,7 +6039,6 @@ function Teacher() {
             </Panel>
           ))}
         </div>
-
         <button
           type="button"
           onDragOver={(e) => e.preventDefault()}
@@ -12854,7 +6069,6 @@ function Teacher() {
             e.target.value = "";
           }}
         />
-
         <Panel
           className="mt-6"
           title="Master score table"
@@ -13002,13 +6216,11 @@ function Teacher() {
             </table>
           </div>
         </Panel>
-
         <AddStudentForm />
       </TeacherOnly>
     </AppShell>
   );
 }
-
 function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border bg-muted/40 p-3">
@@ -13017,7 +6229,6 @@ function Figure({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
 function AddStudentForm() {
   const { refresh } = useApp();
   const [set, setSet] = useState<MathSet>("S2M3");
@@ -13090,356 +6301,1646 @@ function AddStudentForm() {
     </Panel>
   );
 }
-````
+```
 
-## File: src/routes/_authenticated/upload.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
-import {
-  ArrowDown,
-  ArrowUp,
-  ExternalLink,
-  Eye,
-  FileText,
-  ListChecks,
-  Plus,
-  Trash2,
-  Video,
-} from "lucide-react";
+## File: src/components/SheetGradebook.tsx
+```typescript
+import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { AppShell, TeacherOnly } from "@/components/AppShell";
-import { PageHeader } from "@/components/PageParts";
-import { CHAPTERS } from "@/lib/data";
-import { useApp } from "@/lib/app-store";
-import { parseVideoSource } from "@/lib/video-watch";
-import { isStoragePath, isWebLink, notesPreviewUrl } from "@/lib/drive-link";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { scoreTone } from "@/components/AppShell";
+import { Panel } from "@/components/PageParts";
+import { useApp } from "@/lib/app-store";
+import { syncGoogleSheet, type SheetSource, type SyncReport } from "@/lib/sheets.functions";
+import { ITEM_CATEGORIES, percent, termSummary, termsOf, WEIGHTS } from "@/lib/assessments";
+import { termResult } from "@/lib/gamification/rules";
+import type { Category, MathSet } from "@/lib/sheet-parse";
 import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/upload")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Chapter content — HLC Math" },
-      {
-        name: "description",
-        content: "Add videos, notes and exercises for each Mathematics chapter.",
-      },
-      { property: "og:title", content: "Chapter content — HLC Math" },
-      { property: "og:description", content: "Prepare S2 chapter content for students." },
-    ],
-  }),
-  component: Upload,
-});
-
-interface DraftVideo {
-  id: string;
-  title: string;
-  url: string;
-}
-interface Draft {
-  notes: string;
-  quiz: string;
-  videos: DraftVideo[];
-}
-const input =
-  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
-
-function Upload() {
-  const { content, videos, refresh } = useApp();
+const SPREADSHEET_ID = "1alJ2ErpHOBgHMCT5vixmopRMlfO-yUr3wDPcYqxLbX8";
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
+const TERM_OPTIONS = [1, 2] as const;
+const SOURCE_LABEL: Record<SheetSource, string> = {
+  service_account: "Google service account",
+  api_key: "Google Sheets API key",
+  public_xlsx: "public link (full workbook)",
+};
+const control =
+  "rounded-md border border-input bg-card px-3 py-1.5 text-sm font-medium outline-none focus:border-primary";
+export function SheetGradebook() {
+  const { students, refresh, lastSync } = useApp();
+  const serverSync = useServerFn(syncGoogleSheet);
   const [busy, setBusy] = useState(false);
-  const [ch, setCh] = useState(1);
-  const [drafts, setDrafts] = useState<Record<number, Draft>>({});
-  const saved = (chapter: number): Draft => {
-    const c = content.find((x) => x.chapter === chapter);
-    return {
-      notes: c?.notes ?? "",
-      quiz: c?.quiz ?? "",
-      videos: videos
-        .filter((v) => v.chapter === chapter)
-        .map((v) => ({ id: v.id, title: v.title, url: v.url })),
-    };
-  };
-  const cur = drafts[ch] ?? saved(ch);
-  const update = (patch: Partial<Draft>) => setDrafts({ ...drafts, [ch]: { ...cur, ...patch } });
-  const setVideo = (i: number, patch: Partial<DraftVideo>) =>
-    update({ videos: cur.videos.map((v, j) => (j === i ? { ...v, ...patch } : v)) });
-  const move = (i: number, d: number) => {
-    const list = [...cur.videos];
-    const [v] = list.splice(i, 1);
-    if (v) list.splice(i + d, 0, v);
-    update({ videos: list });
-  };
-
-  const notes = cur.notes.trim();
-  const oldPdf = isStoragePath(notes);
-  const notesInvalid = notes !== "" && !oldPdf && !isWebLink(notes);
-  const preview = isWebLink(notes) ? notesPreviewUrl(notes) : null;
-
-  const save = async () => {
-    setBusy(true);
-    try {
-      if (notesInvalid)
-        throw new Error("Chapter notes: paste the full Google Drive link, starting with https://");
-      cur.videos.forEach((v, i) => {
-        if (!v.title.trim()) throw new Error(`Give video ${i + 1} a name`);
-        if (!parseVideoSource(v.url)) {
-          throw new Error(
-            `Video ${i + 1} ("${v.title}") needs a YouTube link or an https link to an .mp4 or .webm file`,
-          );
+  const [report, setReport] = useState<SyncReport | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [set, setSet] = useState<MathSet>("S2M3");
+  const [term, setTerm] = useState<number>(1);
+  const [view, setView] = useState<Category | "summary">("summary");
+  const list = useMemo(
+    () =>
+      students
+        .filter((s) => s.set === set)
+        .sort((a, b) =>
+          `${a.className ?? ""}${(a.classNo ?? "").padStart(3, "0")}`.localeCompare(
+            `${b.className ?? ""}${(b.classNo ?? "").padStart(3, "0")}`,
+          ),
+        ),
+    [students, set],
+  );
+  const termsWithScores = useMemo(
+    () =>
+      termsOf(
+        list.flatMap((s) =>
+          (s.assessments ?? []).filter((a) => a.kind === "item" && (a.score !== null || a.absent)),
+        ),
+      ),
+    [list],
+  );
+  // If the chosen term has no marks yet, show the first term that does.
+  const activeTerm =
+    termsWithScores.length === 0 || termsWithScores.includes(term)
+      ? term
+      : (termsWithScores[0] ?? term);
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<Category, number>();
+    for (const c of ITEM_CATEGORIES) {
+      const labels = new Set<string>();
+      for (const s of list) {
+        for (const a of s.assessments ?? []) {
+          if (a.kind === "item" && a.term === activeTerm && a.category === c.id) {
+            labels.add(a.label);
+          }
         }
-      });
-      const { error } = await supabase
-        .from("chapter_content")
-        .upsert({ chapter: ch, notes, quiz: cur.quiz });
-      if (error) throw error;
-      const keep = new Set(cur.videos.map((v) => v.id));
-      const removed = videos.filter((v) => v.chapter === ch && !keep.has(v.id)).map((v) => v.id);
-      if (removed.length) {
-        const r = await supabase.from("chapter_videos").delete().in("id", removed);
-        if (r.error) throw r.error;
       }
-      if (cur.videos.length) {
-        const r = await supabase.from("chapter_videos").upsert(
-          cur.videos.map((v, i) => ({
-            id: v.id,
-            chapter: ch,
-            title: v.title.trim(),
-            url: v.url.trim(),
-            position: i,
-          })),
-        );
-        if (r.error) throw r.error;
+      counts.set(c.id, labels.size);
+    }
+    return counts;
+  }, [list, activeTerm]);
+  const columns = useMemo(() => {
+    const seen = new Map<string, { label: string; full: number | null; position: number }>();
+    for (const s of list) {
+      for (const a of s.assessments ?? []) {
+        if (
+          a.kind === "item" &&
+          a.term === activeTerm &&
+          a.category === view &&
+          !seen.has(a.label)
+        ) {
+          seen.set(a.label, { label: a.label, full: a.full_marks, position: a.position });
+        }
       }
+    }
+    return [...seen.values()].sort((a, b) => a.position - b.position);
+  }, [list, activeTerm, view]);
+  const missingFull = useMemo(
+    () => [
+      ...new Set(
+        students.flatMap((s) =>
+          (s.assessments ?? [])
+            .filter((a) => a.kind === "item" && a.score !== null && !a.full_marks)
+            .map((a) => `${s.set} ${a.label}`),
+        ),
+      ),
+    ],
+    [students],
+  );
+  const runSync = async () => {
+    setBusy(true);
+    setSyncError(null);
+    try {
+      const result = await serverSync();
+      setReport(result);
       await refresh();
-      setDrafts((d) => {
-        const n = { ...d };
-        delete n[ch];
-        return n;
-      });
-      toast.success(`Chapter ${ch} saved`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save");
+      toast.success(`Synced ${result.students} students and ${result.scores} marks`);
+      if (result.gameError)
+        toast.error(`Marks saved, but game data was not published: ${result.gameError}`);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Sync failed";
+      setSyncError(message);
+      toast.error(message);
     } finally {
       setBusy(false);
     }
   };
-
+  const termNo: 1 | 2 = activeTerm === 2 ? 2 : 1;
   return (
-    <AppShell>
-      <TeacherOnly>
-        <PageHeader
-          title="Chapter content"
-          description="Videos, notes and an exercise for each chapter. Students earn 1 Math Coin for each video they watch to the end."
-        />
-        <div className="mt-6 grid gap-6 lg:grid-cols-[260px_1fr]">
-          <nav
-            aria-label="Chapters"
-            className="flex gap-2 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-hidden lg:rounded-lg lg:border lg:border-border lg:bg-card"
-          >
-            {CHAPTERS.map((c) => {
-              const n = videos.filter((v) => v.chapter === c.id).length;
-              return (
-                <button
-                  type="button"
-                  key={c.id}
-                  onClick={() => setCh(c.id)}
-                  className={cn(
-                    "flex min-w-48 items-center gap-3 rounded-md border px-3 py-2.5 text-left lg:min-w-0 lg:rounded-none lg:border-0 lg:border-b lg:last:border-b-0",
-                    ch === c.id
-                      ? "border-primary bg-primary/5 lg:border-l-4 lg:border-l-primary"
-                      : "border-border bg-card hover:bg-muted/50",
-                  )}
-                >
-                  <span className="w-5 shrink-0 text-sm font-semibold tabular-nums text-muted-foreground">
-                    {c.id}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">{c.short}</span>
-                    <span className="block text-xs text-muted-foreground">
-                      {n} video{n === 1 ? "" : "s"}
-                      {drafts[c.id] ? ", unsaved changes" : ""}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-          </nav>
-          <div className="space-y-6 rounded-lg border border-border bg-card p-6 shadow-chunky">
-            <div className="flex flex-wrap items-center gap-3 border-b border-border pb-4">
-              <h2 className="mr-auto text-lg font-semibold">
-                Chapter {ch}: {CHAPTERS[ch - 1]?.title}
-              </h2>
-              <Link
-                to="/courses/$chapter"
-                params={{ chapter: String(ch) }}
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                <Eye className="h-4 w-4" /> Preview as student
-              </Link>
-            </div>
-
-            <Field icon={<Video className="h-4 w-4 text-primary" />} label="Videos">
-              <div className="space-y-3">
-                {cur.videos.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No videos yet.</p>
-                )}
-                {cur.videos.map((v, i) => {
-                  const ok = !v.url || parseVideoSource(v.url);
-                  return (
-                    <div key={v.id} className="rounded-md border border-border p-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-muted-foreground">
-                          {i + 1}.
-                        </span>
-                        <input
-                          aria-label={`Video ${i + 1} name`}
-                          value={v.title}
-                          onChange={(e) => setVideo(i, { title: e.target.value })}
-                          placeholder="Video name, e.g. 5.1 Solving by substitution"
-                          className={input}
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label="Move up"
-                          disabled={i === 0}
-                          onClick={() => move(i, -1)}
-                        >
-                          <ArrowUp />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label="Move down"
-                          disabled={i === cur.videos.length - 1}
-                          onClick={() => move(i, 1)}
-                        >
-                          <ArrowDown />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Remove video ${i + 1}`}
-                          onClick={() => update({ videos: cur.videos.filter((_, j) => j !== i) })}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </div>
-                      <input
-                        aria-label={`Video ${i + 1} link`}
-                        value={v.url}
-                        onChange={(e) => setVideo(i, { url: e.target.value })}
-                        placeholder="https://www.youtube.com/watch?v=…"
-                        className={cn(input, "mt-2", !ok && "border-destructive")}
-                      />
-                      {!ok && (
-                        <p className="mt-1 text-xs text-destructive">
-                          Use a YouTube link or an https link to an .mp4 or .webm file so it can
-                          play inside HLC Math.
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    update({
-                      videos: [...cur.videos, { id: crypto.randomUUID(), title: "", url: "" }],
-                    })
-                  }
-                >
-                  <Plus /> Add video
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Removing a video keeps the coins students already earned from it.
-                </p>
-              </div>
-            </Field>
-
-            <Field
-              icon={<FileText className="h-4 w-4 text-success" />}
-              label="Chapter notes (Google Drive link)"
-            >
-              <input
-                aria-label="Google Drive link for chapter notes"
-                value={oldPdf ? "" : cur.notes}
-                onChange={(e) => update({ notes: e.target.value })}
-                placeholder="https://drive.google.com/file/d/…/view"
-                className={cn(input, notesInvalid && "border-destructive")}
-              />
-              {oldPdf && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  This chapter still uses a PDF uploaded to HLC Math. Paste a Google Drive link to
-                  replace it.
-                </p>
-              )}
-              {notesInvalid && (
-                <p className="mt-1 text-xs text-destructive">
-                  Paste the full link, starting with https://
-                </p>
-              )}
-              {isWebLink(notes) && (
-                <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-success">
-                  {preview
-                    ? "Students will see this file inside the chapter page."
-                    : "Students will get a button that opens this link."}
-                  <a
-                    href={notes}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-primary underline"
-                  >
-                    Test link <ExternalLink className="h-3 w-3" />
-                  </a>
-                </p>
-              )}
-              <p className="mt-1 text-xs text-muted-foreground">
-                In Google Drive: Share, then General access, then HLC (or Anyone with the link) as
-                Viewer, then Copy link.
-              </p>
-            </Field>
-
-            <Field icon={<ListChecks className="h-4 w-4 text-gold-deep" />} label="Exercise">
-              <textarea
-                value={cur.quiz}
-                onChange={(e) => update({ quiz: e.target.value })}
-                rows={6}
-                placeholder={"Q1. Solve x + y = 5 and x − y = 1.\nQ2. …"}
-                className={input}
-              />
-            </Field>
-
-            <Button disabled={busy} onClick={() => void save()}>
-              {busy ? "Saving…" : "Save chapter"}
-            </Button>
-          </div>
+    <Panel
+      className="mt-6"
+      title="Assessment gradebook"
+      description={
+        <>
+          From{" "}
+          <a href={SHEET_URL} target="_blank" rel="noreferrer" className="text-primary underline">
+            2627 Name list (For LMS)
+          </a>
+          {", "}
+          {lastSync
+            ? `last synced ${new Date(lastSync).toLocaleString("en-HK", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}`
+            : "not synced yet"}
+        </>
+      }
+      actions={
+        <Button onClick={() => void runSync()} disabled={busy}>
+          <RefreshCw className={cn(busy && "animate-spin")} />
+          {busy ? "Syncing…" : "Sync from Google Sheet"}
+        </Button>
+      }
+    >
+      {syncError && (
+        <div
+          role="alert"
+          className="mb-3 flex gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p className="whitespace-pre-wrap">{syncError}</p>
         </div>
-      </TeacherOnly>
-    </AppShell>
+      )}
+      {report && !syncError && (
+        <div className="mb-3 rounded-md border border-success/30 bg-success/5 p-3 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-success">
+            <CheckCircle2 className="h-4 w-4" />
+            Synced from the {SOURCE_LABEL[report.source]}: {report.students} students,{" "}
+            {report.scores} marks
+          </p>
+          <ul className="mt-1 space-y-0.5 text-muted-foreground">
+            {report.tabs.map((t) => (
+              <li key={t.set}>
+                {t.set}: {t.students} students, {t.term1Items} Term 1 items, {t.term2Items} Term 2
+                items, {t.scores} marks filled in
+              </li>
+            ))}
+            <li>
+              {report.game
+                ? `Ranks, charts and leaderboards published for ${report.game.students} students${
+                    report.game.newRewards ? `, ${report.game.newRewards} new rewards given` : ""
+                  }.`
+                : `Game data not published: ${report.gameError ?? "unknown error"}`}
+            </li>
+          </ul>
+          {report.duplicates.length > 0 && (
+            <p className="mt-1 text-gold-deep">
+              Listed more than once (only the first row was kept): {report.duplicates.join(", ")}
+            </p>
+          )}
+        </div>
+      )}
+      {missingFull.length > 0 && (
+        <p className="mb-3 rounded-md border border-gold/50 bg-gold/10 p-2 text-sm">
+          Full marks are missing in the sheet for: {missingFull.join(", ")}. Percentages for these
+          items will appear once the &quot;Full marks&quot; row is filled in.
+        </p>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          aria-label="Set"
+          value={set}
+          onChange={(e) => setSet(e.target.value as MathSet)}
+          className={control}
+        >
+          <option>S2M3</option>
+          <option>S2M5</option>
+        </select>
+        <select
+          aria-label="Term"
+          value={activeTerm}
+          onChange={(e) => setTerm(Number(e.target.value))}
+          className={control}
+        >
+          {TERM_OPTIONS.map((t) => (
+            <option key={t} value={t}>
+              Term {t}
+              {termsWithScores.includes(t) ? "" : " (no marks yet)"}
+            </option>
+          ))}
+        </select>
+        <div className="flex flex-wrap gap-0.5 rounded-md border border-border p-0.5">
+          <button
+            type="button"
+            onClick={() => setView("summary")}
+            className={cn(
+              "rounded px-3 py-1 text-xs font-semibold transition-colors",
+              view === "summary"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            CA and term score
+          </button>
+          {ITEM_CATEGORIES.map((c) => {
+            const count = categoryCounts.get(c.id) ?? 0;
+            return (
+              <button
+                type="button"
+                key={c.id}
+                onClick={() => setView(c.id)}
+                className={cn(
+                  "rounded px-3 py-1 text-xs font-semibold transition-colors",
+                  view === c.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {c.label}
+                {count > 0 ? ` (${count})` : ""}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="mt-4 overflow-x-auto">
+        {list.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No students in {set} yet. Press Sync from Google Sheet to import the class list and
+            marks.
+          </p>
+        ) : view !== "summary" && columns.length === 0 ? (
+          <p className="py-4 text-sm text-muted-foreground">
+            No {ITEM_CATEGORIES.find((c) => c.id === view)?.label ?? ""} marks for Term {activeTerm}{" "}
+            yet.
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
+                <th className="p-2">Class</th>
+                <th className="p-2">Student</th>
+                {view === "summary" ? (
+                  <>
+                    {WEIGHTS.map((w) => (
+                      <th key={w.id} className="p-2 text-center">
+                        {w.label} ({w.weight})
+                      </th>
+                    ))}
+                    <th className="p-2 text-center">CA (T{termNo}A2) /200</th>
+                    <th className="p-2 text-center">TT /200</th>
+                    <th className="p-2 text-center">Exam (T{termNo}A3) /200</th>
+                    <th className="p-2 text-center">Term total /200</th>
+                  </>
+                ) : (
+                  columns.map((c) => (
+                    <th key={c.label} className="p-2 text-center">
+                      {c.label}
+                      {c.full ? ` (${c.full})` : ""}
+                    </th>
+                  ))
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((s) => {
+                const sum = termSummary(s.assessments ?? [], activeTerm);
+                const result = termResult(s.assessments ?? [], termNo);
+                return (
+                  <tr key={s.id} className="border-b border-border last:border-0">
+                    <td className="whitespace-nowrap p-2 text-muted-foreground">
+                      {s.className} {s.classNo}
+                    </td>
+                    <td className="p-2">
+                      <p className="font-medium">{s.name}</p>
+                      <p className="text-xs text-muted-foreground">{s.hlcNo ?? s.email}</p>
+                    </td>
+                    {view === "summary" ? (
+                      <>
+                        {sum.parts.map((p) => (
+                          <td key={p.id} className="p-2 text-center tabular-nums">
+                            {p.value ?? "—"}
+                          </td>
+                        ))}
+                        <td className="p-2 text-center font-semibold tabular-nums">
+                          {result.ca ?? "—"}
+                        </td>
+                        <td className="p-2 text-center tabular-nums">{result.tt ?? "—"}</td>
+                        <td className="p-2 text-center tabular-nums">{result.exam ?? "—"}</td>
+                        <td className="p-2 text-center font-semibold tabular-nums">
+                          {result.total ?? "—"}
+                        </td>
+                      </>
+                    ) : (
+                      columns.map((c) => {
+                        const a = s.assessments?.find(
+                          (x) => x.kind === "item" && x.term === activeTerm && x.label === c.label,
+                        );
+                        const pct = a ? percent(a) : null;
+                        return (
+                          <td key={c.label} className="p-1 text-center">
+                            <span
+                              title={pct === null ? "" : `${pct}%`}
+                              className={cn(
+                                "inline-block min-w-12 rounded px-1 py-0.5 text-xs font-semibold tabular-nums",
+                                a?.absent ? "bg-muted text-muted-foreground" : scoreTone(pct),
+                              )}
+                            >
+                              {!a || (a.score === null && !a.absent)
+                                ? "—"
+                                : a.absent
+                                  ? "ABS"
+                                  : a.score}
+                            </span>
+                          </td>
+                        );
+                      })
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Term total = 20% Term Test + 40% CA + 40% Exam. It stays empty until all three have a mark.
+      </p>
+    </Panel>
   );
 }
+```
 
-function Field({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+## File: src/components/AppShell.tsx
+```typescript
+import { Link, useNavigate } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import { CheckCircle2, Circle, GraduationCap, LogOut, PlayCircle } from "lucide-react";
+import { GlobalBars } from "@/components/GlobalBars";
+import { AvatarBadge, FrameStyles, TitleTag } from "@/components/game/AvatarBadge";
+import { useApp } from "@/lib/app-store";
+import { displayCoins } from "@/lib/gamification/rules";
+import { STUDENT_NAV, TEACHER_NAV, navKey, visibleNav, type NavItem } from "@/lib/nav";
+import { TONES, toneForPath } from "@/lib/tones";
+import { cn } from "@/lib/utils";
+/** The student's Math Coins balance, shown in the top bar. */
+function CoinChip({ amount }: { amount: number }) {
   return (
-    <div>
-      <p className="mb-2 flex items-center gap-2 text-sm font-semibold">
-        {icon} {label}
-      </p>
-      {children}
+    <Link
+      to="/shop"
+      title="Math Coins: open the Shop"
+      className="flex items-center gap-1.5 rounded-full bg-gold/30 py-1 pl-1 pr-3 text-sm font-bold text-gold-deep transition-transform hover:-translate-y-0.5"
+    >
+      <span
+        aria-hidden="true"
+        className="grid h-6 w-6 place-items-center rounded-full bg-gold text-xs font-bold text-accent-foreground shadow-coin"
+      >
+        M
+      </span>
+      <span className="tabular-nums">{amount}</span>
+      <span className="sr-only">Math Coins</span>
+    </Link>
+  );
+}
+/** The student's avatar, name and title in the top bar; opens the profile page. */
+function ProfileChip({ compact = false }: { compact?: boolean }) {
+  const { me, cosmeticsOf } = useApp();
+  const c = cosmeticsOf(me.id);
+  const firstName = me.name.split(" ")[0] ?? me.name;
+  return (
+    <Link
+      to="/profile"
+      title="My profile"
+      className="flex items-center gap-2 rounded-full py-0.5 pl-0.5 pr-2 transition-transform hover:-translate-y-0.5"
+    >
+      <AvatarBadge avatarId={c.avatarId} frameId={c.equippedFrameId} size="sm" />
+      {compact ? null : (
+        <span className="hidden flex-col leading-tight sm:flex">
+          <span className="text-sm font-bold">{firstName}</span>
+          <TitleTag titleId={c.equippedTitle} className="px-1.5 py-0 text-[10px]" />
+        </span>
+      )}
+    </Link>
+  );
+}
+/** One entry in the desktop navigation rail. */
+function RailItem({ item }: { item: NavItem }) {
+  if (item.status === "soon") {
+    return (
+      <span
+        aria-disabled="true"
+        title={`${item.label} is coming soon`}
+        className="flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-bold leading-tight text-nav-foreground/45"
+      >
+        <span className="grid h-10 w-10 place-items-center rounded-xl border-2 border-dashed border-nav-foreground/25">
+          <item.icon className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <span>{item.label}</span>
+        <span className="rounded-full bg-nav-foreground/10 px-1.5 text-[10px] font-semibold">
+          Soon
+        </span>
+      </span>
+    );
+  }
+  const tone = TONES[toneForPath(item.to)];
+  return (
+    <Link
+      to={item.to}
+      className="group flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-bold leading-tight"
+    >
+      {({ isActive }) => (
+        <>
+          <span
+            className={cn(
+              "grid h-10 w-10 place-items-center rounded-xl transition-transform group-hover:-translate-y-0.5",
+              isActive ? tone.solid : cn(tone.dim, "text-nav-foreground"),
+            )}
+          >
+            <item.icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span
+            className={
+              isActive
+                ? "text-nav-foreground"
+                : "text-nav-foreground/70 group-hover:text-nav-foreground"
+            }
+          >
+            {item.label}
+          </span>
+        </>
+      )}
+    </Link>
+  );
+}
+/** One pill in the mobile navigation strip. */
+function PillItem({ item }: { item: NavItem }) {
+  if (item.status === "soon") {
+    return (
+      <span
+        aria-disabled="true"
+        title={`${item.label} is coming soon`}
+        className="flex shrink-0 items-center gap-1.5 rounded-full border border-dashed border-nav-foreground/30 px-3.5 py-1.5 text-sm font-bold text-nav-foreground/45"
+      >
+        <item.icon className="h-4 w-4" aria-hidden="true" />
+        {item.label}
+      </span>
+    );
+  }
+  const tone = TONES[toneForPath(item.to)];
+  return (
+    <Link to={item.to} className="shrink-0">
+      {({ isActive }) => (
+        <span
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-bold",
+            isActive ? tone.flat : "bg-white/10 text-nav-foreground/85",
+          )}
+        >
+          <item.icon className="h-4 w-4" aria-hidden="true" />
+          {item.label}
+        </span>
+      )}
+    </Link>
+  );
+}
+export function AppShell({ children }: { children: ReactNode }) {
+  const { session, role, logout, ready, error, me, isPreview } = useApp();
+  const navigate = useNavigate();
+  const items = visibleNav(role === "student" ? STUDENT_NAV : TEACHER_NAV, isPreview);
+  const home = role === "teacher" ? "/teacher" : "/dashboard";
+  const context = isPreview
+    ? `${me.set} student preview`
+    : role === "teacher"
+      ? "Teacher"
+      : me.id
+        ? me.set
+        : "Student";
+  const showCoins = role === "student" && Boolean(me.id);
+  const coins = displayCoins(me);
+  const signOut = async () => {
+    await logout();
+    await navigate({ to: "/", replace: true });
+  };
+  return (
+    <div className="min-h-screen bg-background md:pl-[88px]">
+      <FrameStyles />
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[88px] flex-col bg-nav text-nav-foreground md:flex">
+        <Link
+          to={home}
+          aria-label="HLC Math home"
+          className="flex h-[72px] shrink-0 items-center justify-center"
+        >
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold text-accent-foreground shadow-chunky-gold">
+            <GraduationCap className="h-6 w-6" />
+          </span>
+        </Link>
+        <nav aria-label="Main" className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-1">
+          {items.map((item) => (
+            <RailItem key={navKey(item)} item={item} />
+          ))}
+        </nav>
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="group mx-2 mb-3 flex flex-col items-center gap-1 rounded-xl px-1 py-2 text-[11px] font-bold text-nav-foreground/70 transition-colors hover:text-nav-foreground"
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 group-hover:bg-white/20">
+            <LogOut className="h-5 w-5" aria-hidden="true" />
+          </span>
+          Sign out
+        </button>
+      </aside>
+      <GlobalBars />
+      <header className="sticky top-0 z-30 bg-nav text-nav-foreground md:hidden">
+        <div className="flex items-center gap-3 px-4 py-2.5">
+          <Link to={home} className="flex items-center gap-2 font-bold">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-gold text-accent-foreground">
+              <GraduationCap className="h-5 w-5" aria-hidden="true" />
+            </span>
+            HLC Mathematics
+          </Link>
+          <div className="ml-auto flex items-center gap-2">
+            {showCoins ? <ProfileChip compact /> : null}
+            {showCoins ? <CoinChip amount={coins} /> : null}
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              aria-label="Sign out"
+              className="rounded-lg p-2 text-nav-foreground/80 hover:bg-white/10"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        <nav aria-label="Main" className="flex gap-1.5 overflow-x-auto px-3 pb-3">
+          {items.map((item) => (
+            <PillItem key={navKey(item)} item={item} />
+          ))}
+        </nav>
+      </header>
+      <div className="hidden h-14 items-center gap-3 border-b-2 border-border bg-card px-8 md:flex">
+        <p className="flex items-center gap-2 text-sm">
+          <span className="font-bold">HLC Mathematics</span>
+          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary-deep">
+            {context}
+          </span>
+        </p>
+        <div className="ml-auto flex items-center gap-3">
+          {showCoins ? <CoinChip amount={coins} /> : null}
+          {showCoins ? <ProfileChip /> : null}
+          <p className="truncate text-sm text-muted-foreground">{session?.email}</p>
+        </div>
+      </div>
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
+        {!ready ? (
+          <p className="text-sm text-muted-foreground">Loading your records…</p>
+        ) : error ? (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        ) : !session ? (
+          <Link to="/" className="text-primary underline">
+            Sign in
+          </Link>
+        ) : role === "student" && !me.id ? (
+          <p className="text-sm">
+            Your school account is not linked to a student record yet. Please contact your
+            Mathematics teacher.
+          </p>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }
-````
+export function TeacherOnly({ children }: { children: ReactNode }) {
+  const { role } = useApp();
+  return role === "teacher" ? children : <p>Teacher access required.</p>;
+}
+export function scoreTone(s: number | null) {
+  return s === null
+    ? "bg-muted text-muted-foreground"
+    : s >= 85
+      ? "bg-success/15 text-success-deep"
+      : s >= 60
+        ? "bg-primary/10 text-primary-deep"
+        : "bg-destructive/12 text-destructive";
+}
+export const CHAPTER_STATUS = {
+  Completed: { cls: "bg-success/15 text-success-deep", icon: CheckCircle2 },
+  "In Progress": { cls: "bg-gold/30 text-gold-deep", icon: PlayCircle },
+  "Not Started": { cls: "bg-muted text-muted-foreground", icon: Circle },
+};
+```
+
+## File: src/integrations/supabase/types.ts
+```typescript
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18";
+  };
+  public: {
+    Tables: {
+      assessment_scores: {
+        Row: {
+          absent: boolean;
+          category: string;
+          full_marks: number | null;
+          kind: string;
+          label: string;
+          position: number;
+          score: number | null;
+          student_id: string;
+          synced_at: string;
+          term: number;
+        };
+        Insert: {
+          absent?: boolean;
+          category: string;
+          full_marks?: number | null;
+          kind: string;
+          label: string;
+          position?: number;
+          score?: number | null;
+          student_id: string;
+          synced_at?: string;
+          term: number;
+        };
+        Update: {
+          absent?: boolean;
+          category?: string;
+          full_marks?: number | null;
+          kind?: string;
+          label?: string;
+          position?: number;
+          score?: number | null;
+          student_id?: string;
+          synced_at?: string;
+          term?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_scores_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chapter_content: {
+        Row: {
+          chapter: number;
+          notes: string;
+          quiz: string;
+          updated_at: string;
+          video: string;
+        };
+        Insert: {
+          chapter: number;
+          notes?: string;
+          quiz?: string;
+          updated_at?: string;
+          video?: string;
+        };
+        Update: {
+          chapter?: number;
+          notes?: string;
+          quiz?: string;
+          updated_at?: string;
+          video?: string;
+        };
+        Relationships: [];
+      };
+      chapter_scores: {
+        Row: {
+          chapter: number;
+          score: number | null;
+          student_id: string;
+        };
+        Insert: {
+          chapter: number;
+          score?: number | null;
+          student_id: string;
+        };
+        Update: {
+          chapter?: number;
+          score?: number | null;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chapter_scores_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chapter_self_checks: {
+        Row: {
+          chapter: number;
+          checked_at: string;
+          objective_id: string;
+          student_id: string;
+        };
+        Insert: {
+          chapter: number;
+          checked_at?: string;
+          objective_id: string;
+          student_id: string;
+        };
+        Update: {
+          chapter?: number;
+          checked_at?: string;
+          objective_id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chapter_self_checks_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chapter_video_completions: {
+        Row: {
+          chapter: number;
+          completed_at: string;
+          id: string;
+          marks: number;
+          student_id: string;
+          video_id: string | null;
+          video_title: string;
+        };
+        Insert: {
+          chapter: number;
+          completed_at?: string;
+          id?: string;
+          marks?: number;
+          student_id: string;
+          video_id?: string | null;
+          video_title: string;
+        };
+        Update: {
+          chapter?: number;
+          completed_at?: string;
+          id?: string;
+          marks?: number;
+          student_id?: string;
+          video_id?: string | null;
+          video_title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chapter_video_completions_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chapter_video_completions_video_id_fkey";
+            columns: ["video_id"];
+            isOneToOne: false;
+            referencedRelation: "chapter_videos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chapter_videos: {
+        Row: {
+          chapter: number;
+          created_at: string;
+          id: string;
+          position: number;
+          title: string;
+          url: string;
+        };
+        Insert: {
+          chapter: number;
+          created_at?: string;
+          id?: string;
+          position?: number;
+          title: string;
+          url: string;
+        };
+        Update: {
+          chapter?: number;
+          created_at?: string;
+          id?: string;
+          position?: number;
+          title?: string;
+          url?: string;
+        };
+        Relationships: [];
+      };
+      daily_checkins: {
+        Row: {
+          checkin_date: string;
+          correct: boolean;
+          created_at: string;
+          question_id: string;
+          student_id: string;
+        };
+        Insert: {
+          checkin_date: string;
+          correct: boolean;
+          created_at?: string;
+          question_id: string;
+          student_id: string;
+        };
+        Update: {
+          checkin_date?: string;
+          correct?: boolean;
+          created_at?: string;
+          question_id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "daily_checkins_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      daily_marks: {
+        Row: {
+          awarded_by: string;
+          batch_id: string | null;
+          created_at: string;
+          id: string;
+          lesson_date: string;
+          marks: number;
+          note: string;
+          reason: string;
+          student_id: string;
+        };
+        Insert: {
+          awarded_by: string;
+          batch_id?: string | null;
+          created_at?: string;
+          id?: string;
+          lesson_date?: string;
+          marks: number;
+          note?: string;
+          reason: string;
+          student_id: string;
+        };
+        Update: {
+          awarded_by?: string;
+          batch_id?: string | null;
+          created_at?: string;
+          id?: string;
+          lesson_date?: string;
+          marks?: number;
+          note?: string;
+          reason?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "daily_marks_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      exam_dates: {
+        Row: {
+          created_at: string;
+          id: string;
+          kind: string;
+          math_set: string;
+          starts_at: string;
+          title: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          math_set?: string;
+          starts_at: string;
+          title: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          math_set?: string;
+          starts_at?: string;
+          title?: string;
+        };
+        Relationships: [];
+      };
+      game_leaderboards: {
+        Row: {
+          generated_at: string;
+          id: string;
+          metric: string;
+          payload: Json;
+          scope: string;
+          term: number | null;
+        };
+        Insert: {
+          generated_at?: string;
+          id: string;
+          metric: string;
+          payload: Json;
+          scope: string;
+          term?: number | null;
+        };
+        Update: {
+          generated_at?: string;
+          id?: string;
+          metric?: string;
+          payload?: Json;
+          scope?: string;
+          term?: number | null;
+        };
+        Relationships: [];
+      };
+      game_rewards: {
+        Row: {
+          awarded_at: string;
+          base_mc: number;
+          description: string;
+          exp: number;
+          mc: number;
+          multiplier: number;
+          quiz_id: string | null;
+          reason: string;
+          source_key: string;
+          student_id: string;
+        };
+        Insert: {
+          awarded_at?: string;
+          base_mc: number;
+          description?: string;
+          exp?: number;
+          mc: number;
+          multiplier?: number;
+          quiz_id?: string | null;
+          reason: string;
+          source_key: string;
+          student_id: string;
+        };
+        Update: {
+          awarded_at?: string;
+          base_mc?: number;
+          description?: string;
+          exp?: number;
+          mc?: number;
+          multiplier?: number;
+          quiz_id?: string | null;
+          reason?: string;
+          source_key?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_rewards_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      game_snapshots: {
+        Row: {
+          generated_at: string;
+          math_set: string;
+          payload: Json;
+          student_id: string;
+        };
+        Insert: {
+          generated_at?: string;
+          math_set: string;
+          payload: Json;
+          student_id: string;
+        };
+        Update: {
+          generated_at?: string;
+          math_set?: string;
+          payload?: Json;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_snapshots_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      homework: {
+        Row: {
+          chapter: number | null;
+          created_at: string;
+          created_by: string;
+          details: string;
+          due_at: string;
+          id: string;
+          link: string;
+          math_set: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          chapter?: number | null;
+          created_at?: string;
+          created_by?: string;
+          details?: string;
+          due_at: string;
+          id?: string;
+          link?: string;
+          math_set: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          chapter?: number | null;
+          created_at?: string;
+          created_by?: string;
+          details?: string;
+          due_at?: string;
+          id?: string;
+          link?: string;
+          math_set?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      mistakes: {
+        Row: {
+          chapter: number;
+          created_at: string;
+          error_type: string;
+          id: string;
+          image_path: string | null;
+          question: string;
+          solution: string;
+          status: string;
+          student_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          chapter: number;
+          created_at?: string;
+          error_type: string;
+          id?: string;
+          image_path?: string | null;
+          question?: string;
+          solution?: string;
+          status?: string;
+          student_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          chapter?: number;
+          created_at?: string;
+          error_type?: string;
+          id?: string;
+          image_path?: string | null;
+          question?: string;
+          solution?: string;
+          status?: string;
+          student_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mistakes_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      profiles: {
+        Row: {
+          display_name: string;
+          id: string;
+          preferences: Json;
+        };
+        Insert: {
+          display_name?: string;
+          id: string;
+          preferences?: Json;
+        };
+        Update: {
+          display_name?: string;
+          id?: string;
+          preferences?: Json;
+        };
+        Relationships: [];
+      };
+      reward_redemptions: {
+        Row: {
+          cost: number;
+          created_at: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          id: string;
+          reward_id: string | null;
+          reward_name: string;
+          status: string;
+          student_id: string;
+        };
+        Insert: {
+          cost: number;
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          id?: string;
+          reward_id?: string | null;
+          reward_name: string;
+          status?: string;
+          student_id: string;
+        };
+        Update: {
+          cost?: number;
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          id?: string;
+          reward_id?: string | null;
+          reward_name?: string;
+          status?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey";
+            columns: ["reward_id"];
+            isOneToOne: false;
+            referencedRelation: "rewards";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reward_redemptions_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      rewards: {
+        Row: {
+          active: boolean;
+          cooldown_days: number | null;
+          cost: number;
+          created_at: string;
+          description: string;
+          emoji: string;
+          id: string;
+          name: string;
+          position: number;
+        };
+        Insert: {
+          active?: boolean;
+          cooldown_days?: number | null;
+          cost: number;
+          created_at?: string;
+          description?: string;
+          emoji?: string;
+          id?: string;
+          name: string;
+          position?: number;
+        };
+        Update: {
+          active?: boolean;
+          cooldown_days?: number | null;
+          cost?: number;
+          created_at?: string;
+          description?: string;
+          emoji?: string;
+          id?: string;
+          name?: string;
+          position?: number;
+        };
+        Relationships: [];
+      };
+      sheet_syncs: {
+        Row: {
+          created_at: string;
+          id: string;
+          scores: number;
+          students: number;
+          synced_by: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          scores?: number;
+          students?: number;
+          synced_by: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          scores?: number;
+          students?: number;
+          synced_by?: string;
+        };
+        Relationships: [];
+      };
+      shop_items: {
+        Row: {
+          active: boolean;
+          description: string;
+          grants: string[];
+          id: string;
+          name: string;
+          position: number;
+          price: number;
+        };
+        Insert: {
+          active?: boolean;
+          description?: string;
+          grants: string[];
+          id: string;
+          name: string;
+          position?: number;
+          price: number;
+        };
+        Update: {
+          active?: boolean;
+          description?: string;
+          grants?: string[];
+          id?: string;
+          name?: string;
+          position?: number;
+          price?: number;
+        };
+        Relationships: [];
+      };
+      shop_purchases: {
+        Row: {
+          item_id: string;
+          price: number;
+          purchased_at: string;
+          student_id: string;
+        };
+        Insert: {
+          item_id: string;
+          price: number;
+          purchased_at?: string;
+          student_id: string;
+        };
+        Update: {
+          item_id?: string;
+          price?: number;
+          purchased_at?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_purchases_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_purchases_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      student_cosmetics: {
+        Row: {
+          avatar_id: string;
+          frame_id: string | null;
+          student_id: string;
+          title_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          avatar_id?: string;
+          frame_id?: string | null;
+          student_id: string;
+          title_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          avatar_id?: string;
+          frame_id?: string | null;
+          student_id?: string;
+          title_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_cosmetics_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      students: {
+        Row: {
+          class_name: string;
+          class_no: string;
+          email: string;
+          hlc_no: string | null;
+          id: string;
+          last_month_avg: number;
+          last_month_form_rank: number;
+          math_set: string;
+          name: string;
+          streak: number;
+          user_id: string | null;
+          xp: number;
+        };
+        Insert: {
+          class_name?: string;
+          class_no?: string;
+          email: string;
+          hlc_no?: string | null;
+          id?: string;
+          last_month_avg?: number;
+          last_month_form_rank?: number;
+          math_set: string;
+          name: string;
+          streak?: number;
+          user_id?: string | null;
+          xp?: number;
+        };
+        Update: {
+          class_name?: string;
+          class_no?: string;
+          email?: string;
+          hlc_no?: string | null;
+          id?: string;
+          last_month_avg?: number;
+          last_month_form_rank?: number;
+          math_set?: string;
+          name?: string;
+          streak?: number;
+          user_id?: string | null;
+          xp?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "students_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      system_config: {
+        Row: {
+          double_mc_event_active: boolean;
+          id: boolean;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          double_mc_event_active?: boolean;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          double_mc_event_active?: boolean;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      user_roles: {
+        Row: {
+          id: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          role?: Database["public"]["Enums"]["app_role"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      video_completions: {
+        Row: {
+          chapter: number;
+          completed_at: string;
+          marks: number;
+          student_id: string;
+          video_url: string;
+        };
+        Insert: {
+          chapter: number;
+          completed_at?: string;
+          marks?: number;
+          student_id: string;
+          video_url: string;
+        };
+        Update: {
+          chapter?: number;
+          completed_at?: string;
+          marks?: number;
+          student_id?: string;
+          video_url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "video_completions_chapter_fkey";
+            columns: ["chapter"];
+            isOneToOne: false;
+            referencedRelation: "chapter_content";
+            referencedColumns: ["chapter"];
+          },
+          {
+            foreignKeyName: "video_completions_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+    };
+    Views: {
+      student_coin_totals: {
+        Row: {
+          checkin_earned: number | null;
+          daily_earned: number | null;
+          reward_earned: number | null;
+          shop_spent: number | null;
+          spent: number | null;
+          student_id: string | null;
+          video_earned: number | null;
+        };
+        Relationships: [];
+      };
+    };
+    Functions: {
+      buy_shop_item: { Args: { _item_id: string }; Returns: undefined };
+      claim_student: { Args: never; Returns: undefined };
+      complete_chapter_video: { Args: { _video_id: string }; Returns: boolean };
+      complete_video: { Args: { _chapter: number }; Returns: undefined };
+      equip_cosmetics: {
+        Args: { _avatar: string; _frame: string | null; _title: string | null };
+        Returns: undefined;
+      };
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"];
+          _user_id: string;
+        };
+        Returns: boolean;
+      };
+      is_demo_user: { Args: never; Returns: boolean };
+      redeem_reward: { Args: { _reward_id: string }; Returns: string };
+      submit_daily_checkin: { Args: { _question_id: string; _correct: boolean }; Returns: number };
+    };
+    Enums: {
+      app_role: "teacher" | "student";
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
+};
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never;
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never;
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["teacher", "student"],
+    },
+  },
+} as const;
+```
 
 ## File: src/lib/data.ts
-````typescript
+```typescript
 import type { Assessment } from "./assessments";
-
+import type { GameProfile } from "./gamification/types";
 export const CHAPTERS = [
   { id: 1, title: "Approximation and Errors", short: "Approx. & Errors", emoji: "🎯" },
   {
@@ -13454,15 +7955,11 @@ export const CHAPTERS = [
   { id: 6, title: "Angles and Parallel Lines (II)", short: "Angles & Parallels", emoji: "📐" },
   { id: 7, title: "Organization and Presentation of Data (II)", short: "Data (II)", emoji: "📊" },
 ] as const;
-
 export type MathSet = "S2M3" | "S2M5";
-
 /** The shared demo login. Teachers never see this account in class lists or rankings. */
 export const DEMO_EMAIL = "demo.student@hlc.edu.hk";
-
 /** Where a chapter score came from: typed in the app, or worked out from the Google Sheet. */
 export type ScoreSource = "manual" | "sheet" | null;
-
 export interface Student {
   id: string;
   userId?: string | null;
@@ -13470,8 +7967,14 @@ export interface Student {
   dailyMarks?: number;
   /** Math Coins earned from watching chapter videos to the end. */
   videoMarks?: number;
-  /** Math Coins spent on rewards (rejected requests are not counted). */
+  /** Math Coins spent on reward tickets (rejected requests are not counted). */
   coinsSpent?: number;
+  /** Math Coins from saved game rewards (quiz ranks, most improved, homework streaks). */
+  rewardCoins?: number;
+  /** Math Coins from daily check-ins (1 for every 5). */
+  checkinCoins?: number;
+  /** Math Coins spent on Shop items such as frames and title packs. */
+  shopSpent?: number;
   /** Ids of chapter videos this student has watched to the end. */
   completedVideos?: string[];
   assessments?: Assessment[];
@@ -13487,17 +7990,19 @@ export interface Student {
   lastMonthFormRank: number;
   xp: number;
   streak: number;
+  /**
+   * Game layer: term totals, rewards, EXP, ranks and cosmetics, worked out by
+   * src/lib/gamification/rules.ts. Only filled in where the whole set can be read.
+   */
+  game?: GameProfile;
 }
-
 export function average(s: Student) {
   const done = s.scores.filter((x) => x !== null) as number[];
   return done.length ? Math.round(done.reduce((a, b) => a + b, 0) / done.length) : 0;
 }
-
 export function completion(s: Student) {
   return Math.round((s.scores.filter((x) => x !== null).length / CHAPTERS.length) * 100);
 }
-
 export function weakTopics(s: Student) {
   return s.scores
     .map((sc, i) => ({ sc, ch: CHAPTERS[i] }))
@@ -13509,33 +8014,26 @@ export function weakTopics(s: Student) {
     .slice(0, 2)
     .map((x) => x.ch);
 }
-
 export function ranked(list: Student[]) {
   return [...list].sort((a, b) => average(b) - average(a));
 }
-
 export function formRank(s: Student, all: Student[]) {
   return ranked(all).findIndex((x) => x.id === s.id) + 1;
 }
-
 export function setRank(s: Student, all: Student[]) {
   return ranked(all.filter((x) => x.set === s.set)).findIndex((x) => x.id === s.id) + 1;
 }
-
 export function improvement(s: Student) {
   return s.lastMonthAvg ? Math.round(((average(s) - s.lastMonthAvg) / s.lastMonthAvg) * 100) : 0;
 }
-
 export function level(xp: number) {
   return Math.floor(xp / 1000) + 1;
 }
-
 export function chapterStatus(score: number | null, idx: number, scores: (number | null)[]) {
   if (score !== null) return "Completed" as const;
   const firstOpen = scores.findIndex((x) => x === null);
   return idx === firstOpen ? ("In Progress" as const) : ("Not Started" as const);
 }
-
 /** Sort by class, then class number, then name (e.g. 2A 1, 2A 2, 2B 1). */
 export function sortByClass<T extends Pick<Student, "className" | "classNo" | "name">>(
   list: T[],
@@ -13543,602 +8041,19 @@ export function sortByClass<T extends Pick<Student, "className" | "classNo" | "n
   const key = (s: T) => `${s.className ?? ""}${(s.classNo ?? "").padStart(3, "0")}${s.name}`;
   return [...list].sort((a, b) => key(a).localeCompare(key(b)));
 }
-````
-
-## File: src/routeTree.gen.ts
-````typescript
-/* eslint-disable */
-
-// @ts-nocheck
-
-// noinspection JSUnusedGlobalSymbols
-
-// This file was automatically generated by TanStack Router.
-// You should NOT make any changes in this file as it will be overwritten.
-// Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
-
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
-import { Route as AuthenticatedAwardsRouteImport } from './routes/_authenticated/awards'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedHomeworkRouteImport } from './routes/_authenticated/homework'
-import { Route as AuthenticatedLeaderboardRouteImport } from './routes/_authenticated/leaderboard'
-import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
-import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
-import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
-import { Route as AuthenticatedCoursesChapterRouteImport } from './routes/_authenticated/courses.$chapter'
-
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
-  id: '/activity',
-  path: '/activity',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAwardsRoute = AuthenticatedAwardsRouteImport.update({
-  id: '/awards',
-  path: '/awards',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedHomeworkRoute = AuthenticatedHomeworkRouteImport.update({
-  id: '/homework',
-  path: '/homework',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedLeaderboardRoute =
-  AuthenticatedLeaderboardRouteImport.update({
-    id: '/leaderboard',
-    path: '/leaderboard',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
-  id: '/teacher',
-  path: '/teacher',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedUploadRoute = AuthenticatedUploadRouteImport.update({
-  id: '/upload',
-  path: '/upload',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCoursesIndexRoute =
-  AuthenticatedCoursesIndexRouteImport.update({
-    id: '/courses/',
-    path: '/courses/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedCoursesChapterRoute =
-  AuthenticatedCoursesChapterRouteImport.update({
-    id: '/courses/$chapter',
-    path: '/courses/$chapter',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/activity': typeof AuthenticatedActivityRoute
-  '/awards': typeof AuthenticatedAwardsRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/homework': typeof AuthenticatedHomeworkRoute
-  '/leaderboard': typeof AuthenticatedLeaderboardRoute
-  '/teacher': typeof AuthenticatedTeacherRoute
-  '/upload': typeof AuthenticatedUploadRoute
-  '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
-  '/courses/': typeof AuthenticatedCoursesIndexRoute
-}
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/reset-password': typeof ResetPasswordRoute
-  '/activity': typeof AuthenticatedActivityRoute
-  '/awards': typeof AuthenticatedAwardsRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/homework': typeof AuthenticatedHomeworkRoute
-  '/leaderboard': typeof AuthenticatedLeaderboardRoute
-  '/teacher': typeof AuthenticatedTeacherRoute
-  '/upload': typeof AuthenticatedUploadRoute
-  '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
-  '/courses': typeof AuthenticatedCoursesIndexRoute
-}
-export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/activity': typeof AuthenticatedActivityRoute
-  '/_authenticated/awards': typeof AuthenticatedAwardsRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/homework': typeof AuthenticatedHomeworkRoute
-  '/_authenticated/leaderboard': typeof AuthenticatedLeaderboardRoute
-  '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
-  '/_authenticated/upload': typeof AuthenticatedUploadRoute
-  '/_authenticated/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
-  '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
-}
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/reset-password'
-    | '/activity'
-    | '/awards'
-    | '/dashboard'
-    | '/homework'
-    | '/leaderboard'
-    | '/teacher'
-    | '/upload'
-    | '/courses/$chapter'
-    | '/courses/'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/reset-password'
-    | '/activity'
-    | '/awards'
-    | '/dashboard'
-    | '/homework'
-    | '/leaderboard'
-    | '/teacher'
-    | '/upload'
-    | '/courses/$chapter'
-    | '/courses'
-  id:
-    | '__root__'
-    | '/'
-    | '/_authenticated'
-    | '/reset-password'
-    | '/_authenticated/activity'
-    | '/_authenticated/awards'
-    | '/_authenticated/dashboard'
-    | '/_authenticated/homework'
-    | '/_authenticated/leaderboard'
-    | '/_authenticated/teacher'
-    | '/_authenticated/upload'
-    | '/_authenticated/courses/$chapter'
-    | '/_authenticated/courses/'
-  fileRoutesById: FileRoutesById
-}
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  ResetPasswordRoute: typeof ResetPasswordRoute
-}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/activity': {
-      id: '/_authenticated/activity'
-      path: '/activity'
-      fullPath: '/activity'
-      preLoaderRoute: typeof AuthenticatedActivityRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/awards': {
-      id: '/_authenticated/awards'
-      path: '/awards'
-      fullPath: '/awards'
-      preLoaderRoute: typeof AuthenticatedAwardsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/homework': {
-      id: '/_authenticated/homework'
-      path: '/homework'
-      fullPath: '/homework'
-      preLoaderRoute: typeof AuthenticatedHomeworkRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/leaderboard': {
-      id: '/_authenticated/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof AuthenticatedLeaderboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/teacher': {
-      id: '/_authenticated/teacher'
-      path: '/teacher'
-      fullPath: '/teacher'
-      preLoaderRoute: typeof AuthenticatedTeacherRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/upload': {
-      id: '/_authenticated/upload'
-      path: '/upload'
-      fullPath: '/upload'
-      preLoaderRoute: typeof AuthenticatedUploadRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/courses/': {
-      id: '/_authenticated/courses/'
-      path: '/courses'
-      fullPath: '/courses/'
-      preLoaderRoute: typeof AuthenticatedCoursesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/courses/$chapter': {
-      id: '/_authenticated/courses/$chapter'
-      path: '/courses/$chapter'
-      fullPath: '/courses/$chapter'
-      preLoaderRoute: typeof AuthenticatedCoursesChapterRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-  }
-}
-
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
-  AuthenticatedAwardsRoute: typeof AuthenticatedAwardsRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedHomeworkRoute: typeof AuthenticatedHomeworkRoute
-  AuthenticatedLeaderboardRoute: typeof AuthenticatedLeaderboardRoute
-  AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
-  AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
-  AuthenticatedCoursesChapterRoute: typeof AuthenticatedCoursesChapterRoute
-  AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
-}
-
-const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedActivityRoute: AuthenticatedActivityRoute,
-  AuthenticatedAwardsRoute: AuthenticatedAwardsRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedHomeworkRoute: AuthenticatedHomeworkRoute,
-  AuthenticatedLeaderboardRoute: AuthenticatedLeaderboardRoute,
-  AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
-  AuthenticatedUploadRoute: AuthenticatedUploadRoute,
-  AuthenticatedCoursesChapterRoute: AuthenticatedCoursesChapterRoute,
-  AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
-}
-
-const AuthenticatedRouteRouteWithChildren =
-  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
-
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  ResetPasswordRoute: ResetPasswordRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
-````
-
-## File: src/routes/_authenticated/dashboard.tsx
-````typescript
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarClock } from "lucide-react";
-import { AppShell, scoreTone } from "@/components/AppShell";
-import { AssessmentReport } from "@/components/AssessmentReport";
-import { PageHeader, Panel, StatCard } from "@/components/PageParts";
-import { useApp } from "@/lib/app-store";
-import { CHAPTERS, average, improvement, weakTopics } from "@/lib/data";
-import { COIN_NAME, coinBalance, reasonLabel } from "@/lib/coins";
-import { termSummary, termsOf } from "@/lib/assessments";
-import {
-  DUE_LABEL,
-  DUE_TONE,
-  dueStatus,
-  formatDue,
-  homeworkForSet,
-  splitByDue,
-} from "@/lib/homework";
-import { TONES, chapterTone } from "@/lib/tones";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({
-    meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { title: "Dashboard — HLC Math" },
-      { name: "description", content: "Your homework, marks and chapter progress." },
-      { property: "og:title", content: "Dashboard — HLC Math" },
-      { property: "og:description", content: "Homework, marks and chapter progress." },
-    ],
-  }),
-  component: Dashboard,
-});
-
-const HOMEWORK_PREVIEW = 5;
-const COIN_PREVIEW = 5;
-
-function Dashboard() {
-  const { me, homework, markLog } = useApp();
-  const assessments = me.assessments ?? [];
-  const terms = termsOf(
-    assessments.filter((a) => a.kind === "item" && (a.score !== null || a.absent)),
-  );
-  const term = terms.at(-1);
-  const coursework = term === undefined ? null : termSummary(assessments, term).coursework200;
-  const marked = me.scores.filter((s) => s !== null).length;
-  const avg = average(me);
-  const imp = improvement(me);
-  const weak = weakTopics(me);
-  const { upcoming } = splitByDue(homeworkForSet(homework, me.set));
-  const coins = markLog.filter((m) => m.student_id === me.id).slice(0, COIN_PREVIEW);
-  const firstName = me.name.split(" ")[0] ?? me.name;
-  const classText = me.className
-    ? `, class ${me.className}${me.classNo ? ` (${me.classNo})` : ""}`
-    : "";
-
-  return (
-    <AppShell>
-      <PageHeader
-        title={`Welcome back, ${firstName}`}
-        description={`${me.set} Mathematics${classText}`}
-      />
-
-      <section aria-label="Summary" className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard
-          tone="blue"
-          label={term === undefined ? "Coursework" : `Term ${term} coursework`}
-          value={coursework === null ? "—" : String(coursework)}
-          suffix="/ 200"
-        />
-        <StatCard
-          tone="green"
-          label="Chapter average"
-          value={marked ? `${avg}%` : "—"}
-          note={
-            marked && me.lastMonthAvg > 0 ? `${imp >= 0 ? "+" : ""}${imp}% on last month` : null
-          }
-        />
-        <StatCard
-          tone="grape"
-          label="Chapters with marks"
-          value={String(marked)}
-          suffix={`/ ${CHAPTERS.length}`}
-        />
-        <Link to="/awards" className="block rounded-xl transition-transform hover:-translate-y-0.5">
-          <StatCard
-            tone="gold"
-            label={COIN_NAME}
-            value={String(coinBalance(me))}
-            note="See rewards"
-          />
-        </Link>
-      </section>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          <Panel
-            tone="flame"
-            title="Homework"
-            description={
-              upcoming.length === 0
-                ? "Nothing due"
-                : `${upcoming.length} upcoming deadline${upcoming.length === 1 ? "" : "s"}`
-            }
-            actions={
-              <Link to="/homework" className="text-sm font-bold text-primary hover:underline">
-                View all
-              </Link>
-            }
-            bodyClassName="px-5 py-1"
-          >
-            {upcoming.length === 0 ? (
-              <p className="py-3 text-sm text-muted-foreground">
-                No homework is due. New homework from your teacher will appear here.
-              </p>
-            ) : (
-              <ul className="divide-y-2 divide-border">
-                {upcoming.slice(0, HOMEWORK_PREVIEW).map((h) => {
-                  const st = dueStatus(h.due_at);
-                  return (
-                    <li key={h.id} className="flex items-start gap-3 py-3">
-                      <CalendarClock
-                        className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold leading-snug">{h.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Due {formatDue(h.due_at)}
-                          {h.chapter === null ? "" : `, Chapter ${h.chapter}`}
-                        </p>
-                      </div>
-                      <span
-                        className={cn(
-                          "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold",
-                          DUE_TONE[st],
-                        )}
-                      >
-                        {DUE_LABEL[st]}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Panel>
-
-          <AssessmentReport assessments={assessments} />
-
-          <Panel tone="green" title="Chapter progress" bodyClassName="px-3 py-2">
-            <ul>
-              {CHAPTERS.map((c, i) => {
-                const s = me.scores[i] ?? null;
-                const tone = TONES[chapterTone(c.id)];
-                return (
-                  <li key={c.id}>
-                    <Link
-                      to="/courses/$chapter"
-                      params={{ chapter: String(c.id) }}
-                      className="flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-muted/70"
-                    >
-                      <span
-                        className={cn(
-                          "grid h-9 w-9 shrink-0 place-items-center rounded-lg text-sm font-bold",
-                          tone.flat,
-                        )}
-                      >
-                        {c.id}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
-                        {c.title}
-                      </span>
-                      <span className="hidden h-2 w-28 overflow-hidden rounded-full bg-muted sm:block">
-                        <span
-                          className={cn(
-                            "block h-full rounded-full",
-                            s !== null && s < 60 ? "bg-destructive" : tone.bar,
-                          )}
-                          style={{ width: `${s ?? 0}%` }}
-                        />
-                      </span>
-                      <span
-                        className={cn(
-                          "w-14 shrink-0 rounded-full px-1.5 py-0.5 text-center text-xs font-bold tabular-nums",
-                          scoreTone(s),
-                        )}
-                      >
-                        {s === null ? "—" : `${s}%`}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </Panel>
-        </div>
-
-        <aside className="space-y-6">
-          <Panel tone="flame" title="Topics to review">
-            {weak.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                {marked ? "No chapter is below 60% at the moment." : "No chapter marks yet."}
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {weak.map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      to="/courses/$chapter"
-                      params={{ chapter: String(c.id) }}
-                      className="flex items-center justify-between gap-3 rounded-lg border-2 border-border px-3 py-2 transition-colors hover:border-flame/60"
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-xs text-muted-foreground">Chapter {c.id}</span>
-                        <span className="block truncate text-sm font-semibold">{c.title}</span>
-                      </span>
-                      <span className="shrink-0 text-sm font-bold text-destructive">
-                        {me.scores[c.id - 1]}%
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {weak.length > 0 && (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Rewatch the chapter videos and redo the exercise before the next quiz.
-              </p>
-            )}
-          </Panel>
-
-          <Panel
-            tone="gold"
-            title={`Recent ${COIN_NAME}`}
-            actions={
-              <Link to="/awards" className="text-sm font-bold text-primary hover:underline">
-                History
-              </Link>
-            }
-          >
-            {coins.length === 0 ? (
-              <p className="text-sm text-muted-foreground">None awarded yet.</p>
-            ) : (
-              <ul className="space-y-2 text-sm">
-                {coins.map((m) => (
-                  <li key={m.id} className="flex items-center gap-3">
-                    <span className="min-w-0 flex-1 truncate">
-                      {reasonLabel(m.reason)}
-                      {m.note ? <span className="text-muted-foreground">, {m.note}</span> : null}
-                    </span>
-                    <span
-                      className={cn(
-                        "font-bold tabular-nums",
-                        m.marks > 0
-                          ? "text-success-deep"
-                          : m.marks < 0
-                            ? "text-destructive"
-                            : "text-muted-foreground",
-                      )}
-                    >
-                      {m.marks > 0 ? `+${m.marks}` : m.marks}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Panel>
-        </aside>
-      </div>
-    </AppShell>
-  );
-}
-````
+```
 
 ## File: src/lib/app-store.tsx
-````typescript
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+```typescript
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -14146,7 +8061,29 @@ import type { Database } from "@/integrations/supabase/types";
 import { DEMO_EMAIL, type ScoreSource, type Student } from "./data";
 import { chapterScoresFromAssessments, type Assessment } from "./assessments";
 import type { Homework } from "./homework";
-
+import {
+  MOCK_COSMETICS,
+  MOCK_STUDENTS,
+  MOCK_VOICE_COUNTS,
+  isMockStudentId,
+  mockSeedLedger,
+} from "./gamification/mock-data";
+import { mockSelfChecks } from "./gamification/mock-activity";
+import { cosmeticsFromRow, ledgerFromRow } from "./gamification/publish";
+import { mergeUnlocks } from "./gamification/catalog";
+import { attachGame, countVoiceMarks } from "./gamification/rules";
+import type { ExamDate, ExamKind } from "./gamification/vault";
+import {
+  DEFAULT_COSMETICS,
+  DEFAULT_SYSTEM_CONFIG,
+  type Cosmetics,
+  type LedgerEntry,
+  type Leaderboard,
+  type StudentSnapshot,
+  type SystemConfig,
+  type Unlocks,
+} from "./gamification/types";
+import { buildGameWorld, parseLeaderboard, parseSnapshot } from "./gamification/world";
 type PublicTables = Database["public"]["Tables"];
 type AssessmentRow = PublicTables["assessment_scores"]["Row"];
 type VideoCompletionRow = PublicTables["chapter_video_completions"]["Row"];
@@ -14156,12 +8093,19 @@ export type ChapterVideo = PublicTables["chapter_videos"]["Row"];
 export type MarkRow = PublicTables["daily_marks"]["Row"];
 export type Reward = PublicTables["rewards"]["Row"];
 export type Redemption = PublicTables["reward_redemptions"]["Row"];
-
+type RewardRow = PublicTables["game_rewards"]["Row"];
+type CosmeticsRow = PublicTables["student_cosmetics"]["Row"];
+type SnapshotRow = PublicTables["game_snapshots"]["Row"];
+type BoardRow = PublicTables["game_leaderboards"]["Row"];
+type SelfCheckRow = Pick<PublicTables["chapter_self_checks"]["Row"], "student_id" | "objective_id">;
+export type ShopItem = PublicTables["shop_items"]["Row"];
+type PurchaseRow = PublicTables["shop_purchases"]["Row"];
 const CHAPTER_COUNT = 7;
 const PAGE_SIZE = 1000;
 const MARK_LOG_LIMIT = 300;
 const REDEMPTION_LIMIT = 500;
-
+/** Keeps the previewed student while the teacher moves between pages or refreshes the tab. */
+const PREVIEW_STORAGE_KEY = "hlc-preview-student";
 /** Supabase caps how many rows one request returns, so keep paging until a page comes back empty. */
 async function fetchAllAssessments(): Promise<AssessmentRow[]> {
   const rows: AssessmentRow[] = [];
@@ -14181,7 +8125,6 @@ async function fetchAllAssessments(): Promise<AssessmentRow[]> {
     from += data.length;
   }
 }
-
 async function fetchAllVideoCompletions(): Promise<VideoCompletionRow[]> {
   const rows: VideoCompletionRow[] = [];
   let from = 0;
@@ -14197,14 +8140,12 @@ async function fetchAllVideoCompletions(): Promise<VideoCompletionRow[]> {
     from += data.length;
   }
 }
-
 interface CoinData {
   error: string | null;
   totals: CoinTotalRow[];
   rewards: Reward[];
   redemptions: Redemption[];
 }
-
 /** Coins and awards are optional: if their tables are not set up yet, the rest of the app still works. */
 async function loadCoinData(): Promise<CoinData> {
   const [totals, rewards, redemptions] = await Promise.all([
@@ -14232,12 +8173,10 @@ async function loadCoinData(): Promise<CoinData> {
     redemptions: redemptions.data ?? [],
   };
 }
-
 interface HomeworkData {
   error: string | null;
   rows: Homework[];
 }
-
 /** Homework is optional too: before 0007 is run, every other page keeps working. */
 async function loadHomework(): Promise<HomeworkData> {
   const { data, error } = await supabase
@@ -14252,7 +8191,154 @@ async function loadHomework(): Promise<HomeworkData> {
   }
   return { error: null, rows: data ?? [] };
 }
-
+interface ConfigData {
+  config: SystemConfig;
+  error: string | null;
+}
+/** The 2x event switch is optional too: before 0009 is run, the event simply stays off. */
+async function loadSystemConfig(): Promise<ConfigData> {
+  const { data, error } = await supabase
+    .from("system_config")
+    .select("double_mc_event_active")
+    .eq("id", true)
+    .maybeSingle();
+  if (error) {
+    return {
+      config: DEFAULT_SYSTEM_CONFIG,
+      error: `The 2x Math Coins event switch is not set up yet (${error.message}). Run supabase/sql/0009_system_config.sql in the Supabase SQL Editor.`,
+    };
+  }
+  return { config: { isDoubleMCEventActive: data?.double_mc_event_active === true }, error: null };
+}
+interface GameData {
+  error: string | null;
+  ledger: LedgerEntry[];
+  cosmetics: CosmeticsRow[];
+  /** Students: their own published snapshot. Teachers work everything out locally. */
+  snapshots: SnapshotRow[];
+  /** Students: the published leaderboards. */
+  boards: BoardRow[];
+  selfChecks: SelfCheckRow[];
+  publishedAt: string | null;
+}
+const EMPTY_GAME: Omit<GameData, "error"> = {
+  ledger: [],
+  cosmetics: [],
+  snapshots: [],
+  boards: [],
+  selfChecks: [],
+  publishedAt: null,
+};
+async function fetchAllRewards(): Promise<RewardRow[]> {
+  const rows: RewardRow[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("game_rewards")
+      .select("*")
+      .order("student_id")
+      .order("source_key")
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+async function fetchAllSelfChecks(): Promise<SelfCheckRow[]> {
+  const rows: SelfCheckRow[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from("chapter_self_checks")
+      .select("student_id, objective_id")
+      .order("student_id")
+      .order("objective_id")
+      .range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...data);
+    from += data.length;
+  }
+}
+/** Game data is optional too: before 0010 is run, every other page keeps working. */
+async function loadGameData(role: "student" | "teacher"): Promise<GameData> {
+  try {
+    const [ledger, cosmetics, selfChecks, snapshots, boards] = await Promise.all([
+      fetchAllRewards(),
+      supabase.from("student_cosmetics").select("*"),
+      fetchAllSelfChecks(),
+      role === "student"
+        ? supabase.from("game_snapshots").select("*")
+        : Promise.resolve({ data: [] as SnapshotRow[], error: null }),
+      role === "student"
+        ? supabase.from("game_leaderboards").select("*")
+        : supabase
+            .from("game_leaderboards")
+            .select("*")
+            .order("generated_at", { ascending: false })
+            .limit(1),
+    ]);
+    const error = cosmetics.error ?? snapshots.error ?? boards.error;
+    if (error) throw error;
+    const boardRows = boards.data ?? [];
+    const snapshotRows = snapshots.data ?? [];
+    return {
+      error: null,
+      ledger: ledger.flatMap((r) => {
+        const e = ledgerFromRow(r);
+        return e ? [e] : [];
+      }),
+      cosmetics: cosmetics.data ?? [],
+      snapshots: snapshotRows,
+      boards: role === "student" ? boardRows : [],
+      selfChecks,
+      publishedAt: snapshotRows[0]?.generated_at ?? boardRows[0]?.generated_at ?? null,
+    };
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : String((e as { message?: unknown })?.message ?? e);
+    return {
+      ...EMPTY_GAME,
+      error: `Game features are not set up yet (${message}). Run supabase/sql/0010_game_data.sql in the Supabase SQL Editor.`,
+    };
+  }
+}
+interface ExtrasData {
+  error: string | null;
+  shopItems: ShopItem[];
+  purchases: PurchaseRow[];
+  examDates: ExamDate[];
+}
+/** Shop and exam dates are optional too: before 0011 is run, every other page keeps working. */
+async function loadExtras(): Promise<ExtrasData> {
+  const [items, purchases, exams] = await Promise.all([
+    supabase.from("shop_items").select("*").order("position"),
+    supabase.from("shop_purchases").select("*"),
+    supabase.from("exam_dates").select("*").order("starts_at"),
+  ]);
+  const error = items.error ?? purchases.error ?? exams.error;
+  if (error) {
+    return {
+      error: `The Shop, check-ins and Mistake Vault are not set up yet (${error.message}). Run supabase/sql/0011_shop_badges_vault.sql in the Supabase SQL Editor.`,
+      shopItems: [],
+      purchases: [],
+      examDates: [],
+    };
+  }
+  return {
+    error: null,
+    shopItems: items.data ?? [],
+    purchases: purchases.data ?? [],
+    examDates: (exams.data ?? []).map((e) => ({
+      id: e.id,
+      title: e.title,
+      kind: e.kind as ExamKind,
+      set: e.math_set === "S2M3" || e.math_set === "S2M5" ? e.math_set : "ALL",
+      startsAt: e.starts_at,
+    })),
+  };
+}
 function toAssessment(row: AssessmentRow): Assessment {
   return {
     term: row.term,
@@ -14265,10 +8351,12 @@ function toAssessment(row: AssessmentRow): Assessment {
     position: row.position,
   };
 }
-
 interface Store {
   session: { email: string; name: string } | null;
+  /** The role the pages should render for. While a teacher previews, this is "student". */
   role: "student" | "teacher";
+  /** The signed-in account's own role, which does not change during a preview. */
+  actualRole: "student" | "teacher";
   students: Student[];
   me: Student;
   ready: boolean;
@@ -14283,20 +8371,66 @@ interface Store {
   coinsError: string | null;
   homework: Homework[];
   homeworkError: string | null;
+  /** True while a teacher is viewing the site as a student. */
+  isPreview: boolean;
+  /** True while previewing: student pages must not save anything. */
+  readOnly: boolean;
+  /** Whether the previewed student is from the class list or the sandbox. */
+  previewSource: "live" | "mock" | null;
+  startPreview: (studentId: string) => void;
+  exitPreview: () => void;
+  /** Sandbox students for previews (teachers only; never saved). */
+  mockStudents: Student[];
+  systemConfig: SystemConfig;
+  configError: string | null;
+  /** The game data the current view should show for `me` (own, previewed or sandbox). */
+  gameSnapshot: StudentSnapshot | null;
+  /** Leaderboards for the current view. Teachers (not previewing) get full rankings. */
+  boards: Leaderboard[];
+  gameError: string | null;
+  /** When game data was last published for students. */
+  gamePublishedAt: string | null;
+  cosmeticsOf: (studentId: string) => Cosmetics;
+  /** Self-check statements ticked by `me`. */
+  selfChecks: string[];
+  /** True for the public demo login, which only ever sees sandbox classmates. */
+  isDemo: boolean;
+  shopItems: ShopItem[];
+  /** Shop item ids that `me` has bought. */
+  ownedItems: string[];
+  /** Frames and titles `me` may equip: earned plus bought. */
+  myUnlocks: Unlocks;
+  examDates: ExamDate[];
+  extrasError: string | null;
+  setDoubleMcEvent: (active: boolean) => Promise<void>;
   refresh: () => Promise<unknown>;
   logout: () => Promise<void>;
 }
-
 const g = globalThis as unknown as {
   __hlcCloudCtx?: ReturnType<typeof createContext<Store | null>>;
 };
 const Ctx = (g.__hlcCloudCtx ??= createContext<Store | null>(null));
-
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const qc = useQueryClient();
-
+  const rememberPreview = useCallback((id: string | null) => {
+    setPreviewId(id);
+    try {
+      if (id === null) window.sessionStorage.removeItem(PREVIEW_STORAGE_KEY);
+      else window.sessionStorage.setItem(PREVIEW_STORAGE_KEY, id);
+    } catch {
+      // Storage can be blocked; the preview then only lasts until the tab is refreshed.
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      setPreviewId(window.sessionStorage.getItem(PREVIEW_STORAGE_KEY));
+    } catch {
+      // Storage can be blocked; start without a preview.
+    }
+  }, []);
   useEffect(() => {
     let active = true;
     const verify = async () => {
@@ -14324,7 +8458,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       listener.subscription.unsubscribe();
     };
   }, [qc]);
-
   const query = useQuery({
     queryKey: ["math-records", user?.id],
     enabled: Boolean(user),
@@ -14344,6 +8477,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         chapterVideos,
         coins,
         homeworkData,
+        configData,
+        extras,
       ] = await Promise.all([
         supabase.from("user_roles").select("role"),
         supabase.from("students").select("*"),
@@ -14364,11 +8499,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         supabase.from("chapter_videos").select("*").order("chapter").order("position"),
         loadCoinData(),
         loadHomework(),
+        loadSystemConfig(),
+        loadExtras(),
       ]);
       for (const r of [roles, roster, scores, markLog, content, syncs, chapterVideos]) {
         if (r.error) throw r.error;
       }
-
       const assessmentsByStudent = new Map<string, Assessment[]>();
       for (const row of assessmentRows) {
         const item = toAssessment(row);
@@ -14376,33 +8512,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (existing) existing.push(item);
         else assessmentsByStudent.set(row.student_id, [item]);
       }
-
       const videosByStudent = new Map<string, VideoCompletionRow[]>();
       for (const row of videoRows) {
         const existing = videosByStudent.get(row.student_id);
         if (existing) existing.push(row);
         else videosByStudent.set(row.student_id, [row]);
       }
-
       const savedScores = new Map<string, number | null>();
       for (const row of scores.data ?? [])
         savedScores.set(`${row.student_id}|${row.chapter}`, row.score);
-
       const totals = new Map<string, CoinTotalRow>();
       for (const t of coins.totals) if (t.student_id) totals.set(t.student_id, t);
-
       // Only used if the coin totals view is not set up yet.
       const dailyFromLog = new Map<string, number>();
       for (const m of markLog.data ?? []) {
         dailyFromLog.set(m.student_id, (dailyFromLog.get(m.student_id) ?? 0) + m.marks);
       }
-
       const students: Student[] = (roster.data ?? []).map((s) => {
         const own = assessmentsByStudent.get(s.id) ?? [];
         const fromSheet = chapterScoresFromAssessments(own, CHAPTER_COUNT);
         const ownVideos = videosByStudent.get(s.id) ?? [];
         const total = totals.get(s.id);
-
         // A score the teacher typed in the app wins; otherwise use the Google Sheet's score.
         const chapterScores: (number | null)[] = [];
         const scoreSources: ScoreSource[] = [];
@@ -14417,7 +8547,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             scoreSources.push(sheet === null ? null : "sheet");
           }
         }
-
         return {
           id: s.id,
           userId: s.user_id,
@@ -14433,6 +8562,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           dailyMarks: total?.daily_earned ?? dailyFromLog.get(s.id) ?? 0,
           videoMarks: ownVideos.length,
           coinsSpent: total?.spent ?? 0,
+          rewardCoins: total?.reward_earned ?? 0,
+          checkinCoins: total?.checkin_earned ?? 0,
+          shopSpent: total?.shop_spent ?? 0,
           completedVideos: ownVideos.flatMap((v) => (v.video_id ? [v.video_id] : [])),
           assessments: own,
           hlcNo: s.hlc_no,
@@ -14440,16 +8572,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
           classNo: s.class_no,
         };
       });
-
       const role: Store["role"] = roles.data?.some((r) => r.role === "teacher")
         ? "teacher"
         : "student";
-
       // The demo login is for trying the student view only; keep it out of every teacher list.
       const demoIds = new Set(students.filter((s) => s.email === DEMO_EMAIL).map((s) => s.id));
       const hideDemo = role === "teacher" && demoIds.size > 0;
       const allMarks = markLog.data ?? [];
-
+      const game = await loadGameData(role);
       return {
         lastSync: syncs.data?.[0]?.created_at ?? null,
         students: hideDemo ? students.filter((s) => !demoIds.has(s.id)) : students,
@@ -14464,11 +8594,123 @@ export function AppProvider({ children }: { children: ReactNode }) {
         coinsError: coins.error,
         homework: homeworkData.rows,
         homeworkError: homeworkData.error,
+        systemConfig: configData.config,
+        configError: configData.error,
+        game,
+        extras,
       };
     },
   });
-
-  const students = user ? (query.data?.students ?? []) : [];
+  const data = query.data;
+  const actualRole: Store["role"] = data?.role ?? "student";
+  const doubleEvent = data?.systemConfig.isDoubleMCEventActive ?? false;
+  const systemConfig = useMemo<SystemConfig>(
+    () => ({ isDoubleMCEventActive: doubleEvent }),
+    [doubleEvent],
+  );
+  const game = data?.game;
+  // Without a saved ledger every reward would be new, so keep everything at 1x until 0010 is run.
+  const gameConfig = game && game.error === null ? systemConfig : DEFAULT_SYSTEM_CONFIG;
+  const liveCosmetics = useMemo(
+    () =>
+      new Map<string, Cosmetics>(
+        (game?.cosmetics ?? []).map((r) => [r.student_id, cosmeticsFromRow(r)]),
+      ),
+    [game],
+  );
+  const cosmeticsOf = useCallback(
+    (studentId: string): Cosmetics =>
+      liveCosmetics.get(studentId) ?? MOCK_COSMETICS.get(studentId) ?? DEFAULT_COSMETICS,
+    [liveCosmetics],
+  );
+  const ownRecord = data?.students.find((s) => s.userId === user?.id) ?? null;
+  const isDemo = actualRole === "student" && ownRecord?.email === DEMO_EMAIL;
+  // Ranks need the whole set, which only a teacher's account can read. Teachers work the game
+  // out in the browser; students read what the teacher last published.
+  const teacherWorld = useMemo(() => {
+    if (!data || data.role !== "teacher" || data.students.length === 0) return null;
+    return buildGameWorld({
+      students: data.students,
+      config: gameConfig,
+      ledger: data.game.ledger,
+      cosmetics: liveCosmetics,
+      voiceCounts: countVoiceMarks(data.markLog),
+      rewardsSpendable: false,
+    });
+  }, [data, gameConfig, liveCosmetics]);
+  // The sandbox: teachers preview it, and the public demo login plays in it so it never sees
+  // real classmates.
+  const sandboxWorld = useMemo(() => {
+    if (actualRole !== "teacher" && !isDemo) return null;
+    // The demo account's saved rewards are already in its database balance, so they are
+    // taken out here and counted once, from the sandbox ledger.
+    const demo = isDemo && ownRecord ? [{ ...ownRecord, rewardCoins: 0 }] : [];
+    const demoVoice = countVoiceMarks(data?.markLog ?? []);
+    return buildGameWorld({
+      students: [...MOCK_STUDENTS, ...demo],
+      config: gameConfig,
+      ledger: [...mockSeedLedger(), ...(isDemo ? (game?.ledger ?? []) : [])],
+      cosmetics: new Map<string, Cosmetics>([...MOCK_COSMETICS, ...liveCosmetics]),
+      voiceCounts: new Map<string, number>([...MOCK_VOICE_COUNTS, ...demoVoice]),
+      // Sandbox rewards live only here, so they count towards the sandbox balance.
+      rewardsSpendable: true,
+    });
+  }, [actualRole, isDemo, ownRecord, data?.markLog, game, gameConfig, liveCosmetics]);
+  const liveStudents = useMemo(() => {
+    const rows = data?.students ?? [];
+    return teacherWorld ? rows.map((s) => attachGame(s, teacherWorld.profiles)) : rows;
+  }, [data, teacherWorld]);
+  const mockStudents = useMemo(
+    () =>
+      actualRole === "teacher" && sandboxWorld
+        ? MOCK_STUDENTS.map((s) => attachGame(s, sandboxWorld.profiles))
+        : [],
+    [actualRole, sandboxWorld],
+  );
+  const previewStudent =
+    actualRole === "teacher" && previewId !== null
+      ? (liveStudents.find((s) => s.id === previewId) ??
+        mockStudents.find((s) => s.id === previewId) ??
+        null)
+      : null;
+  const previewSource: Store["previewSource"] = previewStudent
+    ? isMockStudentId(previewStudent.id)
+      ? "mock"
+      : "live"
+    : null;
+  // Forget a preview that no longer matches anyone (for example after signing in as a student).
+  useEffect(() => {
+    if (data && previewId !== null && previewStudent === null) rememberPreview(null);
+  }, [data, previewId, previewStudent, rememberPreview]);
+  const loadedSnapshot = useMemo(() => {
+    if (actualRole !== "student" || isDemo || !ownRecord) return null;
+    const row = game?.snapshots.find((r) => r.student_id === ownRecord.id);
+    return row ? parseSnapshot(row.payload) : null;
+  }, [actualRole, isDemo, ownRecord, game]);
+  const loadedBoards = useMemo(
+    () =>
+      (game?.boards ?? []).flatMap((r) => {
+        const b = parseLeaderboard(r.payload);
+        return b ? [b] : [];
+      }),
+    [game],
+  );
+  let gameSnapshot: StudentSnapshot | null = null;
+  let boards: Leaderboard[] = [];
+  if (previewStudent) {
+    const world = previewSource === "mock" ? sandboxWorld : teacherWorld;
+    gameSnapshot = world?.snapshots.get(previewStudent.id) ?? null;
+    boards = world?.boards ?? [];
+  } else if (actualRole === "teacher") {
+    boards = teacherWorld?.fullBoards ?? [];
+  } else if (isDemo && ownRecord) {
+    gameSnapshot = sandboxWorld?.snapshots.get(ownRecord.id) ?? null;
+    boards = sandboxWorld?.boards ?? [];
+  } else {
+    gameSnapshot = loadedSnapshot;
+    boards = loadedBoards;
+  }
+  const students = user ? liveStudents : [];
   const metaName: unknown = user?.user_metadata?.["full_name"];
   const fallbackMe: Student = {
     id: "",
@@ -14486,28 +8728,87 @@ export function AppProvider({ children }: { children: ReactNode }) {
     coinsSpent: 0,
     completedVideos: [],
   };
-  const me = students.find((s) => s.userId === user?.id) ?? fallbackMe;
-
+  const baseMe = previewStudent ?? (user ? ownRecord : null) ?? fallbackMe;
+  const me: Student =
+    gameSnapshot && !baseMe.game ? { ...baseMe, game: gameSnapshot.profile } : baseMe;
+  const isPreview = previewStudent !== null;
+  const extras = data?.extras;
+  const ownedItems = (extras?.purchases ?? [])
+    .filter((p) => p.student_id === me.id)
+    .map((p) => p.item_id);
+  const boughtGrants = (extras?.shopItems ?? [])
+    .filter((i) => ownedItems.includes(i.id))
+    .flatMap((i) => i.grants);
+  const myUnlocks = mergeUnlocks(gameSnapshot?.unlocks ?? null, boughtGrants);
+  const selfChecks = isMockStudentId(me.id)
+    ? mockSelfChecks(me.id)
+    : (game?.selfChecks ?? []).filter((r) => r.student_id === me.id).map((r) => r.objective_id);
+  const setDoubleMcEvent = async (active: boolean) => {
+    if (actualRole !== "teacher") {
+      throw new Error("Only teacher accounts can change the 2x Math Coins event");
+    }
+    const { data: rows, error } = await supabase
+      .from("system_config")
+      .update({
+        double_mc_event_active: active,
+        updated_at: new Date().toISOString(),
+        updated_by: user?.id ?? null,
+      })
+      .eq("id", true)
+      .select("id");
+    if (error) throw new Error(error.message);
+    if (!rows || rows.length === 0) {
+      throw new Error(
+        "The 2x Math Coins event switch was not found. Run supabase/sql/0009_system_config.sql in the Supabase SQL Editor.",
+      );
+    }
+    await query.refetch();
+  };
   return (
     <Ctx.Provider
       value={{
         session: user ? { email: user.email ?? "", name: me.name } : null,
-        role: query.data?.role ?? "student",
+        role: isPreview ? "student" : actualRole,
+        actualRole,
         students,
         me,
         ready: hydrated && (!user || !query.isPending),
         error: query.error?.message ?? null,
-        content: query.data?.content ?? [],
-        videos: query.data?.videos ?? [],
-        lastSync: query.data?.lastSync ?? null,
-        markLog: query.data?.markLog ?? [],
-        rewards: query.data?.rewards ?? [],
-        redemptions: query.data?.redemptions ?? [],
-        coinsError: query.data?.coinsError ?? null,
-        homework: query.data?.homework ?? [],
-        homeworkError: query.data?.homeworkError ?? null,
+        content: data?.content ?? [],
+        videos: data?.videos ?? [],
+        lastSync: data?.lastSync ?? null,
+        markLog: data?.markLog ?? [],
+        rewards: data?.rewards ?? [],
+        redemptions: data?.redemptions ?? [],
+        coinsError: data?.coinsError ?? null,
+        homework: data?.homework ?? [],
+        homeworkError: data?.homeworkError ?? null,
+        isPreview,
+        readOnly: isPreview,
+        previewSource,
+        startPreview: (studentId) => {
+          if (actualRole === "teacher") rememberPreview(studentId);
+        },
+        exitPreview: () => rememberPreview(null),
+        mockStudents,
+        systemConfig,
+        configError: data?.configError ?? null,
+        setDoubleMcEvent,
+        gameSnapshot,
+        boards,
+        gameError: game?.error ?? null,
+        gamePublishedAt: isDemo ? (gameSnapshot?.generatedAt ?? null) : (game?.publishedAt ?? null),
+        cosmeticsOf,
+        selfChecks,
+        isDemo,
+        shopItems: extras?.shopItems ?? [],
+        ownedItems,
+        myUnlocks,
+        examDates: extras?.examDates ?? [],
+        extrasError: extras?.error ?? null,
         refresh: () => query.refetch(),
         logout: async () => {
+          rememberPreview(null);
           await supabase.auth.signOut();
           qc.clear();
           setUser(null);
@@ -14518,204 +8819,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     </Ctx.Provider>
   );
 }
-
 export function useApp() {
   const c = useContext(Ctx);
   if (!c) throw new Error("useApp outside provider");
   return c;
 }
-````
-
-## File: src/routes/index.tsx
-````typescript
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { GraduationCap } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { useApp } from "@/lib/app-store";
-import { DEMO_EMAIL } from "@/lib/data";
-
-const DEMO_PASSWORD = "HlcMath2026!";
-
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — HLC Math" },
-      { name: "description", content: "Sign in to your HLC Mathematics records." },
-      { property: "og:title", content: "Sign in — HLC Math" },
-      { property: "og:description", content: "School Mathematics marks and chapter progress." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: Login,
-});
-
-/** An error Supabase or Google sends back in the address after a sign-in that did not finish. */
-function readAuthError(): string {
-  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-  const query = new URLSearchParams(window.location.search);
-  return (
-    hash.get("error_description") ??
-    query.get("error_description") ??
-    hash.get("error") ??
-    query.get("error") ??
-    ""
-  );
-}
-
-/** True while the page is finishing a Google sign-in (tokens or a code in the address). */
-function isReturningFromGoogle(): boolean {
-  return /access_token=|[?&]code=/.test(`${window.location.hash}${window.location.search}`);
-}
-
-/** Four big flat shapes behind the sign-in card. */
-function Shapes() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-      <span className="absolute -left-12 top-16 h-32 w-32 rotate-45 rounded-3xl bg-sky/85 md:h-44 md:w-44" />
-      <span className="absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-gold/90 md:left-28 md:h-48 md:w-48" />
-      <span className="absolute -right-10 top-20 h-36 w-36 bg-berry/90 [clip-path:polygon(50%_0%,100%_100%,0%_100%)] md:h-52 md:w-52" />
-      <span className="absolute -bottom-14 -right-6 h-32 w-32 -rotate-12 rounded-3xl bg-success/90 md:h-44 md:w-44" />
-    </div>
-  );
-}
-
-function Login() {
-  const { session, ready, role } = useApp();
-  const navigate = useNavigate();
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
-  const [returning, setReturning] = useState(false);
-
-  useEffect(() => {
-    const err = readAuthError();
-    if (err) setMessage(`Google sign-in did not finish: ${err}`);
-    else setReturning(isReturningFromGoogle());
-  }, []);
-
-  useEffect(() => {
-    if (ready && session) {
-      void navigate({ to: role === "teacher" ? "/teacher" : "/dashboard", replace: true });
-    }
-  }, [ready, session, role, navigate]);
-
-  const signInWithGoogle = async () => {
-    setMessage("");
-    setBusy(true);
-    // Supabase sends the browser to Google and back to this page. The address must be listed
-    // under Supabase > Authentication > URL Configuration > Redirect URLs.
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/`,
-        queryParams: { hd: "hlc.edu.hk", prompt: "select_account" },
-      },
-    });
-    if (error) {
-      setMessage(error.message);
-      setBusy(false);
-    }
-  };
-
-  const signInDemo = async () => {
-    setMessage("");
-    setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: DEMO_EMAIL,
-      password: DEMO_PASSWORD,
-    });
-    if (error) setMessage(error.message);
-    setBusy(false);
-  };
-
-  return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden bg-nav">
-      <Shapes />
-      <div className="relative flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md rounded-2xl border-2 border-border bg-card p-8 shadow-pop">
-          <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-xl bg-gold text-accent-foreground shadow-chunky-gold">
-              <GraduationCap className="h-6 w-6" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-lg font-bold leading-tight">HLC Mathematics</p>
-              <p className="text-sm text-muted-foreground">Learning management system</p>
-            </div>
-          </div>
-
-          <h1 className="mt-8 text-2xl font-bold">Sign in</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Use your school Google account (@hlc.edu.hk).
-          </p>
-
-          {returning && !message ? (
-            <p role="status" className="mt-6 text-sm font-medium">
-              Finishing sign-in…
-            </p>
-          ) : null}
-
-          <div className="mt-6 space-y-3">
-            <Button
-              className="google-auth h-11 w-full"
-              variant="outline"
-              disabled={busy}
-              onClick={() => void signInWithGoogle()}
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
-                <path
-                  fill="#4285F4"
-                  d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
-                />
-              </svg>
-              Continue with Google
-            </Button>
-
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="h-px flex-1 bg-border" />
-              or
-              <span className="h-px flex-1 bg-border" />
-            </div>
-
-            <Button
-              variant="secondary"
-              className="h-11 w-full"
-              disabled={busy}
-              onClick={() => void signInDemo()}
-            >
-              View the demo student account
-            </Button>
-          </div>
-
-          {message && (
-            <p
-              role="alert"
-              className="mt-5 rounded-lg border-2 border-destructive/40 bg-destructive/10 p-3 text-sm font-medium text-destructive"
-            >
-              {message}
-            </p>
-          )}
-
-          <p className="mt-8 text-xs text-muted-foreground">
-            Cannot sign in? Ask your Mathematics teacher to check that your school email is on the
-            class list.
-          </p>
-        </div>
-      </div>
-    </main>
-  );
-}
-````
+```

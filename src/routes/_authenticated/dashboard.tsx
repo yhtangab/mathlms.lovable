@@ -19,6 +19,9 @@ import {
   quizResultsFromAssessments,
   termResult,
 } from "@/lib/gamification/rules";
+import { CHAPTERS } from "@/lib/data";
+import { CHAPTER_STRANDS, STRANDS } from "@/lib/gamification/catalog";
+import type { Strand } from "@/lib/gamification/types";
 import { boardId } from "@/lib/gamification/world";
 import {
   DUE_LABEL,
@@ -250,7 +253,10 @@ function Dashboard() {
           description={`You against the ${me.set} average`}
         >
           {gameSnapshot ? (
-            <CompetencyRadar axes={gameSnapshot.radar} />
+            <>
+              <CompetencyRadar axes={gameSnapshot.radar} />
+              <StrandChapters />
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">
               Appears after your teacher publishes the marks.
@@ -401,5 +407,47 @@ function Dashboard() {
         </p>
       ) : null}
     </AppShell>
+  );
+}
+
+function StrandChapters() {
+  const [open, setOpen] = useState<Strand | null>(null);
+  return (
+    <ul className="mt-3 space-y-1">
+      {STRANDS.filter((s) => s.id !== "attitude").map((strand) => {
+        const chapters = CHAPTERS.filter((c) => CHAPTER_STRANDS[c.id] === strand.id);
+        const shown = open === strand.id;
+        return (
+          <li key={strand.id}>
+            <button
+              type="button"
+              aria-expanded={shown}
+              onClick={() => setOpen(shown ? null : strand.id)}
+              className="text-sm font-semibold text-primary hover:underline"
+            >
+              {strand.label}
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                {chapters.length === 0 ? "No S2 chapter yet" : `${chapters.length} chapters`}
+              </span>
+            </button>
+            {shown && chapters.length > 0 ? (
+              <ul className="mt-1 space-y-1 pl-3">
+                {chapters.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      to="/courses/$chapter"
+                      params={{ chapter: String(c.id) }}
+                      className="text-sm hover:underline"
+                    >
+                      Chapter {c.id}: {c.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
   );
 }

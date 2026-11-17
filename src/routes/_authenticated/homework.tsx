@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CalendarClock, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -7,7 +7,8 @@ import { Notice, PageHeader, Panel } from "@/components/PageParts";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
-import { CHAPTERS } from "@/lib/data";
+import { CHAPTERS, type MathSet } from "@/lib/data";
+import { HomeworkMatrix, type MatrixStudent } from "@/components/teacher/HomeworkMatrix";
 import { isWebLink } from "@/lib/drive-link";
 import {
   DUE_LABEL,
@@ -109,21 +110,60 @@ function HomeworkRow({
 
 function StudentHomework() {
   const { me, homework, homeworkError } = useApp();
+  const [captainOf, setCaptainOf] = useState<MatrixStudent[] | null>(null);
   const { upcoming, past } = useMemo(
     () => splitByDue(homeworkForSet(homework, me.set)),
     [homework, me.set],
   );
+
+  useEffect(() => {
+    if (!me.id) return;
+    let active = true;
+    void (async () => {
+      const { data: seat, error } = await supabase
+        .from("subject_captains")
+        .select("student_id")
+        .eq("student_id", me.id)
+        .maybeSingle();
+      if (!active || error || !seat) return;
+      const { data } = await supabase.rpc("captain_classmates");
+      if (!active || !data) return;
+      const rows = data.flatMap((s) => {
+        if (s.math_set !== "S2M3" && s.math_set !== "S2M5") return [];
+        const set: MathSet = s.math_set;
+        return [
+          {
+            id: s.id,
+            name: s.name,
+            className: s.class_name,
+            classNo: s.class_no,
+            set,
+          },
+        ];
+      });
+      setCaptainOf(rows);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [me.id]);
+
   return (
     <>
       <PageHeader
         title="Homework"
-        description={`${me.set} Mathematics. Deadlines are set by your teacher.`}
+        description={
+          captainOf
+            ? `${me.set} Mathematics. You are a subject captain: marks you enter are the same ones your teacher sees.`
+            : `${me.set} Mathematics. Deadlines are set by your teacher.`
+        }
       />
       {homeworkError && (
         <div className="mt-4">
           <Notice tone="info">Homework is not available yet.</Notice>
         </div>
       )}
+      {captainOf ? <HomeworkMatrix roster={captainOf} fixedSet={me.set} /> : null}
       <div className="mt-6 space-y-6">
         <Panel
           title="Upcoming"
@@ -296,13 +336,15 @@ function TeacherHomework() {
     <>
       <PageHeader
         title="Homework"
-        description="Post homework with a deadline. Students see it on their dashboard and on this page."
+        description="Post deadlines, then mark who handed work in. Subject captains can mark the same grid."
       />
       {homeworkError && (
         <div className="mt-4">
           <Notice tone="error">{homeworkError}</Notice>
         </div>
       )}
+      <HomeworkMatrix />
+      <SubjectCaptains />
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
         <Panel title={draft.id ? "Edit homework" : "New homework"}>
           <form
@@ -447,5 +489,114 @@ function TeacherHomework() {
         </div>
       </div>
     </>
+  );
+}
+
+function SubjectCaptains() {
+  const { students } = useApp();
+  const [set, setSet] = useState<MathSet>("S2M3");
+  const [ids, setIds] = useState<Set<string>>(new Set());
+  const [ready, setReady] = useState<boolean | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const list = students.filter((s) => s.set === set);
+
+  useEffect(() => {
+    let active = true;
+    void supabase
+      .from("subject_captains")
+      .select("student_id")
+      .then(({ data, error }) => {
+        if (!active) return;
+        setReady(!error);
+        setIds(new Set((data ?? []).map((row) => row.student_id)));
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const toggle = async (studentId: string, on: boolean) => {
+    setBusyId(studentId);
+    const previous = new Set(ids);
+    setIds((current) => {
+      const next = new Set(current);
+      if (on) next.add(studentId);
+      else next.delete(studentId);
+      return next;
+    });
+    try {
+      if (on) {
+        const { data: auth } = await supabase.auth.getUser();
+        const { error } = await supabase
+          .from("subject_captains")
+          .insert({ student_id: studentId, appointed_by: auth.user?.id ?? null });
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase
+          .from("subject_captains")
+          .delete()
+          .eq("student_id", studentId);
+        if (error) throw new Error(error.message);
+      }
+      toast.success(on ? "Subject captain added" : "Subject captain removed");
+    } catch (e) {
+      setIds(previous);
+      toast.error(e instanceof Error ? e.message : "Could not update subject captains");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <Panel
+      className="mt-6"
+      title="Subject captains"
+      description="These students can open this page and mark homework for their own set. Their ticks are the same records you see."
+      actions={
+        <div className="flex rounded-md border border-border bg-card p-0.5">
+          {(["S2M3", "S2M5"] as const).map((x) => (
+            <button
+              type="button"
+              key={x}
+              onClick={() => setSet(x)}
+              className={cn(
+                "rounded px-3 py-1 text-sm font-semibold",
+                set === x ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+              )}
+            >
+              {x}
+            </button>
+          ))}
+        </div>
+      }
+    >
+      {ready === false ? (
+        <Notice tone="info">
+          Subject captains are not set up yet. Run supabase/sql/0013_subject_captains.sql in the
+          Supabase SQL Editor.
+        </Notice>
+      ) : null}
+      <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {list.map((s) => (
+          <li key={s.id}>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={ids.has(s.id)}
+                disabled={ready !== true || busyId === s.id}
+                onChange={(e) => void toggle(s.id, e.target.checked)}
+                className="h-4 w-4 accent-[var(--primary)]"
+              />
+              <span>
+                {s.name}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  {s.className} {s.classNo}
+                </span>
+              </span>
+            </label>
+          </li>
+        ))}
+      </ul>
+    </Panel>
   );
 }
