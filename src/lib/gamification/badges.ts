@@ -1,8 +1,11 @@
+import { checkinStreak, hkDateKey } from "./checkin";
 import { objectivesFor } from "./catalog";
-import type { QuizResult } from "./types";
+import type { PublicBadge, QuizResult, RewardGrant } from "./types";
 
 export const TIER_NAMES = ["Locked", "Bronze", "Silver", "Gold", "Diamond"] as const;
 export type Tier = 0 | 1 | 2 | 3 | 4;
+/** Math Coins for reaching that tier. Bronze 1, Silver 2, Gold 3, Diamond 5. */
+export const BADGE_TIER_MC = [0, 1, 2, 3, 5] as const;
 
 export interface BadgeDef {
   id: string;
@@ -145,4 +148,77 @@ export function badgeProgress(input: BadgeInput): BadgeProgress[] {
     const progress = next === null ? 1 : Math.min(1, Math.max(0, (value - prev) / (next - prev)));
     return { def, value, tier, next, progress };
   });
+}
+
+/** One pin per badge: Silver replaces Bronze, Gold replaces Silver, and so on. */
+export function highestBadges(progress: readonly BadgeProgress[]): PublicBadge[] {
+  return progress.flatMap((b) => {
+    if (b.tier < 1) return [];
+    const tier = b.tier as PublicBadge["tier"];
+    return [{ id: b.def.id, emoji: b.def.emoji, tier }];
+  });
+}
+
+/** One coin grant for every tier already reached. Repeats use the same source key. */
+export function badgeRewardGrants(
+  studentId: string,
+  progress: readonly BadgeProgress[],
+): RewardGrant[] {
+  const grants: RewardGrant[] = [];
+  for (const b of progress) {
+    for (let tier = 1; tier <= b.tier; tier++) {
+      grants.push({
+        sourceKey: `badge:${b.def.id}:t${tier}`,
+        studentId,
+        reason: "badge",
+        baseMc: BADGE_TIER_MC[tier] ?? 0,
+        exp: 0,
+        description: `${b.def.name}, ${TIER_NAMES[tier] ?? "tier"}`,
+        quizId: null,
+      });
+    }
+  }
+  return grants;
+}
+
+export interface BadgeStats {
+  selfChecks: Map<string, string[]>;
+  masteredMistakes: Map<string, number>;
+  bestCheckinStreak: Map<string, number>;
+  luckyDrawCorrect: Map<string, number>;
+}
+
+/** Turns class-wide rows into the counts each badge uses. */
+export function badgeStatsFromRows(input: {
+  selfChecks: readonly { student_id: string; objective_id: string }[];
+  mistakes: readonly { student_id: string; status: string }[];
+  checkins: readonly { student_id: string; checkin_date: string }[];
+  luckyDraws: readonly { student_id: string }[];
+  today?: string;
+}): BadgeStats {
+  const selfChecks = new Map<string, string[]>();
+  const masteredMistakes = new Map<string, number>();
+  const bestCheckinStreak = new Map<string, number>();
+  const luckyDrawCorrect = new Map<string, number>();
+  for (const row of input.selfChecks) {
+    const list = selfChecks.get(row.student_id) ?? [];
+    list.push(row.objective_id);
+    selfChecks.set(row.student_id, list);
+  }
+  for (const row of input.mistakes) {
+    if (row.status !== "mastered") continue;
+    masteredMistakes.set(row.student_id, (masteredMistakes.get(row.student_id) ?? 0) + 1);
+  }
+  const dates = new Map<string, string[]>();
+  for (const row of input.checkins) {
+    const list = dates.get(row.student_id) ?? [];
+    list.push(row.checkin_date);
+    dates.set(row.student_id, list);
+  }
+  const today = input.today ?? hkDateKey(new Date());
+  for (const [id, list] of dates) bestCheckinStreak.set(id, checkinStreak(list, today).best);
+  for (const row of input.luckyDraws) {
+    luckyDrawCorrect.set(row.student_id, (luckyDrawCorrect.get(row.student_id) ?? 0) + 1);
+  }
+  return { selfChecks, masteredMistakes, bestCheckinStreak, luckyDrawCorrect };
 }

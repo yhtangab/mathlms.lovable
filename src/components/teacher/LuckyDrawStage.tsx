@@ -88,7 +88,7 @@ export function LuckyDrawStage({ list }: { list: Student[] }) {
   const matched = matchWinners(winners, list);
 
   return (
-    <div className="relative mt-6 h-[calc(100dvh-8.5rem)] min-h-[680px] overflow-hidden rounded-3xl bg-[#07050f]">
+    <div className="relative mt-6 h-[calc(100dvh-8.5rem)] min-h-[680px] overflow-hidden rounded-3xl bg-[#241838]">
       <div ref={host} className="h-full w-full" />
       {rewardHost
         ? createPortal(

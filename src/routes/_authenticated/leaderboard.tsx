@@ -3,12 +3,14 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
 import { AnonymousAvatar, AvatarBadge, TitleTag } from "@/components/game/AvatarBadge";
+import { BadgeIcon } from "@/components/game/BadgeIcon";
 import { useApp } from "@/lib/app-store";
 import type {
   BoardMetric,
   BoardScope,
   Leaderboard,
   LeaderboardEntry,
+  PublicBadge,
 } from "@/lib/gamification/types";
 import { boardId, boardTerm } from "@/lib/gamification/world";
 import { cn } from "@/lib/utils";
@@ -83,6 +85,17 @@ function Segmented<T extends string | number>({
   );
 }
 
+function BadgePins({ badges }: { badges: PublicBadge[] | undefined }) {
+  if (!badges?.length) return null;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-0.5 align-middle">
+      {badges.map((b) => (
+        <BadgeIcon key={b.id} emoji={b.emoji} tier={b.tier} size={22} />
+      ))}
+    </span>
+  );
+}
+
 function scoreText(board: Leaderboard, score: number): string {
   return board.metric === "exp" ? `${score} EXP` : `${score} / 200`;
 }
@@ -140,6 +153,9 @@ function LeaderboardPage() {
           <p className="truncate font-bold">
             {entry.name}
             {mine ? <span className="ml-2 text-xs text-primary">You</span> : null}
+            <span className="ml-2">
+              <BadgePins badges={entry.badges} />
+            </span>
           </p>
           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
             <span>
@@ -224,6 +240,7 @@ function LeaderboardPage() {
                     {entry.name}
                     {entry.studentId === me.id ? " (You)" : ""}
                   </p>
+                  <BadgePins badges={entry.badges} />
                   <TitleTag titleId={c.equippedTitle} className="mt-1" />
                   <p className="mt-1 text-sm font-bold tabular-nums">
                     {scoreText(board, entry.score)}

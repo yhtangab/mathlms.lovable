@@ -181,7 +181,7 @@ export function SheetGradebook() {
               {report.game
                 ? `Ranks, charts and leaderboards published for ${report.game.students} students${
                     report.game.newRewards ? `, ${report.game.newRewards} new rewards given` : ""
-                  }.`
+                  }.${report.game.badgeWarning ? ` ${report.game.badgeWarning}` : ""}`
                 : `Game data not published: ${report.gameError ?? "unknown error"}`}
             </li>
           </ul>

@@ -23,6 +23,7 @@ import {
 } from "./gamification/mock-data";
 import { mockSelfChecks } from "./gamification/mock-activity";
 import { cosmeticsFromRow, ledgerFromRow } from "./gamification/publish";
+import { loadBadgeStats } from "./gamification/badge-stats";
 import { mergeUnlocks } from "./gamification/catalog";
 import { attachGame, countVoiceMarks } from "./gamification/rules";
 import type { ExamDate, ExamKind } from "./gamification/vault";
@@ -583,6 +584,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const role: Store["role"] = roles.data?.some((r) => r.role === "teacher")
         ? "teacher"
         : "student";
+      const badgeStats = await loadBadgeStats(supabase);
 
       // The demo login is for trying the student view only; keep it out of every teacher list.
       const demoIds = new Set(students.filter((s) => s.email === DEMO_EMAIL).map((s) => s.id));
@@ -608,6 +610,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         configError: configData.error,
         game,
         extras,
+        badgeStats,
       };
     },
   });
@@ -650,6 +653,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ledger: data.game.ledger,
       cosmetics: liveCosmetics,
       voiceCounts: countVoiceMarks(data.markLog),
+      badgeStats: data.badgeStats,
       rewardsSpendable: false,
     });
   }, [data, gameConfig, liveCosmetics]);
@@ -668,7 +672,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ledger: [...mockSeedLedger(), ...(isDemo ? (game?.ledger ?? []) : [])],
       cosmetics: new Map<string, Cosmetics>([...MOCK_COSMETICS, ...liveCosmetics]),
       voiceCounts: new Map<string, number>([...MOCK_VOICE_COUNTS, ...demoVoice]),
-      // Sandbox rewards live only here, so they count towards the sandbox balance.
+      ...(data?.badgeStats ? { badgeStats: data.badgeStats } : {}),
       rewardsSpendable: true,
     });
   }, [actualRole, isDemo, ownRecord, data?.markLog, game, gameConfig, liveCosmetics]);

@@ -261,15 +261,19 @@ function buildBoard(
     .filter((m): m is typeof m & { score: number } => m.score !== null)
     .sort((a, b) => b.score - a.score || a.student.name.localeCompare(b.student.name));
   const keys = scored.map((m) => Math.round(m.score * 10));
-  const entries: LeaderboardEntry[] = scored.map((m, i) => ({
-    rank: 1 + keys.filter((k) => k > (keys[i] ?? 0)).length,
-    studentId: m.student.id,
-    name: m.student.name,
-    set: m.student.set,
-    className: m.student.className ?? "",
-    classNo: m.student.classNo ?? "",
-    score: round1(m.score),
-  }));
+  const entries: LeaderboardEntry[] = scored.map((m, i) => {
+    const pins = m.profile.badges ?? [];
+    return {
+      rank: 1 + keys.filter((k) => k > (keys[i] ?? 0)).length,
+      studentId: m.student.id,
+      name: m.student.name,
+      set: m.student.set,
+      className: m.student.className ?? "",
+      classNo: m.student.classNo ?? "",
+      score: round1(m.score),
+      ...(pins.length ? { badges: pins } : {}),
+    };
+  });
   const top = entries.filter((e) => e.rank <= TOP_N);
   const rest = entries.filter((e) => e.rank > TOP_N);
   const cutoff = scored.length >= TOP_N ? (scored[TOP_N - 1]?.score ?? null) : null;

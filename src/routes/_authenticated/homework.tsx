@@ -126,22 +126,33 @@ function StudentHomework() {
         .eq("student_id", me.id)
         .maybeSingle();
       if (!active || error || !seat) return;
-      const { data } = await supabase.rpc("captain_classmates");
-      if (!active || !data) return;
-      const rows = data.flatMap((s) => {
-        if (s.math_set !== "S2M3" && s.math_set !== "S2M5") return [];
-        const set: MathSet = s.math_set;
-        return [
-          {
-            id: s.id,
-            name: s.name,
-            className: s.class_name,
-            classNo: s.class_no,
-            set,
-          },
-        ];
-      });
-      setCaptainOf(rows);
+      const [listed, rpc] = await Promise.all([
+        supabase.from("students").select("id, name, class_name, class_no, math_set"),
+        supabase.rpc("captain_classmates"),
+      ]);
+      if (!active) return;
+      const merged = new Map<string, MatrixStudent>();
+      const add = (row: {
+        id: string;
+        name: string;
+        class_name: string | null;
+        class_no: string | null;
+        math_set: string;
+      }) => {
+        if (row.math_set !== "S2M3" && row.math_set !== "S2M5") return;
+        if (row.math_set !== me.set) return;
+        const set: MathSet = row.math_set;
+        merged.set(row.id, {
+          id: row.id,
+          name: row.name,
+          set,
+          ...(row.class_name ? { className: row.class_name } : {}),
+          ...(row.class_no ? { classNo: row.class_no } : {}),
+        });
+      };
+      for (const row of listed.data ?? []) add(row);
+      for (const row of rpc.data ?? []) add(row);
+      setCaptainOf([...merged.values()]);
     })();
     return () => {
       active = false;

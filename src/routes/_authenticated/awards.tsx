@@ -107,7 +107,7 @@ function StudentAwards() {
             {REASONS.filter((r) => r.id !== "deduction" && r.id !== "incorrect_answer").map((r) => (
               <li key={r.id}>{r.label}</li>
             ))}
-            <li>Watching a chapter video to the end (+{VIDEO_COINS})</li>
+            <li>Watching a chapter video to the end (+{VIDEO_COINS} MC)</li>
           </ul>
           <p className="mt-3 text-xs text-muted-foreground">
             Missing homework or breaking class rules can lose coins.

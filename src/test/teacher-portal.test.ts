@@ -53,9 +53,9 @@ describe("homework matrix", () => {
       statusOf: (_student, id) => (id === "b" ? "missing" : "submitted"),
       missingOf: () => 3,
     });
-    expect(text).toContain("b（欠交 1）");
-    expect(text).toContain("Ada（2A 1） ⚠️ 第3次欠交");
-    expect(text).not.toContain("a（欠交");
+    expect(text).toContain("b (1 missing)");
+    expect(text).toContain("Ada (2A 1) (missing 3 times)");
+    expect(text).not.toContain("\na ");
   });
 });
 

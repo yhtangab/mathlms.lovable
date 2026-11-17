@@ -35,7 +35,7 @@ export function parseVideoSource(raw: string): VideoSource | null {
 
 /**
  * Records which whole seconds of a video were actually played. Jumps (seeking ahead)
- * are not counted, so a student cannot skip to the end to earn the mark.
+ * are not counted, so a student cannot skip to the end to earn the coin.
  */
 export function createWatchTracker() {
   const watched = new Set<number>();

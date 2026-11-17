@@ -11,6 +11,7 @@ import {
   type RewardReason,
   type SystemConfig,
 } from "./types";
+import { loadBadgeStats } from "./badge-stats";
 import { buildGameWorld } from "./world";
 
 type Client = SupabaseClient<Database>;
@@ -24,7 +25,13 @@ type CoinTotalRow = Database["public"]["Views"]["student_coin_totals"]["Row"];
 
 const PAGE = 1000;
 const WRITE_CHUNK = 500;
-const REASONS: RewardReason[] = ["quiz_top3", "quiz_top10", "most_improved", "homework_streak"];
+const REASONS: RewardReason[] = [
+  "quiz_top3",
+  "quiz_top10",
+  "most_improved",
+  "homework_streak",
+  "badge",
+];
 
 export interface PublishReport {
   students: number;
@@ -32,6 +39,8 @@ export interface PublishReport {
   boards: number;
   newRewards: number;
   publishedAt: string;
+  /** Set when badge coins could not be saved, usually because 0014 has not been run. */
+  badgeWarning?: string;
 }
 
 interface Page<T> {
@@ -215,12 +224,14 @@ export async function publishGame(
   const demo = students.find((s) => s.email === DEMO_EMAIL);
   const realIds = new Set(real.map((s) => s.id));
 
+  const badgeStats = await loadBadgeStats(supabase);
   const world = buildGameWorld({
     students: real,
     config,
     ledger: ledger.filter((e) => realIds.has(e.studentId)),
     cosmetics,
     voiceCounts,
+    badgeStats,
     rewardsSpendable: false,
     now,
   });
@@ -242,6 +253,7 @@ export async function publishGame(
         ...MOCK_VOICE_COUNTS,
         [demo.id, voiceCounts.get(demo.id) ?? 0],
       ]),
+      badgeStats,
       rewardsSpendable: false,
       now,
     });
@@ -250,11 +262,32 @@ export async function publishGame(
     if (demoSnapshot) snapshots.push(demoSnapshot);
   }
 
-  for (const part of chunk(newRewards.map(ledgerToRow), WRITE_CHUNK)) {
-    const { error } = await supabase
-      .from("game_rewards")
-      .upsert(part, { onConflict: "student_id,source_key", ignoreDuplicates: true });
-    if (error) throw new Error(`Could not save game rewards: ${error.message}`);
+  const saveRewards = async (rows: ReturnType<typeof ledgerToRow>[]) => {
+    for (const part of chunk(rows, WRITE_CHUNK)) {
+      const { error } = await supabase
+        .from("game_rewards")
+        .upsert(part, { onConflict: "student_id,source_key", ignoreDuplicates: true });
+      if (error) throw new Error(error.message);
+    }
+  };
+  const badgeRewards = newRewards.filter((e) => e.reason === "badge");
+  try {
+    await saveRewards(newRewards.filter((e) => e.reason !== "badge").map(ledgerToRow));
+  } catch (e) {
+    throw new Error(
+      `Could not save game rewards: ${e instanceof Error ? e.message : "unknown error"}`,
+    );
+  }
+  let badgeWarning: string | undefined;
+  if (badgeRewards.length) {
+    try {
+      await saveRewards(badgeRewards.map(ledgerToRow));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "unknown error";
+      badgeWarning = message.includes("check")
+        ? "Badge coins were not saved. Run supabase/sql/0014_captain_roster_badges.sql in the Supabase SQL Editor, then publish again."
+        : `Badge coins were not saved: ${message}`;
+    }
   }
 
   const publishedAt = now.toISOString();
@@ -290,5 +323,6 @@ export async function publishGame(
     boards: world.boards.length,
     newRewards: newRewards.length,
     publishedAt,
+    ...(badgeWarning ? { badgeWarning } : {}),
   };
 }

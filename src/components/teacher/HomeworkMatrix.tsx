@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
-import { ClipboardCopy } from "lucide-react";
+import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Notice, Panel } from "@/components/PageParts";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,12 @@ import {
   MARKS_PER_MISSING,
   MISSING_ALERT,
   assignmentsForSet,
-  chasingListText,
+  CHASE_EMAIL_BODY,
+  CHASE_EMAIL_SUBJECT,
+  chaseEmail,
   checkKey,
   homeworkPenalty,
+  missingByStudent,
   streakRewardMc,
   summarizeChecks,
   type CheckAssignment,
@@ -32,7 +35,23 @@ export interface MatrixStudent {
   name: string;
   className?: string;
   classNo?: string;
+  email?: string;
   set: MathSet;
+}
+
+const EMAIL_KEY = "hlc.chaseEmail.v1";
+
+function savedEmailTemplate(): { subject: string; body: string } {
+  try {
+    const raw = localStorage.getItem(EMAIL_KEY);
+    const parsed = raw ? (JSON.parse(raw) as { subject?: unknown; body?: unknown }) : null;
+    if (parsed && typeof parsed.subject === "string" && typeof parsed.body === "string") {
+      return { subject: parsed.subject, body: parsed.body };
+    }
+  } catch {
+    // Keep the built-in draft.
+  }
+  return { subject: CHASE_EMAIL_SUBJECT, body: CHASE_EMAIL_BODY };
 }
 
 type Brush = CheckStatus | "clear";
@@ -60,6 +79,9 @@ export function HomeworkMatrix({
   const [busy, setBusy] = useState<string | null>(null);
   const [brush, setBrush] = useState<Brush>("submitted");
   const [focus, setFocus] = useState<{ row: number; col: number } | null>(null);
+  const [mailOpen, setMailOpen] = useState(false);
+  const [mailSubject, setMailSubject] = useState(CHASE_EMAIL_SUBJECT);
+  const [mailBody, setMailBody] = useState(CHASE_EMAIL_BODY);
 
   const activeSet = fixedSet ?? set;
 
@@ -108,6 +130,7 @@ export function HomeworkMatrix({
           set: s.set,
           ...(s.className !== undefined ? { className: s.className } : {}),
           ...(s.classNo !== undefined ? { classNo: s.classNo } : {}),
+          ...(s.email ? { email: s.email } : {}),
         }));
     return source
       .filter((s) => s.set === activeSet)
@@ -224,20 +247,48 @@ export function HomeworkMatrix({
     }
   };
 
-  const copyList = async () => {
-    const text = chasingListText({
-      set: activeSet,
-      assignments,
-      students: rows,
-      statusOf,
-      missingOf: (id) => summaryOf(id).missing,
-    });
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("追功課名單已複製，可以貼去 Google Classroom 或 WhatsApp");
-    } catch {
-      toast.error("Could not copy. Allow clipboard access and try again.");
+  const missingGroups = useMemo(
+    () => missingByStudent({ assignments, students: rows, statusOf }),
+    [assignments, rows, statusOf],
+  );
+
+  const openMail = () => {
+    const saved = savedEmailTemplate();
+    setMailSubject(saved.subject);
+    setMailBody(saved.body);
+    setMailOpen(true);
+  };
+
+  const sendMail = () => {
+    const ready = missingGroups.filter((g) => g.student.email);
+    if (!ready.length) {
+      toast.error("None of these students have a Google sign-in email.");
+      return;
     }
+    localStorage.setItem(EMAIL_KEY, JSON.stringify({ subject: mailSubject, body: mailBody }));
+    for (const group of ready) {
+      const email = group.student.email;
+      if (!email) continue;
+      const mail = chaseEmail({
+        subject: mailSubject,
+        body: mailBody,
+        student: group.student,
+        titles: group.titles,
+      });
+      const url =
+        "https://mail.google.com/mail/?view=cm&fs=1" +
+        `&to=${encodeURIComponent(email)}` +
+        `&su=${encodeURIComponent(mail.subject)}` +
+        `&body=${encodeURIComponent(mail.body)}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+    const skipped = missingGroups.length - ready.length;
+    toast.success(
+      `Opened ${ready.length} Gmail draft${ready.length === 1 ? "" : "s"} from your Google account.${
+        skipped ? ` ${skipped} student${skipped === 1 ? "" : "s"} had no email.` : ""
+      }`,
+    );
+    setMailOpen(false);
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -291,9 +342,17 @@ export function HomeworkMatrix({
               ))}
             </div>
           )}
-          <Button type="button" variant="outline" size="sm" onClick={() => void copyList()}>
-            <ClipboardCopy /> 一鍵複製追功課名單
-          </Button>
+          {role === "teacher" ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={openMail}
+              disabled={!missingGroups.length}
+            >
+              <Mail /> Send emails
+            </Button>
+          ) : null}
         </div>
       }
     >
@@ -349,6 +408,15 @@ export function HomeworkMatrix({
         </div>
       ) : null}
 
+      {roster && rows.length < 2 ? (
+        <div className="mb-3">
+          <Notice tone="info">
+            The full class list is not available to this account yet. Run
+            supabase/sql/0014_captain_roster_badges.sql in the Supabase SQL Editor, then sign in
+            again.
+          </Notice>
+        </div>
+      ) : null}
       {assignments.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No homework for {activeSet} yet. Add assignments on this page first.
@@ -425,6 +493,63 @@ export function HomeworkMatrix({
           </table>
         </div>
       )}
+      {mailOpen ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
+          <div
+            role="dialog"
+            aria-labelledby="chase-email-title"
+            className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-xl border border-border bg-card p-5 shadow-xl"
+          >
+            <h2 id="chase-email-title" className="text-lg font-semibold">
+              Send missing-homework emails
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              One email per student. If they missed more than one piece of homework, it is listed
+              in that same email. Gmail opens from your Google sign-in account. You can edit the
+              draft here; {"{name}"}, {"{class}"}, {"{count}"} and {"{homework}"} are filled in for
+              each student.
+            </p>
+            <label className="mt-4 block text-sm font-medium">
+              Subject
+              <input
+                value={mailSubject}
+                onChange={(e) => setMailSubject(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-normal"
+              />
+            </label>
+            <label className="mt-3 block text-sm font-medium">
+              Message
+              <textarea
+                value={mailBody}
+                onChange={(e) => setMailBody(e.target.value)}
+                rows={10}
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-normal"
+              />
+            </label>
+            <ul className="mt-4 space-y-2 text-sm">
+              {missingGroups.map((group) => (
+                <li key={group.student.id} className="rounded-md border border-border px-3 py-2">
+                  <p className="font-medium">
+                    {group.student.name}
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      {group.student.email ?? "No Google email on the class list"}
+                    </span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">{group.titles.join(", ")}</p>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setMailOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={sendMail}>
+                <Mail /> Send {missingGroups.length}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </Panel>
   );
 }

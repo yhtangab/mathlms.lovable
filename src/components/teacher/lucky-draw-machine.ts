@@ -4,7 +4,7 @@ import gsap from "gsap";
 /** 3D lucky-draw machine adapted from the class reference page. */
 
 const CSS = `
-.ld-root{position:relative;height:100%;overflow:hidden;background:#07050f;color:#f6efe2;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.ld-root{position:relative;height:100%;overflow:hidden;background:#241838;color:#f6efe2;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .ld-root button,.ld-root input,.ld-root textarea{font-family:inherit}
 .ld-root button:disabled{opacity:.4;cursor:not-allowed}
 .ld-root button:focus-visible,.ld-root input:focus-visible,.ld-root textarea:focus-visible{outline:2px solid #2fd3e0;outline-offset:2px}
@@ -56,7 +56,7 @@ const GRAV = 14;
 const MAX_BALLS = 100;
 const MAX_DRAW = 10;
 const EXIT = new THREE.Vector3(0, -0.6, 0.8).normalize();
-const LIGHT = Math.PI;
+const LIGHT = Math.PI * 2.4;
 const COLORS: ReadonlyArray<readonly [string, string]> = [
   ["#ff4d6d", "#a3123a"],
   ["#ffb627", "#c26a00"],
@@ -160,13 +160,14 @@ export function mountLuckyDraw(
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.35;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   ui.stage.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x07050f);
-  scene.fog = new THREE.FogExp2(0x07050f, 0.03);
+  scene.background = new THREE.Color(0x241838);
+  scene.fog = new THREE.FogExp2(0x241838, 0.012);
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
 
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -277,10 +278,10 @@ export function mountLuckyDraw(
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(45, 96),
     new THREE.MeshStandardMaterial({
-      color: 0x0e0b18,
-      roughness: 0.35,
-      metalness: 0.6,
-      envMapIntensity: 0.3,
+      color: 0x4a3b68,
+      roughness: 0.32,
+      metalness: 0.35,
+      envMapIntensity: 0.85,
     }),
   );
   floor.rotation.x = -Math.PI / 2;
@@ -294,7 +295,8 @@ export function mountLuckyDraw(
   glowRing.position.y = 0.02;
   scene.add(glowRing);
 
-  scene.add(new THREE.AmbientLight(0x8a7cff, 0.25 * LIGHT));
+  scene.add(new THREE.AmbientLight(0xfff6e8, 0.85 * LIGHT));
+  scene.add(new THREE.HemisphereLight(0xfff4d2, 0x6a4e8a, 0.55 * LIGHT));
   const key = new THREE.SpotLight(0xfff3e0, 1.6 * LIGHT, 0, Math.PI / 7.5, 0.55);
   key.position.set(3, 15, 7);
   key.target.position.copy(C);
@@ -360,7 +362,7 @@ export function mountLuckyDraw(
   const glassMat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     transparent: true,
-    opacity: 0.16,
+    opacity: 0.28,
     roughness: 0,
     metalness: 0,
     clearcoat: 1,

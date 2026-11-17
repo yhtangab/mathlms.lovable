@@ -125,6 +125,59 @@ export interface ChaseStudent {
   name: string;
   className?: string;
   classNo?: string;
+  email?: string;
+}
+
+export interface MissingGroup {
+  student: ChaseStudent;
+  titles: string[];
+}
+
+/** Students with at least one missing homework. Several pieces stay in one group. */
+export function missingByStudent(input: {
+  assignments: readonly CheckAssignment[];
+  students: readonly ChaseStudent[];
+  statusOf: (studentId: string, homeworkId: string) => CheckStatus | null;
+}): MissingGroup[] {
+  return input.students
+    .map((student) => ({
+      student,
+      titles: input.assignments
+        .filter((hw) => input.statusOf(student.id, hw.id) === "missing")
+        .map((hw) => hw.title),
+    }))
+    .filter((row) => row.titles.length > 0)
+    .sort((a, b) => a.student.name.localeCompare(b.student.name));
+}
+
+export const CHASE_EMAIL_SUBJECT = "Missing Mathematics homework";
+
+export const CHASE_EMAIL_BODY = `Dear {name},
+
+This is a reminder from your Mathematics teacher. You still have {count} homework assignment(s) marked missing:
+
+{homework}
+
+Please hand them in as soon as you can, or talk to me if something is in the way.
+
+Thank you,
+HLC Mathematics`;
+
+export function chaseEmail(input: {
+  subject: string;
+  body: string;
+  student: ChaseStudent;
+  titles: readonly string[];
+}): { subject: string; body: string } {
+  const homework = input.titles.map((title) => `- ${title}`).join("\n");
+  const who = [input.student.className, input.student.classNo].filter(Boolean).join(" ");
+  const fill = (text: string) =>
+    text
+      .replaceAll("{name}", input.student.name)
+      .replaceAll("{class}", who || input.student.name)
+      .replaceAll("{count}", String(input.titles.length))
+      .replaceAll("{homework}", homework);
+  return { subject: fill(input.subject).slice(0, 180), body: fill(input.body).slice(0, 4000) };
 }
 
 /** Text ready to paste into Google Classroom or WhatsApp. */
@@ -135,21 +188,21 @@ export function chasingListText(input: {
   statusOf: (studentId: string, homeworkId: string) => CheckStatus | null;
   missingOf: (studentId: string) => number;
 }): string {
-  const lines = [`追功課名單 · ${input.set}`];
+  const lines = [`Missing homework · ${input.set}`];
   let any = false;
   for (const hw of input.assignments) {
     const missing = input.students.flatMap((s) => {
       if (input.statusOf(s.id, hw.id) !== "missing") return [];
       const count = input.missingOf(s.id);
       const who = [s.className, s.classNo].filter(Boolean).join(" ");
-      const warn = count >= MISSING_ALERT ? ` ⚠️ 第${count}次欠交` : "";
-      return [`- ${s.name}${who ? `（${who}）` : ""}${warn}`];
+      const warn = count >= MISSING_ALERT ? ` (missing ${count} times)` : "";
+      return [`- ${s.name}${who ? ` (${who})` : ""}${warn}`];
     });
     if (missing.length === 0) continue;
     any = true;
-    lines.push("", `${hw.title}（欠交 ${missing.length}）`, ...missing);
+    lines.push("", `${hw.title} (${missing.length} missing)`, ...missing);
   }
-  if (!any) lines.push("", "目前沒有欠交。");
+  if (!any) lines.push("", "Nobody is missing homework.");
   return lines.join("\n");
 }
 

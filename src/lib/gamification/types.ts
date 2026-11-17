@@ -33,7 +33,19 @@ export interface HomeworkRecord {
   status: HomeworkStatus;
 }
 
-export type RewardReason = "quiz_top3" | "quiz_top10" | "most_improved" | "homework_streak";
+export type RewardReason =
+  | "quiz_top3"
+  | "quiz_top10"
+  | "most_improved"
+  | "homework_streak"
+  | "badge";
+
+/** Highest tier of one badge, safe to show next to a name on the leaderboard. */
+export interface PublicBadge {
+  id: string;
+  emoji: string;
+  tier: 1 | 2 | 3 | 4;
+}
 
 /** A reward the rules say a student has earned, before the 2x event is applied. */
 export interface RewardGrant {
@@ -150,6 +162,8 @@ export interface GameProfile extends Cosmetics {
   quizHistory: QuizResult[];
   standings: PublicStanding[];
   rewards: LedgerEntry[];
+  /** Highest tier of each earned badge. */
+  badges?: PublicBadge[];
 }
 
 /** The six areas on the competency radar. */
@@ -201,6 +215,8 @@ export interface LeaderboardEntry {
   className: string;
   classNo: string;
   score: number;
+  /** Highest tier of each badge this student has earned. */
+  badges?: PublicBadge[];
 }
 
 /**

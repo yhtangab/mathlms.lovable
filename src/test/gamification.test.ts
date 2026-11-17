@@ -100,12 +100,12 @@ describe("quiz ranks", () => {
     expect(ranks).toEqual([1, 1, 3, 4]);
   });
 
-  it("pays +3 MC / 150 EXP to ranks 1–3 and +1 MC / 50 EXP to ranks 4–10", () => {
+  it("pays +2 MC / 150 EXP to ranks 1–3 and +1 MC / 50 EXP to ranks 4–10", () => {
     const rows = roster("SQ1.1", [20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9]);
     const map = computeSetStandings(rows);
     const paid = rows.map((r) => rankRewardGrants(r.studentId, map.get(r.studentId) ?? []));
-    expect(paid[0]?.[0]).toMatchObject({ reason: "quiz_top3", baseMc: 3, exp: 150 });
-    expect(paid[2]?.[0]).toMatchObject({ reason: "quiz_top3", baseMc: 3, exp: 150 });
+    expect(paid[0]?.[0]).toMatchObject({ reason: "quiz_top3", baseMc: 2, exp: 150 });
+    expect(paid[2]?.[0]).toMatchObject({ reason: "quiz_top3", baseMc: 2, exp: 150 });
     expect(paid[3]?.[0]).toMatchObject({ reason: "quiz_top10", baseMc: 1, exp: 50 });
     expect(paid[9]?.[0]).toMatchObject({ reason: "quiz_top10", baseMc: 1, exp: 50 });
     expect(paid[10]).toHaveLength(0);

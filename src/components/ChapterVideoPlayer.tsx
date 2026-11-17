@@ -36,11 +36,11 @@ export function ChapterVideoPlayer({ video, completed, canEarn, onComplete }: { 
     setWatched(coverage);
     if (!canEarn || done.current) return;
     if (coverage < REQUIRED_COVERAGE) {
-      toast.info(`You watched ${Math.round(coverage * 100)}% of this video. Watch it all the way through, without skipping, to earn the mark.`);
+      toast.info(`You watched ${Math.round(coverage * 100)}% of this video. Watch it all the way through, without skipping, to earn +1 MC.`);
       return;
     }
     done.current = true;
-    try { await onComplete(video.id); } catch (e) { done.current = false; toast.error(e instanceof Error ? e.message : 'Could not save your mark'); }
+    try { await onComplete(video.id); } catch (e) { done.current = false; toast.error(e instanceof Error ? e.message : 'Could not save your coin'); }
   };
   const finishRef = useRef(finish);
   finishRef.current = finish;
@@ -91,9 +91,9 @@ export function ChapterVideoPlayer({ video, completed, canEarn, onComplete }: { 
       <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
         <h3 className="mr-auto font-semibold">{video.title}</h3>
         {completed ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 font-semibold text-success"><CheckCircle2 className="h-4 w-4" /> Watched · 1 mark earned</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-3 py-1 font-semibold text-success"><CheckCircle2 className="h-4 w-4" /> Watched · +1 MC</span>
         ) : canEarn && source ? (
-          <span className="rounded-full bg-muted px-3 py-1 font-semibold text-muted-foreground">Watched {pct}% · finish to earn 1 mark</span>
+          <span className="rounded-full bg-muted px-3 py-1 font-semibold text-muted-foreground">Watched {pct}% · finish to earn +1 MC</span>
         ) : null}
       </div>
       {!completed && canEarn && source && <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} /></div>}

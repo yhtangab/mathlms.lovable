@@ -170,6 +170,7 @@ function PublishButton() {
       toast.success(
         `Published for ${report.students} students${report.newRewards ? `, ${report.newRewards} new rewards` : ""}`,
       );
+      if (report.badgeWarning) toast.message(report.badgeWarning);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not publish game data");
     } finally {
