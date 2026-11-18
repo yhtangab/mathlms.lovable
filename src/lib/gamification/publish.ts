@@ -108,6 +108,7 @@ export function cosmeticsFromRow(row: CosmeticsRow): Cosmetics {
     avatarId: row.avatar_id,
     equippedFrameId: row.frame_id,
     equippedTitle: row.title_id,
+    equippedTitle2: row.title_id_2,
   };
 }
 

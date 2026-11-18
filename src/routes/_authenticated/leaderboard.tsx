@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
-import { AnonymousAvatar, AvatarBadge, TitleTag } from "@/components/game/AvatarBadge";
+import { AnonymousAvatar, AvatarBadge, TitleTags } from "@/components/game/AvatarBadge";
 import { BadgeIcon } from "@/components/game/BadgeIcon";
 import { useApp } from "@/lib/app-store";
 import { BADGES, TIER_NAMES } from "@/lib/gamification/badges";
@@ -195,7 +195,7 @@ function LeaderboardPage() {
             <span>
               {entry.set} {entry.className} {entry.classNo}
             </span>
-            <TitleTag titleId={c.equippedTitle} />
+            <TitleTags titles={[c.equippedTitle, c.equippedTitle2]} />
             {hidden ? <span>(students see this row as anonymous)</span> : null}
           </div>
         </div>
@@ -275,7 +275,7 @@ function LeaderboardPage() {
                     {entry.studentId === me.id ? " (You)" : ""}
                   </p>
                   <BadgePins badges={entry.badges} />
-                  <TitleTag titleId={c.equippedTitle} className="mt-1" />
+                  <TitleTags titles={[c.equippedTitle, c.equippedTitle2]} className="mt-1" />
                   <p className="mt-1 text-sm font-bold tabular-nums">
                     {scoreText(board, entry.score)}
                   </p>

@@ -34,11 +34,7 @@ export interface HomeworkRecord {
 }
 
 export type RewardReason =
-  | "quiz_top3"
-  | "quiz_top10"
-  | "most_improved"
-  | "homework_streak"
-  | "badge";
+  "quiz_top3" | "quiz_top10" | "most_improved" | "homework_streak" | "badge";
 
 /** Highest tier of one badge, safe to show next to a name on the leaderboard. */
 export interface PublicBadge {
@@ -118,12 +114,14 @@ export interface Cosmetics {
   avatarId: string;
   equippedFrameId: string | null;
   equippedTitle: string | null;
+  equippedTitle2: string | null;
 }
 
 export const DEFAULT_COSMETICS: Cosmetics = {
   avatarId: "avatar-default",
   equippedFrameId: null,
   equippedTitle: null,
+  equippedTitle2: null,
 };
 
 /**

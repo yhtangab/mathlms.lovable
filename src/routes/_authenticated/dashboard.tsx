@@ -5,7 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { AssessmentReport } from "@/components/AssessmentReport";
 import { Notice, PageHeader, Panel, StatCard } from "@/components/PageParts";
 import { ActivityHeatmap } from "@/components/game/ActivityHeatmap";
-import { AvatarBadge, TitleTag } from "@/components/game/AvatarBadge";
+import { AvatarBadge, TitleTags } from "@/components/game/AvatarBadge";
 import { ClassBoxPlot } from "@/components/game/ClassBoxPlot";
 import { CompetencyRadar } from "@/components/game/CompetencyRadar";
 import { QuizTrajectory } from "@/components/game/QuizTrajectory";
@@ -146,7 +146,10 @@ function Dashboard() {
               </button>
             ))}
           </div>
-          <TitleTag titleId={cosmetics.equippedTitle} className="ml-auto" />
+          <TitleTags
+            titles={[cosmetics.equippedTitle, cosmetics.equippedTitle2]}
+            className="ml-auto"
+          />
         </div>
         <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>

@@ -15,6 +15,7 @@ import { DEMO_EMAIL, type ScoreSource, type Student } from "./data";
 import { chapterScoresFromAssessments, type Assessment } from "./assessments";
 import type { Homework } from "./homework";
 import {
+  DEMO_COSMETICS,
   MOCK_COSMETICS,
   MOCK_STUDENTS,
   MOCK_VOICE_COUNTS,
@@ -646,14 +647,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ),
     [game],
   );
-  const cosmeticsOf = useCallback(
-    (studentId: string): Cosmetics =>
-      liveCosmetics.get(studentId) ?? MOCK_COSMETICS.get(studentId) ?? DEFAULT_COSMETICS,
-    [liveCosmetics],
-  );
 
   const ownRecord = data?.students.find((s) => s.userId === user?.id) ?? null;
   const isDemo = actualRole === "student" && ownRecord?.email === DEMO_EMAIL;
+  const cosmeticsOf = useCallback(
+    (studentId: string): Cosmetics =>
+      liveCosmetics.get(studentId) ??
+      MOCK_COSMETICS.get(studentId) ??
+      (isDemo && ownRecord?.id === studentId ? DEMO_COSMETICS : DEFAULT_COSMETICS),
+    [liveCosmetics, isDemo, ownRecord],
+  );
 
   // Ranks need the whole set, which only a teacher's account can read. Teachers work the game
   // out in the browser; students read what the teacher last published.
@@ -682,11 +685,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // taken out here and counted once, from the sandbox ledger.
     const demo = isDemo && ownRecord ? [{ ...ownRecord, rewardCoins: 0 }] : [];
     const demoVoice = countVoiceMarks(data?.markLog ?? []);
+    const cosmetics = new Map<string, Cosmetics>([...MOCK_COSMETICS, ...liveCosmetics]);
+    if (isDemo && ownRecord && !liveCosmetics.has(ownRecord.id)) {
+      cosmetics.set(ownRecord.id, DEMO_COSMETICS);
+    }
     return buildGameWorld({
       students: [...MOCK_STUDENTS, ...demo],
       config: gameConfig,
       ledger: [...mockSeedLedger(), ...(isDemo ? (game?.ledger ?? []) : [])],
-      cosmetics: new Map<string, Cosmetics>([...MOCK_COSMETICS, ...liveCosmetics]),
+      cosmetics,
       voiceCounts: new Map<string, number>([...MOCK_VOICE_COUNTS, ...demoVoice]),
       ...(data?.badgeStats ? { badgeStats: data.badgeStats } : {}),
       rewardsSpendable: true,

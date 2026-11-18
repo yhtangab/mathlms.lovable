@@ -68,7 +68,21 @@ const FRAME_CSS = `
   0%, 100% { box-shadow: 0 0 0 4px var(--primary); }
   50% { box-shadow: 0 0 0 8px var(--sky); }
 }
-.hlc-title { display: inline-flex; }
+.hlc-avatar-flame { animation: hlc-avatar-flame 1.2s ease-in-out infinite; }
+@keyframes hlc-avatar-flame {
+  0%, 100% { box-shadow: 0 0 0 0 var(--flame); }
+  50% { box-shadow: 0 0 12px 3px var(--flame); }
+}
+.hlc-avatar-prism { animation: hlc-avatar-prism 2.4s linear infinite; }
+@keyframes hlc-avatar-prism {
+  0% { box-shadow: 0 0 0 3px var(--berry); }
+  33% { box-shadow: 0 0 0 3px var(--gold); }
+  66% { box-shadow: 0 0 0 3px var(--sky); }
+  100% { box-shadow: 0 0 0 3px var(--berry); }
+}
+.hlc-avatar-spark { animation: hlc-spark 1.4s ease-in-out infinite; }
+.hlc-avatar-glow { animation: hlc-title-glow 1.6s ease-in-out infinite alternate; }
+.hlc-avatar-float { animation: hlc-title-float 2.4s ease-in-out infinite; }
 .hlc-title-shimmer {
   background-image: linear-gradient(100deg, var(--primary-deep) 20%, var(--gold) 45%, var(--primary-deep) 70%);
   background-size: 200% 100%;
@@ -106,6 +120,11 @@ const FRAME_CSS = `
   .hlc-frame-comet::before,
   .hlc-frame-aurora::before,
   .hlc-frame-halo > .hlc-face,
+  .hlc-avatar-flame,
+  .hlc-avatar-prism,
+  .hlc-avatar-spark,
+  .hlc-avatar-glow,
+  .hlc-avatar-float,
   .hlc-title-shimmer,
   .hlc-title-glow,
   .hlc-title-bounce,
@@ -153,6 +172,7 @@ export function AvatarBadge({
         className={cn(
           "hlc-face grid place-items-center rounded-full leading-none",
           TONES[avatar.tone].flat,
+          avatar.effect !== "none" && `hlc-avatar-${avatar.effect}`,
           SIZES[size],
         )}
       >
@@ -193,6 +213,25 @@ export function TitleTag({ titleId, className }: { titleId: string | null; class
       }
     >
       {title.label}
+    </span>
+  );
+}
+
+/** Equipped titles, up to two, in the order the student chose. */
+export function TitleTags({
+  titles,
+  className,
+}: {
+  titles: readonly (string | null | undefined)[];
+  className?: string;
+}) {
+  const ids = titles.filter((id): id is string => Boolean(id));
+  if (ids.length === 0) return null;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1">
+      {ids.map((id) => (
+        <TitleTag key={id} titleId={id} {...(className ? { className } : {})} />
+      ))}
     </span>
   );
 }

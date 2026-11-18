@@ -816,6 +816,7 @@ export type Database = {
           frame_id: string | null;
           student_id: string;
           title_id: string | null;
+          title_id_2: string | null;
           updated_at: string;
         };
         Insert: {
@@ -823,6 +824,7 @@ export type Database = {
           frame_id?: string | null;
           student_id: string;
           title_id?: string | null;
+          title_id_2?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -830,6 +832,7 @@ export type Database = {
           frame_id?: string | null;
           student_id?: string;
           title_id?: string | null;
+          title_id_2?: string | null;
           updated_at?: string;
         };
         Relationships: [
@@ -1016,7 +1019,12 @@ export type Database = {
       complete_chapter_video: { Args: { _video_id: string }; Returns: boolean };
       complete_video: { Args: { _chapter: number }; Returns: undefined };
       equip_cosmetics: {
-        Args: { _avatar: string; _frame: string | null; _title: string | null };
+        Args: {
+          _avatar: string;
+          _frame: string | null;
+          _title: string | null;
+          _title2: string | null;
+        };
         Returns: undefined;
       };
       has_role: {

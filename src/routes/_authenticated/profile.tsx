@@ -4,7 +4,7 @@ import { Check, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
-import { AvatarBadge, TitleTag } from "@/components/game/AvatarBadge";
+import { AvatarBadge, TitleTag, TitleTags } from "@/components/game/AvatarBadge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
@@ -18,7 +18,6 @@ import {
   itemKind,
   titleById,
 } from "@/lib/gamification/catalog";
-import { TONES } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -48,12 +47,15 @@ function ProfilePage() {
     refresh,
     gameError,
     shopItems,
+    ownedItems,
   } = useApp();
   const saved = cosmeticsOf(me.id);
   const [avatarId, setAvatarId] = useState(avatarById(saved.avatarId).id);
   const [frameId, setFrameId] = useState(frameById(saved.equippedFrameId).id);
   const equippedTitle = titleById(saved.equippedTitle)?.id ?? saved.equippedTitle ?? null;
+  const equippedTitle2 = titleById(saved.equippedTitle2)?.id ?? saved.equippedTitle2 ?? null;
   const [titleId, setTitleId] = useState<string | null>(equippedTitle);
+  const [titleId2, setTitleId2] = useState<string | null>(equippedTitle2);
   const [busy, setBusy] = useState(false);
 
   if (role !== "student") {
@@ -69,7 +71,10 @@ function ProfilePage() {
     );
   }
 
-  const unlockedFrames = new Set([DEFAULT_FRAME_ID, ...myUnlocks.frames]);
+  const ownedGrants = new Set(
+    shopItems.filter((item) => ownedItems.includes(item.id)).flatMap((item) => item.grants),
+  );
+  const unlockedFrames = new Set([DEFAULT_FRAME_ID, ...myUnlocks.frames, ...ownedGrants]);
   const extraFrames = shopItems.filter(
     (item) =>
       item.active &&
@@ -85,13 +90,14 @@ function ProfilePage() {
       item.grants[0] &&
       !TITLES.some((t) => t.id === item.grants[0]),
   );
-  const unlockedTitles = new Set(myUnlocks.titles);
+  const unlockedTitles = new Set([...myUnlocks.titles, ...ownedGrants]);
   const exp = me.game?.exp ?? me.xp;
   const level = me.game?.level ?? Math.floor(exp / EXP_PER_LEVEL) + 1;
   const changed =
     avatarId !== avatarById(saved.avatarId).id ||
     frameId !== frameById(saved.equippedFrameId).id ||
-    titleId !== equippedTitle;
+    titleId !== equippedTitle ||
+    titleId2 !== equippedTitle2;
   const canSave = !readOnly && gameError === null && changed && !busy;
 
   const save = async () => {
@@ -101,6 +107,7 @@ function ProfilePage() {
         _avatar: avatarId,
         _frame: frameId === DEFAULT_FRAME_ID ? null : frameId,
         _title: titleId,
+        _title2: titleId2,
       });
       if (error) throw new Error(error.message);
       await refresh();
@@ -112,11 +119,26 @@ function ProfilePage() {
     }
   };
 
+  const chooseTitle = (id: string | null) => {
+    if (id === null || id === titleId) {
+      setTitleId(titleId2);
+      setTitleId2(null);
+      return;
+    }
+    if (id === titleId2) {
+      setTitleId2(null);
+      return;
+    }
+    if (!titleId) setTitleId(id);
+    else if (!titleId2) setTitleId2(id);
+    else setTitleId2(id);
+  };
+
   return (
     <AppShell>
       <PageHeader
         title="My profile"
-        description="Pick your avatar, frame and title. Classmates see them on the leaderboard."
+        description="Pick your avatar, frame and up to two titles. Classmates see them on the leaderboard."
       />
 
       {readOnly ? (
@@ -136,7 +158,7 @@ function ProfilePage() {
         <div className="min-w-0 flex-1">
           <p className="text-2xl font-bold">{me.name}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <TitleTag titleId={titleId} className="bg-white/90" />
+            <TitleTags titles={[titleId, titleId2]} className="bg-white/90" />
             <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-bold">
               {me.set} {me.className} {me.classNo}
             </span>
@@ -170,28 +192,26 @@ function ProfilePage() {
       <Panel tone="berry" className="mt-6" title="Avatar">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
           {AVATARS.map((a) => {
+            const open = a.free || ownedGrants.has(a.id);
             const on = a.id === avatarId;
             return (
               <button
                 type="button"
                 key={a.id}
+                disabled={!open}
                 onClick={() => setAvatarId(a.id)}
                 aria-pressed={on}
                 className={cn(
                   "flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-transform hover:-translate-y-0.5",
                   on ? "border-primary bg-primary/5" : "border-border",
+                  !open && "cursor-not-allowed opacity-60",
                 )}
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "grid h-14 w-14 place-items-center rounded-full text-3xl",
-                    TONES[a.tone].flat,
-                  )}
-                >
-                  {a.emoji}
-                </span>
+                <AvatarBadge avatarId={a.id} frameId={null} size="md" />
                 <span className="text-center text-xs font-bold leading-tight">{a.name}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {open ? (a.free ? "Free" : "Owned") : "Buy in the Shop"}
+                </span>
               </button>
             );
           })}
@@ -264,38 +284,44 @@ function ProfilePage() {
         </div>
       </Panel>
 
-      <Panel tone="blue" className="mt-6" title="Title">
+      <Panel tone="blue" className="mt-6" title="Titles">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Choose up to two. Both appear on the leaderboard. Press a chosen title again to remove it.
+        </p>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <button
             type="button"
-            onClick={() => setTitleId(null)}
-            aria-pressed={titleId === null}
+            onClick={() => chooseTitle(null)}
+            aria-pressed={titleId === null && titleId2 === null}
             className={cn(
               "rounded-xl border-2 px-3 py-2.5 text-left text-sm font-bold",
-              titleId === null ? "border-primary bg-primary/5" : "border-border",
+              titleId === null && titleId2 === null
+                ? "border-primary bg-primary/5"
+                : "border-border",
             )}
           >
-            No title
+            No titles
           </button>
           {TITLES.map((t) => {
             const open = unlockedTitles.has(t.id);
-            const on = t.id === titleId;
+            const slot = t.id === titleId ? "Title 1" : t.id === titleId2 ? "Title 2" : null;
             return (
               <button
                 type="button"
                 key={t.id}
                 disabled={!open}
-                onClick={() => setTitleId(t.id)}
-                aria-pressed={on}
+                onClick={() => chooseTitle(t.id)}
+                aria-pressed={slot !== null}
                 className={cn(
                   "rounded-xl border-2 px-3 py-2.5 text-left",
-                  on ? "border-primary bg-primary/5" : "border-border",
+                  slot ? "border-primary bg-primary/5" : "border-border",
                   !open && "cursor-not-allowed opacity-60",
                 )}
               >
                 <span className="flex items-center gap-2 text-sm font-bold">
                   {open ? null : <Lock className="h-3.5 w-3.5" aria-hidden="true" />}
                   {t.label}
+                  {slot ? <span className="text-xs text-primary">{slot}</span> : null}
                 </span>
                 <span className="mt-0.5 block text-xs text-muted-foreground">{t.requirement}</span>
               </button>
@@ -304,21 +330,22 @@ function ProfilePage() {
           {extraTitles.map((item) => {
             const id = item.grants[0] ?? item.id;
             const open = unlockedTitles.has(id);
-            const on = id === titleId;
+            const slot = id === titleId ? "Title 1" : id === titleId2 ? "Title 2" : null;
             return (
               <button
                 type="button"
                 key={item.id}
                 disabled={!open}
-                onClick={() => setTitleId(id)}
-                aria-pressed={on}
+                onClick={() => chooseTitle(id)}
+                aria-pressed={slot !== null}
                 className={cn(
                   "rounded-xl border-2 px-3 py-2.5 text-left",
-                  on ? "border-primary bg-primary/5" : "border-border",
+                  slot ? "border-primary bg-primary/5" : "border-border",
                   !open && "cursor-not-allowed opacity-60",
                 )}
               >
                 <TitleTag titleId={id} />
+                {slot ? <span className="ml-2 text-xs font-bold text-primary">{slot}</span> : null}
                 <span className="mt-0.5 block text-xs text-muted-foreground">
                   {open ? "Bought in the Shop" : "Buy it in the Shop"}
                 </span>

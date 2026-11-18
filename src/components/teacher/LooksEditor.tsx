@@ -17,7 +17,7 @@ function singleLook(item: ShopItem): boolean {
 }
 
 /** Teacher prices and publishes the built-in frames and titles. */
-export function LooksEditor() {
+export function LooksEditor({ kind = "all" }: { kind?: "all" | "avatar" | "frame" | "title" }) {
   const { shopItems, refresh, cosmeticsOf, me } = useApp();
   const [prices, setPrices] = useState<Record<string, string>>({});
   const [shown, setShown] = useState<Record<string, boolean>>({});
@@ -53,89 +53,98 @@ export function LooksEditor() {
     }
   };
 
-  const list = (kind: "frame" | "title") => rows.filter((item) => itemKind(item) === kind);
+  const list = (section: "avatar" | "frame" | "title") =>
+    rows.filter((item) => itemKind(item) === section);
 
   return (
     <Panel
       className="mt-6"
       title="Looks"
-      description="Students buy each frame or title on its own. Change the price or hide it. Names stay as they are."
+      description="Students buy each avatar, frame or title on its own. Change the price or hide it. Names stay as they are."
     >
-      {!shopItems.some((item) => item.id === "shop-orbit-ring") ? (
+      {!shopItems.some((item) => item.id === "shop-avatar-robot") ? (
         <div className="mb-3">
           <Notice tone="info">
-            New frames and separate titles appear after you run
-            supabase/sql/0017_separate_titles.sql in the Supabase SQL Editor.
+            Shop avatars, new frames and separate titles appear after you run
+            supabase/sql/0018_shop_avatars.sql in the Supabase SQL Editor.
           </Notice>
         </div>
       ) : null}
-      {(["frame", "title"] as const).map((kind) => (
-        <div key={kind} className="mt-3">
-          <h3 className="text-sm font-bold">{kind === "frame" ? "Frames" : "Titles"}</h3>
-          <ul className="mt-2 space-y-2">
-            {list(kind).map((item) => {
-              const grant = item.grants[0] ?? "";
-              return (
-                <li
-                  key={item.id}
-                  className={cn(
-                    "grid items-center gap-3 rounded-md border p-2 md:grid-cols-[4.5rem_minmax(0,1fr)_6rem_7rem_auto]",
-                    dirty(item) ? "border-primary/60 bg-primary/5" : "border-border",
-                  )}
-                >
-                  <span className="grid h-14 place-items-center">
-                    {kind === "frame" ? (
-                      <AvatarBadge
-                        avatarId={cosmeticsOf(me.id).avatarId}
-                        frameId={grant}
-                        size="md"
-                      />
-                    ) : (
-                      <TitleTag titleId={grant} />
+      {(["avatar", "frame", "title"] as const)
+        .filter((section) => kind === "all" || kind === section)
+        .map((section) => (
+          <div key={section} className="mt-3">
+            <h3 className="text-sm font-bold">
+              {section === "avatar" ? "Avatars" : section === "frame" ? "Frames" : "Titles"}
+            </h3>
+            <ul className="mt-2 space-y-2">
+              {list(section).map((item) => {
+                const grant = item.grants[0] ?? "";
+                return (
+                  <li
+                    key={item.id}
+                    className={cn(
+                      "grid items-center gap-3 rounded-md border p-2 md:grid-cols-[4.5rem_minmax(0,1fr)_6rem_7rem_auto]",
+                      dirty(item) ? "border-primary/60 bg-primary/5" : "border-border",
                     )}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-semibold">{item.name}</span>
-                    <span className="block text-xs text-muted-foreground">{item.description}</span>
-                  </span>
-                  <label className="text-xs font-semibold">
-                    MC
-                    <input
-                      aria-label={`${item.name} price`}
-                      type="number"
-                      min={1}
-                      max={1000}
-                      value={priceOf(item)}
-                      onChange={(event) =>
-                        setPrices((current) => ({ ...current, [item.id]: event.target.value }))
-                      }
-                      className={cn(field, "mt-1")}
-                    />
-                  </label>
-                  <label className="flex items-center gap-2 text-sm font-semibold">
-                    <input
-                      type="checkbox"
-                      checked={shownOf(item)}
-                      onChange={(event) =>
-                        setShown((current) => ({ ...current, [item.id]: event.target.checked }))
-                      }
-                      className="h-4 w-4 accent-[var(--primary)]"
-                    />
-                    Published
-                  </label>
-                  <Button
-                    size="sm"
-                    disabled={!dirty(item) || busyId === item.id}
-                    onClick={() => void save(item)}
                   >
-                    <Save /> Save
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+                    <span className="grid h-14 place-items-center">
+                      {section === "frame" ? (
+                        <AvatarBadge
+                          avatarId={cosmeticsOf(me.id).avatarId}
+                          frameId={grant}
+                          size="md"
+                        />
+                      ) : section === "avatar" ? (
+                        <AvatarBadge avatarId={grant} frameId={null} size="md" />
+                      ) : (
+                        <TitleTag titleId={grant} />
+                      )}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block font-semibold">{item.name}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {item.description}
+                      </span>
+                    </span>
+                    <label className="text-xs font-semibold">
+                      MC
+                      <input
+                        aria-label={`${item.name} price`}
+                        type="number"
+                        min={1}
+                        max={1000}
+                        value={priceOf(item)}
+                        onChange={(event) =>
+                          setPrices((current) => ({ ...current, [item.id]: event.target.value }))
+                        }
+                        className={cn(field, "mt-1")}
+                      />
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={shownOf(item)}
+                        onChange={(event) =>
+                          setShown((current) => ({ ...current, [item.id]: event.target.checked }))
+                        }
+                        className="h-4 w-4 accent-[var(--primary)]"
+                      />
+                      Published
+                    </label>
+                    <Button
+                      size="sm"
+                      disabled={!dirty(item) || busyId === item.id}
+                      onClick={() => void save(item)}
+                    >
+                      <Save /> Save
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
     </Panel>
   );
 }

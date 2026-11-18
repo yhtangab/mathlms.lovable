@@ -1,5 +1,6 @@
 import { chapterScoresFromAssessments, termSummary, type Assessment } from "@/lib/assessments";
 import type { MathSet, ScoreSource, Student } from "@/lib/data";
+import { AVATARS, FRAMES, TITLES } from "./catalog";
 import { buildGameProfiles } from "./rules";
 import {
   DEFAULT_SYSTEM_CONFIG,
@@ -181,15 +182,14 @@ const HOMEWORK_OVERRIDES: HomeworkOverride[] = [
   },
 ];
 
-const AVATARS = ["avatar-owl", "avatar-fox", "avatar-panda", "avatar-robot", "avatar-penguin"];
-const FRAMES: (string | null)[] = ["frame-gold", "frame-silver", "frame-bronze", null, null];
-const TITLES: (string | null)[] = [
-  "Algebra Ace",
-  "Factor Finder",
-  "Data Detective",
-  "Angle Hunter",
-  null,
-];
+const SHOP_FRAMES = FRAMES.map((frame) => frame.id).filter((id) => id !== "frame-default");
+const TITLE_IDS = TITLES.map((title) => title.id);
+
+function pick<T>(list: readonly T[], rnd: () => number): T {
+  const item = list[Math.floor(rnd() * list.length)];
+  if (item === undefined) throw new Error("Cannot pick from an empty list");
+  return item;
+}
 
 function itemRow(p: PlanItem, score: number | null, absent: boolean): Assessment {
   return {
@@ -345,10 +345,17 @@ function buildSandbox(): Sandbox {
       classCounters.set(who.className, classNo);
       const s = makeStudent(set, index, who, classNo, rnd);
       students.push(s);
+      const avatar = pick(AVATARS, rnd);
+      const firstTitle = pick(TITLE_IDS, rnd);
+      const secondTitle = pick(
+        TITLE_IDS.filter((id) => id !== firstTitle),
+        rnd,
+      );
       cosmetics.set(s.id, {
-        avatarId: AVATARS[index % AVATARS.length] ?? "avatar-default",
-        equippedFrameId: FRAMES[index % FRAMES.length] ?? null,
-        equippedTitle: TITLES[index % TITLES.length] ?? null,
+        avatarId: avatar.id,
+        equippedFrameId: pick(SHOP_FRAMES, rnd),
+        equippedTitle: firstTitle,
+        equippedTitle2: secondTitle,
       });
       voice.set(s.id, Math.round(rnd() * 30 * (1 - index / 25)));
     });
@@ -361,6 +368,14 @@ const SANDBOX = buildSandbox();
 export const MOCK_STUDENTS: readonly Student[] = SANDBOX.students;
 export const MOCK_COSMETICS: ReadonlyMap<string, Cosmetics> = SANDBOX.cosmetics;
 export const MOCK_VOICE_COUNTS: ReadonlyMap<string, number> = SANDBOX.voice;
+
+/** A fixed look for the public demo login, used until that account saves its own. */
+export const DEMO_COSMETICS: Cosmetics = {
+  avatarId: "avatar-phoenix",
+  equippedFrameId: "frame-aurora",
+  equippedTitle: "title-formula-fan",
+  equippedTitle2: "title-pi-pioneer",
+};
 
 let seedLedger: LedgerEntry[] | null = null;
 

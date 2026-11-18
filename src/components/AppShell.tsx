@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { CheckCircle2, Circle, GraduationCap, LogOut, PlayCircle } from "lucide-react";
 import { GlobalBars } from "@/components/GlobalBars";
-import { AvatarBadge, FrameStyles, TitleTag } from "@/components/game/AvatarBadge";
+import { AvatarBadge, FrameStyles, TitleTags } from "@/components/game/AvatarBadge";
 import { useApp } from "@/lib/app-store";
 import { displayCoins } from "@/lib/gamification/rules";
 import { STUDENT_NAV, TEACHER_NAV, navKey, visibleNav, type NavItem } from "@/lib/nav";
@@ -44,7 +44,10 @@ function ProfileChip({ compact = false }: { compact?: boolean }) {
       {compact ? null : (
         <span className="hidden flex-col leading-tight sm:flex">
           <span className="text-sm font-bold">{firstName}</span>
-          <TitleTag titleId={c.equippedTitle} className="px-1.5 py-0 text-[10px]" />
+          <TitleTags
+            titles={[c.equippedTitle, c.equippedTitle2]}
+            className="px-1.5 py-0 text-[10px]"
+          />
         </span>
       )}
     </Link>

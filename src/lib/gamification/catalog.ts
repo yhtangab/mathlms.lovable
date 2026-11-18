@@ -3,25 +3,118 @@ import type { GameProfile, RadarAxis, Strand, Unlocks } from "./types";
 
 /* ------------------------------------------------------------------ Avatars */
 
+export type AvatarEffect = "none" | "flame" | "prism" | "spark" | "glow" | "float";
+
 export interface AvatarDef {
   id: string;
   name: string;
   emoji: string;
   tone: Tone;
+  /** Free avatars need no purchase. The others are sold in Looks. */
+  free: boolean;
+  effect: AvatarEffect;
 }
 
-/** Every avatar is free. Avatars sold in the Shop can be added here later with an unlock rule. */
 export const AVATARS: AvatarDef[] = [
-  { id: "avatar-owl", name: "Math Wizard Owl", emoji: "🦉", tone: "grape" },
-  { id: "avatar-shiba", name: "Cyber Shiba", emoji: "🐕", tone: "sky" },
-  { id: "avatar-fox", name: "Geometry Fox", emoji: "🦊", tone: "flame" },
-  { id: "avatar-cat", name: "Einstein Cat", emoji: "🐱", tone: "gold" },
-  { id: "avatar-robot", name: "Pi Robot", emoji: "🤖", tone: "blue" },
-  { id: "avatar-astronaut", name: "Calculus Astronaut", emoji: "🧑‍🚀", tone: "grape" },
-  { id: "avatar-panda", name: "Prime Panda", emoji: "🐼", tone: "green" },
-  { id: "avatar-penguin", name: "Proof Penguin", emoji: "🐧", tone: "sky" },
-  { id: "avatar-dragon", name: "Fractal Dragon", emoji: "🐉", tone: "green" },
-  { id: "avatar-octopus", name: "Octagon Octopus", emoji: "🐙", tone: "berry" },
+  {
+    id: "avatar-owl",
+    name: "Math Wizard Owl",
+    emoji: "🦉",
+    tone: "grape",
+    free: true,
+    effect: "none",
+  },
+  { id: "avatar-shiba", name: "Cyber Shiba", emoji: "🐕", tone: "sky", free: true, effect: "none" },
+  {
+    id: "avatar-fox",
+    name: "Geometry Fox",
+    emoji: "🦊",
+    tone: "flame",
+    free: true,
+    effect: "none",
+  },
+  { id: "avatar-cat", name: "Einstein Cat", emoji: "🐱", tone: "gold", free: true, effect: "none" },
+  { id: "avatar-robot", name: "Pi Robot", emoji: "🤖", tone: "blue", free: false, effect: "glow" },
+  {
+    id: "avatar-astronaut",
+    name: "Calculus Astronaut",
+    emoji: "🧑‍🚀",
+    tone: "grape",
+    free: false,
+    effect: "float",
+  },
+  {
+    id: "avatar-panda",
+    name: "Prime Panda",
+    emoji: "🐼",
+    tone: "green",
+    free: false,
+    effect: "none",
+  },
+  {
+    id: "avatar-penguin",
+    name: "Proof Penguin",
+    emoji: "🐧",
+    tone: "sky",
+    free: false,
+    effect: "float",
+  },
+  {
+    id: "avatar-dragon",
+    name: "Fractal Dragon",
+    emoji: "🐉",
+    tone: "green",
+    free: false,
+    effect: "flame",
+  },
+  {
+    id: "avatar-octopus",
+    name: "Octagon Octopus",
+    emoji: "🐙",
+    tone: "berry",
+    free: false,
+    effect: "prism",
+  },
+  {
+    id: "avatar-phoenix",
+    name: "Ember Phoenix",
+    emoji: "🔥",
+    tone: "flame",
+    free: false,
+    effect: "flame",
+  },
+  {
+    id: "avatar-unicorn",
+    name: "Prism Unicorn",
+    emoji: "🦄",
+    tone: "grape",
+    free: false,
+    effect: "prism",
+  },
+  {
+    id: "avatar-crystal",
+    name: "Crystal Golem",
+    emoji: "💎",
+    tone: "sky",
+    free: false,
+    effect: "spark",
+  },
+  {
+    id: "avatar-whale",
+    name: "Aurora Whale",
+    emoji: "🐳",
+    tone: "sky",
+    free: false,
+    effect: "glow",
+  },
+  {
+    id: "avatar-hare",
+    name: "Comet Hare",
+    emoji: "🐇",
+    tone: "gold",
+    free: false,
+    effect: "float",
+  },
 ];
 
 export const DEFAULT_AVATAR_ID = "avatar-owl";
@@ -34,6 +127,8 @@ export function avatarById(id: string | null | undefined): AvatarDef {
       name: "Math Wizard Owl",
       emoji: "🦉",
       tone: "grape",
+      free: true,
+      effect: "none",
     }
   );
 }
@@ -340,8 +435,9 @@ export interface ShopLook {
   active?: boolean;
 }
 
-export function itemKind(item: ShopLook): "frame" | "title" {
-  if (item.kind === "title" || item.kind === "frame") return item.kind;
+export function itemKind(item: ShopLook): "avatar" | "frame" | "title" {
+  if (item.kind === "avatar" || item.kind === "frame" || item.kind === "title") return item.kind;
+  if (item.grants.some((g) => g.startsWith("avatar-"))) return "avatar";
   return item.grants.some((g) => g.startsWith("title-")) ? "title" : "frame";
 }
 

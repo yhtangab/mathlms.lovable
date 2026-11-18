@@ -56,15 +56,50 @@ function ShopPage() {
   return <AppShell>{role === "teacher" ? <TeacherShop /> : <StudentShop />}</AppShell>;
 }
 
+type ShopTab = "all" | "avatar" | "title" | "frame" | "gifts";
+
+const SHOP_TABS: { id: ShopTab; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "avatar", label: "Avatar" },
+  { id: "title", label: "Title" },
+  { id: "frame", label: "Frame" },
+  { id: "gifts", label: "Gifts" },
+];
+
+function ShopTabs({ value, onChange }: { value: ShopTab; onChange: (tab: ShopTab) => void }) {
+  return (
+    <div role="group" aria-label="Shop sections" className="mt-4 flex flex-wrap gap-1">
+      {SHOP_TABS.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          aria-pressed={value === tab.id}
+          onClick={() => onChange(tab.id)}
+          className={cn(
+            "rounded-full px-3 py-1 text-sm font-bold",
+            value === tab.id
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground",
+          )}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function TeacherShop() {
+  const [tab, setTab] = useState<ShopTab>("all");
   return (
     <>
       <PageHeader
         title="Shop"
         description="Looks unlock straight away. Privileges and gifts wait for your approval."
       />
-      <LooksEditor />
-      <TeacherPrivileges />
+      <ShopTabs value={tab} onChange={setTab} />
+      {tab === "gifts" ? null : <LooksEditor kind={tab === "all" ? "all" : tab} />}
+      {tab === "all" || tab === "gifts" ? <TeacherPrivileges /> : null}
     </>
   );
 }
@@ -85,6 +120,7 @@ function StudentShop() {
   } = useApp();
   const [confirming, setConfirming] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState<ShopTab>("all");
   const balance = displayCoins(me);
   const cosmetics = cosmeticsOf(me.id);
   const earned = new Set([
@@ -221,91 +257,110 @@ function StudentShop() {
         </ul>
       </section>
 
-      <h2 className="shop-scroll mt-8">Looks (unlock straight away)</h2>
-      {shopItems.filter((item) => item.active && item.grants.length === 1).length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">Nothing for sale yet.</p>
-      ) : (
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {shopItems
-            .filter((item) => item.active && item.grants.length === 1)
-            .map((item) => {
-              const owned = ownedItems.includes(item.id);
-              const alreadyEarned = item.grants.every((g) => earned.has(g));
-              const frame = itemKind(item) === "frame" ? item.grants[0] : undefined;
-              return (
-                <div key={item.id} className="shop-card flex flex-col rounded-2xl p-4">
-                  <div className="grid h-28 place-items-center rounded-lg bg-muted/60">
-                    {frame ? (
-                      <AvatarBadge avatarId={cosmetics.avatarId} frameId={frame} size="lg" />
-                    ) : (
-                      <div className="flex flex-wrap justify-center gap-1.5 px-2">
-                        {item.grants.map((g) => (
-                          <TitleTag key={g} titleId={g} />
-                        ))}
+      <ShopTabs value={tab} onChange={setTab} />
+
+      {tab === "gifts" ? null : (
+        <>
+          <h2 className="shop-scroll mt-4">Looks (unlock straight away)</h2>
+          {shopItems.filter(
+            (item) =>
+              item.active && item.grants.length === 1 && (tab === "all" || itemKind(item) === tab),
+          ).length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">Nothing for sale yet.</p>
+          ) : (
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {shopItems
+                .filter(
+                  (item) =>
+                    item.active &&
+                    item.grants.length === 1 &&
+                    (tab === "all" || itemKind(item) === tab),
+                )
+                .map((item) => {
+                  const owned = ownedItems.includes(item.id);
+                  const alreadyEarned = item.grants.every((g) => earned.has(g));
+                  const grant = item.grants[0];
+                  const kind = itemKind(item);
+                  return (
+                    <div key={item.id} className="shop-card flex flex-col rounded-xl p-2.5">
+                      <div className="grid h-16 place-items-center rounded-lg bg-muted/60">
+                        {kind === "frame" && grant ? (
+                          <AvatarBadge avatarId={cosmetics.avatarId} frameId={grant} size="md" />
+                        ) : kind === "avatar" && grant ? (
+                          <AvatarBadge avatarId={grant} frameId={null} size="md" />
+                        ) : (
+                          <TitleTag titleId={grant ?? null} />
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <h3 className="mt-3 font-bold">{item.name}</h3>
-                  <p className="mt-1 flex-1 text-sm text-muted-foreground">{item.description}</p>
-                  <div className="mt-4">
-                    {owned ? (
-                      <Button asChild variant="outline" className="w-full">
-                        <Link to="/profile">
-                          <Check /> Owned, equip on your profile
-                        </Link>
-                      </Button>
-                    ) : alreadyEarned ? (
-                      <Button disabled variant="outline" className="w-full">
-                        Already unlocked by an achievement
-                      </Button>
-                    ) : (
-                      spendButton(`item:${item.id}`, item.price, "Buy", () => void buy(item))
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-        </div>
+                      <h3 className="mt-2 text-sm font-bold leading-tight">{item.name}</h3>
+                      <p className="mt-1 line-clamp-2 flex-1 text-xs text-muted-foreground">
+                        {item.description}
+                      </p>
+                      <div className="mt-4">
+                        {owned ? (
+                          <Button asChild variant="outline" className="w-full">
+                            <Link to="/profile">
+                              <Check /> Equip
+                            </Link>
+                          </Button>
+                        ) : alreadyEarned ? (
+                          <Button disabled variant="outline" className="w-full">
+                            Already unlocked by an achievement
+                          </Button>
+                        ) : (
+                          spendButton(`item:${item.id}`, item.price, "Buy", () => void buy(item))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </>
       )}
 
-      <h2 className="shop-scroll mt-8">Privileges and gifts (your teacher approves)</h2>
-      {gifts.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">No rewards have been added yet.</p>
-      ) : (
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {gifts.map((r) => {
-            const next = nextAvailable(r);
-            return (
-              <div key={r.id} className="shop-card flex flex-col rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-muted text-2xl">
-                    {r.emoji}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold leading-tight">{r.name}</h3>
-                    <p className="text-sm font-semibold text-gold-deep">🪙 {r.cost} MC</p>
+      {tab === "all" || tab === "gifts" ? (
+        <>
+          <h2 className="shop-scroll mt-8">Privileges and gifts (your teacher approves)</h2>
+          {gifts.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No rewards have been added yet.</p>
+          ) : (
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {gifts.map((r) => {
+                const next = nextAvailable(r);
+                return (
+                  <div key={r.id} className="shop-card flex flex-col rounded-2xl p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-muted text-2xl">
+                        {r.emoji}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold leading-tight">{r.name}</h3>
+                        <p className="text-sm font-semibold text-gold-deep">🪙 {r.cost} MC</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 flex-1 text-sm">{r.description}</p>
+                    {r.cooldown_days ? (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Once every {r.cooldown_days} days
+                      </p>
+                    ) : null}
+                    <div className="mt-4">
+                      {next && !readOnly ? (
+                        <Button disabled variant="outline" className="w-full">
+                          Available again {formatDate(next)}
+                        </Button>
+                      ) : (
+                        spendButton(`gift:${r.id}`, r.cost, "Get ticket", () => void redeem(r))
+                      )}
+                    </div>
                   </div>
-                </div>
-                <p className="mt-3 flex-1 text-sm">{r.description}</p>
-                {r.cooldown_days ? (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Once every {r.cooldown_days} days
-                  </p>
-                ) : null}
-                <div className="mt-4">
-                  {next && !readOnly ? (
-                    <Button disabled variant="outline" className="w-full">
-                      Available again {formatDate(next)}
-                    </Button>
-                  ) : (
-                    spendButton(`gift:${r.id}`, r.cost, "Get ticket", () => void redeem(r))
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                );
+              })}
+            </div>
+          )}
+        </>
+      ) : null}
 
       <Panel
         tone="gold"
