@@ -11,6 +11,7 @@ import { useApp, type Reward, type ShopItem } from "@/lib/app-store";
 import { COIN_NAME, redemptionStatus } from "@/lib/coins";
 import { displayCoins } from "@/lib/gamification/rules";
 import { LooksEditor } from "@/components/teacher/LooksEditor";
+import { TeacherPrivileges } from "@/routes/_authenticated/awards";
 import { itemKind } from "@/lib/gamification/catalog";
 import { cn } from "@/lib/utils";
 
@@ -52,26 +53,18 @@ function formatDate(value: string | Date) {
 
 function ShopPage() {
   const { role } = useApp();
-  return <AppShell>{role === "teacher" ? <TeacherNote /> : <StudentShop />}</AppShell>;
+  return <AppShell>{role === "teacher" ? <TeacherShop /> : <StudentShop />}</AppShell>;
 }
 
-function TeacherNote() {
+function TeacherShop() {
   return (
     <>
       <PageHeader
         title="Shop"
-        description="Edit the looks students can buy. Class rewards stay on the Awards page."
+        description="Looks unlock straight away. Privileges and gifts wait for your approval."
       />
-      <div className="mt-6">
-        <Notice tone="info">
-          Students spend coins here. Approve their gift tickets on the{" "}
-          <Link to="/awards" className="font-bold underline">
-            Awards
-          </Link>{" "}
-          page.
-        </Notice>
-      </div>
       <LooksEditor />
+      <TeacherPrivileges />
     </>
   );
 }
@@ -229,14 +222,12 @@ function StudentShop() {
       </section>
 
       <h2 className="shop-scroll mt-8">Looks (unlock straight away)</h2>
-      {shopItems.filter(
-        (i) => i.active && i.grants.filter((g) => g.startsWith("title-")).length <= 1,
-      ).length === 0 ? (
+      {shopItems.filter((item) => item.active && item.grants.length === 1).length === 0 ? (
         <p className="mt-2 text-sm text-muted-foreground">Nothing for sale yet.</p>
       ) : (
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shopItems
-            .filter((i) => i.active && i.grants.filter((g) => g.startsWith("title-")).length <= 1)
+            .filter((item) => item.active && item.grants.length === 1)
             .map((item) => {
               const owned = ownedItems.includes(item.id);
               const alreadyEarned = item.grants.every((g) => earned.has(g));

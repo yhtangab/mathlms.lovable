@@ -1,0 +1,13 @@
+---
+description: After finishing code changes, ask whether to commit and push
+alwaysApply: true
+---
+
+# Commit choice
+
+When a task leaves uncommitted project changes, stop and ask with a choice before any git commit or push:
+
+- Commit and push
+- Do not commit
+
+Do not commit or push until that choice is made. Do not include this question when the user already asked to commit, push, or leave the work uncommitted.

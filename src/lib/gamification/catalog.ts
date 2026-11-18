@@ -64,7 +64,18 @@ const hasMostImproved = (ctx: UnlockContext) =>
 
 /* -------------------------------------------------------------------- Frames */
 
-export type FrameStyle = "default" | "gold" | "neon" | "prism" | "poly";
+export type FrameStyle =
+  | "default"
+  | "gold"
+  | "neon"
+  | "prism"
+  | "poly"
+  | "orbit"
+  | "spark"
+  | "wave"
+  | "comet"
+  | "aurora"
+  | "halo";
 
 export const FRAME_STYLES: readonly FrameStyle[] = ["default", "gold", "neon", "prism", "poly"];
 
@@ -119,6 +130,48 @@ export const FRAMES: FrameDef[] = [
     requirement: "Hand in 20 pieces of homework in a row.",
     isUnlocked: (ctx) => ctx.profile.bestHomeworkStreak >= 20,
   },
+  {
+    id: "frame-orbit",
+    name: "Orbit Ring",
+    style: "orbit",
+    requirement: "Buy it in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "frame-spark",
+    name: "Spark Ring",
+    style: "spark",
+    requirement: "Buy it in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "frame-wave",
+    name: "Wave Ring",
+    style: "wave",
+    requirement: "Buy it in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "frame-comet",
+    name: "Comet Ring",
+    style: "comet",
+    requirement: "Buy it in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "frame-aurora",
+    name: "Aurora Ring",
+    style: "aurora",
+    requirement: "Buy it in the Shop.",
+    isUnlocked: () => false,
+  },
+  {
+    id: "frame-halo",
+    name: "Halo Ring",
+    style: "halo",
+    requirement: "Buy it in the Shop.",
+    isUnlocked: () => false,
+  },
 ];
 
 export function frameById(id: string | null | undefined): FrameDef {
@@ -136,10 +189,13 @@ export function frameById(id: string | null | undefined): FrameDef {
 
 /* -------------------------------------------------------------------- Titles */
 
+export type TitleMotion = "none" | "shimmer" | "glow" | "bounce" | "float" | "flash";
+
 export interface TitleDef {
   id: string;
   label: string;
   requirement: string;
+  motion: TitleMotion;
   isUnlocked: (ctx: UnlockContext) => boolean;
 }
 
@@ -148,73 +204,119 @@ export const TITLES: TitleDef[] = [
     id: "title-pythagoras",
     label: "Pythagoras' Heir",
     requirement: "Come 1st in any quiz in your set.",
+    motion: "none",
     isUnlocked: (ctx) => bestSettledRank(ctx) === 1,
   },
   {
     id: "title-algebra-ace",
     label: "Algebra Ace",
     requirement: "Average 80% or more in Number & Algebra quizzes.",
+    motion: "none",
     isUnlocked: (ctx) => (strand(ctx, "number_algebra") ?? 0) >= 80,
   },
   {
     id: "title-factor-finder",
     label: "Factor Finder",
     requirement: "Average 80% or more in Chapter 2 quizzes.",
+    motion: "none",
     isUnlocked: (ctx) => (ctx.chapterAverages[1] ?? 0) >= 80,
   },
   {
     id: "title-angle-hunter",
     label: "Angle Hunter",
     requirement: "Average 80% or more in Geometry quizzes.",
+    motion: "none",
     isUnlocked: (ctx) => (strand(ctx, "geometry") ?? 0) >= 80,
   },
   {
     id: "title-data-detective",
     label: "Data Detective",
     requirement: "Average 80% or more in Data Handling quizzes.",
+    motion: "none",
     isUnlocked: (ctx) => (strand(ctx, "data_handling") ?? 0) >= 80,
   },
   {
     id: "title-homework-hero",
     label: "Homework Hero",
     requirement: "Hand in 10 pieces of homework in a row.",
+    motion: "none",
     isUnlocked: (ctx) => ctx.profile.bestHomeworkStreak >= 10,
   },
   {
     id: "title-comeback-kid",
     label: "Comeback Kid",
     requirement: "Win a Most Improved award.",
+    motion: "none",
     isUnlocked: hasMostImproved,
   },
   {
     id: "title-curious-mind",
     label: "Curious Mind",
     requirement: "Answer or take part in class 10 times.",
+    motion: "none",
     isUnlocked: (ctx) => ctx.profile.activeVoiceCount >= 10,
   },
   {
     id: "title-rising-star",
     label: "Rising Star",
     requirement: "Reach Level 2 (1,000 EXP).",
+    motion: "none",
     isUnlocked: (ctx) => ctx.profile.level >= 2,
   },
-  // The Title Pack in the Shop: these can only be bought.
   {
     id: "title-formula-fan",
     label: "Formula Fanatic",
-    requirement: "Buy the Title Pack in the Shop.",
+    requirement: "Buy it in the Shop.",
+    motion: "shimmer",
     isUnlocked: () => false,
   },
   {
     id: "title-graph-guru",
     label: "Graph Guru",
-    requirement: "Buy the Title Pack in the Shop.",
+    requirement: "Buy it in the Shop.",
+    motion: "glow",
     isUnlocked: () => false,
   },
   {
     id: "title-sigma-scholar",
     label: "Sigma Scholar",
-    requirement: "Buy the Title Pack in the Shop.",
+    requirement: "Buy it in the Shop.",
+    motion: "bounce",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-equation-explorer",
+    label: "Equation Explorer",
+    requirement: "Buy it in the Shop.",
+    motion: "float",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-pi-pioneer",
+    label: "Pi Pioneer",
+    requirement: "Buy it in the Shop.",
+    motion: "flash",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-vector-voyager",
+    label: "Vector Voyager",
+    requirement: "Buy it in the Shop.",
+    motion: "shimmer",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-proof-pilot",
+    label: "Proof Pilot",
+    requirement: "Buy it in the Shop.",
+    motion: "glow",
+    isUnlocked: () => false,
+  },
+  {
+    id: "title-radian-ranger",
+    label: "Radian Ranger",
+    requirement: "Buy it in the Shop.",
+    motion: "float",
     isUnlocked: () => false,
   },
 ];
@@ -278,18 +380,20 @@ export function frameFromLooks(
 export function titleAppearance(
   id: string | null | undefined,
   items: readonly ShopLook[],
-): { label: string; ink?: string; paper?: string } | null {
+): { label: string; motion: TitleMotion; ink?: string; paper?: string } | null {
   if (!id) return null;
+  const motion = titleById(id)?.motion ?? "none";
   const look = lookForGrant(items, id);
   if (look && itemKind(look) === "title") {
     return {
       label: look.name,
+      motion,
       ...(look.ink ? { ink: look.ink } : {}),
       ...(look.paper ? { paper: look.paper } : {}),
     };
   }
   const title = titleById(id);
-  return title ? { label: title.label } : null;
+  return title ? { label: title.label, motion: title.motion } : null;
 }
 
 /** Achievement unlocks plus everything the student has bought in the Shop. */

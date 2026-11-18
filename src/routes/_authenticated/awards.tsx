@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Check, GripVertical, Minus, Plus, Save, X } from "lucide-react";
 import { toast } from "sonner";
@@ -39,7 +39,12 @@ const DAY_MS = 86_400_000;
 
 function AwardsPage() {
   const { role } = useApp();
-  return <AppShell>{role === "teacher" ? <TeacherAwards /> : <StudentAwards />}</AppShell>;
+  if (role === "teacher") return <Navigate to="/shop" />;
+  return (
+    <AppShell>
+      <StudentAwards />
+    </AppShell>
+  );
 }
 
 function formatDate(value: string | Date) {
@@ -238,7 +243,7 @@ function StudentAwards() {
   );
 }
 
-function TeacherAwards() {
+export function TeacherPrivileges() {
   const { redemptions, students, refresh, coinsError } = useApp();
   const [busyId, setBusyId] = useState<string | null>(null);
   const names = useMemo(
@@ -333,10 +338,6 @@ function TeacherAwards() {
 
   return (
     <>
-      <PageHeader
-        title="Awards"
-        description={`Students spend ${COIN_NAME} here. Approve a request, mark it used, or reject it to return the coins.`}
-      />
       {coinsError && (
         <div className="mt-4">
           <Notice tone="error">{coinsError}</Notice>
@@ -539,7 +540,7 @@ function RewardEditor() {
   return (
     <Panel
       className="mt-6"
-      title="Reward list"
+      title="Privileges and gifts"
       description="Drag a row to reorder it. Untick Shown to hide a reward. Limit means once every N days; leave it blank for no limit."
       actions={
         <Button variant="outline" size="sm" onClick={add}>
