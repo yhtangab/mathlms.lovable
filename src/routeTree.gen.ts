@@ -26,6 +26,7 @@ import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
 import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
 import { Route as AuthenticatedCoursesChapterRouteImport } from './routes/_authenticated/courses.$chapter'
+import { Route as ApiCronPublishRouteImport } from './routes/api/cron/publish'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -115,6 +116,11 @@ const AuthenticatedCoursesChapterRoute =
     path: '/courses/$chapter',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiCronPublishRoute = ApiCronPublishRouteImport.update({
+  id: '/api/cron/publish',
+  path: '/api/cron/publish',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
+  '/api/cron/publish': typeof ApiCronPublishRoute
   '/courses/': typeof AuthenticatedCoursesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/teacher': typeof AuthenticatedTeacherRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
+  '/api/cron/publish': typeof ApiCronPublishRoute
   '/courses': typeof AuthenticatedCoursesIndexRoute
 }
 export interface FileRoutesById {
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
   '/_authenticated/courses/$chapter': typeof AuthenticatedCoursesChapterRoute
+  '/api/cron/publish': typeof ApiCronPublishRoute
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
 }
 export interface FileRouteTypes {
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/upload'
     | '/courses/$chapter'
+    | '/api/cron/publish'
     | '/courses/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/upload'
     | '/courses/$chapter'
+    | '/api/cron/publish'
     | '/courses'
   id:
     | '__root__'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/_authenticated/teacher'
     | '/_authenticated/upload'
     | '/_authenticated/courses/$chapter'
+    | '/api/cron/publish'
     | '/_authenticated/courses/'
   fileRoutesById: FileRoutesById
 }
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiCronPublishRoute: typeof ApiCronPublishRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCoursesChapterRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/cron/publish': {
+      id: '/api/cron/publish'
+      path: '/api/cron/publish'
+      fullPath: '/api/cron/publish'
+      preLoaderRoute: typeof ApiCronPublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -401,6 +421,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiCronPublishRoute: ApiCronPublishRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

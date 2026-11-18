@@ -8,6 +8,7 @@ import { BadgeIcon } from "@/components/game/BadgeIcon";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
+import type { MathSet } from "@/lib/data";
 import {
   TIER_NAMES,
   badgeProgress,
@@ -206,6 +207,8 @@ function TeacherBadges() {
   const { badgeDefs, classProfiles, students, refresh } = useApp();
   const [edits, setEdits] = useState<Record<string, BadgeDef>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [setFilter, setSetFilter] = useState<MathSet>("S2M3");
+  const [openHolders, setOpenHolders] = useState<Record<string, boolean>>({});
   const rows = badgeDefs.map((def) => edits[def.id] ?? def);
 
   const save = async (def: BadgeDef) => {
@@ -262,10 +265,27 @@ function TeacherBadges() {
         title="Badges"
         description="Change how many times a student needs for each level. Untick Published to hide a badge. The list shows who has it now."
       />
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
+        <div role="group" aria-label="Set" className="flex w-fit rounded-full bg-muted p-1">
+          {(["S2M3", "S2M5"] as const).map((set) => (
+            <button
+              key={set}
+              type="button"
+              aria-pressed={setFilter === set}
+              onClick={() => setSetFilter(set)}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-sm font-bold",
+                setFilter === set ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+              )}
+            >
+              {set}
+            </button>
+          ))}
+        </div>
         <Notice tone="info">
-          Leaderboard day badges count one day each time you publish, for 1st, top 3 and top 10 on
-          the set EXP leaderboard. Chapter Complete is 100% of a chapter. There are 7 chapters, so
+          Board Leader, Board Podium and Board Regular count one day each time you publish, for 1st,
+          top 3 and top 10 on the set Continuous Assessment board. When both terms have marks, only
+          the later term counts. Chapter Complete is 100% of a chapter. There are 7 chapters, so
           Diamond 12 stays out of reach until you lower that number.
         </Notice>
       </div>
@@ -277,7 +297,7 @@ function TeacherBadges() {
             const tier = tierFor(value, def.thresholds);
             if (tier < 1) return [];
             const student = students.find((s) => s.id === id);
-            if (!student) return [];
+            if (!student || student.set !== setFilter) return [];
             return [{ student, value, tier }];
           });
           holders.sort((a, b) => b.tier - a.tier || a.student.name.localeCompare(b.student.name));
@@ -366,27 +386,36 @@ function TeacherBadges() {
                 <span className="text-xs text-muted-foreground">{def.unit}</span>
               </div>
               <div className="mt-3">
-                <p className="text-sm font-bold">
-                  {holders.length} student{holders.length === 1 ? "" : "s"}
-                </p>
-                {holders.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nobody has this badge yet.</p>
-                ) : (
-                  <ul className="mt-1 divide-y divide-border text-sm">
-                    {holders.map(({ student, tier, value }) => (
-                      <li key={student.id} className="flex items-center gap-2 py-1">
-                        <BadgeIcon emoji={def.emoji} tier={tier} size={22} />
-                        <span className="font-semibold">{student.name}</span>
-                        <span className="text-muted-foreground">
-                          {student.className} {student.classNo}
-                        </span>
-                        <span className="ml-auto font-bold">
-                          {TIER_NAMES[tier]} · {value}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <button
+                  type="button"
+                  className="text-sm font-bold"
+                  aria-expanded={openHolders[def.id] === true}
+                  onClick={() =>
+                    setOpenHolders((current) => ({ ...current, [def.id]: !current[def.id] }))
+                  }
+                >
+                  {holders.length} student{holders.length === 1 ? "" : "s"} in {setFilter}
+                  {openHolders[def.id] ? " · hide" : " · show"}
+                </button>
+                {openHolders[def.id] &&
+                  (holders.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nobody has this badge yet.</p>
+                  ) : (
+                    <ul className="mt-1 divide-y divide-border text-sm">
+                      {holders.map(({ student, tier, value }) => (
+                        <li key={student.id} className="flex items-center gap-2 py-1">
+                          <BadgeIcon emoji={def.emoji} tier={tier} size={22} />
+                          <span className="font-semibold">{student.name}</span>
+                          <span className="text-muted-foreground">
+                            {student.className} {student.classNo}
+                          </span>
+                          <span className="ml-auto font-bold">
+                            {TIER_NAMES[tier]} · {value}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ))}
               </div>
             </li>
           );

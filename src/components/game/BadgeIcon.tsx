@@ -15,10 +15,13 @@ export function BadgeIcon({
   emoji,
   tier,
   size = 96,
+  label,
 }: {
   emoji: string;
   tier: Tier;
   size?: number;
+  /** Shown on hover. Defaults to the tier name. */
+  label?: string;
 }) {
   const c = TIER_COLORS[tier];
   const id = `badge-shine-${tier}`;
@@ -29,7 +32,7 @@ export function BadgeIcon({
         tier === 4 && "motion-safe:animate-pulse",
       )}
       style={{ width: size, height: size }}
-      title={TIER_NAMES[tier]}
+      title={label ?? TIER_NAMES[tier]}
     >
       <svg
         viewBox="0 0 100 100"

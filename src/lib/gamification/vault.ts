@@ -55,6 +55,24 @@ export const EXAM_KINDS: { id: ExamKind; label: string }[] = [
   { id: "other", label: "Other" },
 ];
 
+export const DATE_KIND_CHIP: Record<ExamKind, string> = {
+  quiz: "bg-gold/25 text-gold-deep",
+  exam: "bg-destructive/10 text-destructive",
+  term_test: "bg-destructive/10 text-destructive",
+  other: "bg-sky/20 text-sky-deep",
+};
+
+export const DATE_KIND_EDGE: Record<ExamKind, string> = {
+  quiz: "border-gold",
+  exam: "border-destructive",
+  term_test: "border-destructive",
+  other: "border-sky",
+};
+
+export function dateKindLabel(kind: ExamKind): string {
+  return EXAM_KINDS.find((item) => item.id === kind)?.label ?? "Date";
+}
+
 /** The next test or exam for this set (or for everyone) that has not started yet. */
 export function nextExam(
   list: readonly ExamDate[],

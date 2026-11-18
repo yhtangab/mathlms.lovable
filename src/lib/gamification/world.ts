@@ -449,8 +449,9 @@ const BOARD_BADGE: Record<"top1" | "top3" | "top10", string> = {
 };
 
 /**
- * Counts a student on today's set EXP leaderboard when that day is not stored yet,
- * then builds the world again so the badge coins include it.
+ * Counts a student on today's set Continuous Assessment leaderboard when that
+ * day is not stored yet, then builds the world again so the badge coins include it.
+ * Only the later term that already has marks is used, so one publish is one day.
  */
 export function buildGameWorldWithBoardDays(
   input: GameInput,
@@ -460,8 +461,14 @@ export function buildGameWorldWithBoardDays(
   const first = buildGameWorld(input);
   const additions: { studentId: string; badgeId: string }[] = [];
   const seen = new Set<string>();
+  const chosen = new Map<string, (typeof first.fullBoards)[number]>();
   for (const board of first.fullBoards) {
-    if (board.metric !== "exp" || board.scope === "S2") continue;
+    if (board.metric !== "ca" || board.scope === "S2" || board.rankedCount === 0) continue;
+    const kept = chosen.get(board.scope);
+    if (kept && (kept.term ?? 0) >= (board.term ?? 0)) continue;
+    chosen.set(board.scope, board);
+  }
+  for (const board of chosen.values()) {
     for (const entry of board.top) {
       const places: ("top1" | "top3" | "top10")[] =
         entry.rank === 1

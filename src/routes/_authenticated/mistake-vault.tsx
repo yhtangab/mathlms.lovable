@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff, ImagePlus, Pencil, Plus, Trash2 } from "lucide-react";
@@ -26,7 +26,6 @@ import {
 } from "@/lib/gamification/student-data";
 import {
   ERROR_TYPES,
-  EXAM_KINDS,
   MISTAKE_STATUS,
   countdownParts,
   errorTypeLabel,
@@ -34,11 +33,9 @@ import {
   nextStatus,
   type ErrorType,
   type ExamDate,
-  type ExamKind,
   type Mistake,
   type MistakeStatus,
 } from "@/lib/gamification/vault";
-import { fromLocalInput } from "@/lib/homework";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/mistake-vault")({
@@ -73,7 +70,7 @@ const IMAGE_TYPES: Record<string, string> = {
 
 function VaultPage() {
   const { role } = useApp();
-  return <AppShell>{role === "teacher" ? <ExamDatesManager /> : <StudentVault />}</AppShell>;
+  return <AppShell>{role === "teacher" ? <TeacherVault /> : <StudentVault />}</AppShell>;
 }
 
 /* ------------------------------------------------------------- Countdown */
@@ -703,142 +700,20 @@ function StudentVault() {
 
 /* --------------------------------------------------------- Teacher side */
 
-function ExamDatesManager() {
-  const { examDates, refresh, extrasError } = useApp();
-  const [title, setTitle] = useState("");
-  const [kind, setKind] = useState<ExamKind>("exam");
-  const [set, setSet] = useState<"ALL" | "S2M3" | "S2M5">("ALL");
-  const [when, setWhen] = useState("");
-  const [busy, setBusy] = useState(false);
-  const upcoming = examDates.filter((e) => new Date(e.startsAt).getTime() > Date.now());
-
-  const add = async () => {
-    const startsAt = fromLocalInput(when);
-    if (!title.trim() || !startsAt) {
-      toast.error("Add a title and a date and time");
-      return;
-    }
-    setBusy(true);
-    try {
-      const { error } = await supabase
-        .from("exam_dates")
-        .insert({ title: title.trim(), kind, math_set: set, starts_at: startsAt });
-      if (error) throw new Error(error.message);
-      await refresh();
-      setTitle("");
-      setWhen("");
-      toast.success("Date added. Students now see the countdown.");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not add the date");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const remove = async (e: ExamDate) => {
-    if (!window.confirm(`Delete "${e.title}"?`)) return;
-    const { error } = await supabase.from("exam_dates").delete().eq("id", e.id);
-    if (error) toast.error(error.message);
-    else await refresh();
-  };
-
+function TeacherVault() {
   return (
     <>
       <PageHeader
-        title="Exam dates"
-        description="Students see a live countdown to the next date in their Mistake Vault. Their mistakes stay private to them; preview a student to see their vault."
+        title="Mistake Vault"
+        description="Students keep their own mistakes here. Preview a student to see that vault."
       />
-      {extrasError ? (
-        <div className="mt-4">
-          <Notice tone="error">{extrasError}</Notice>
-        </div>
-      ) : null}
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <Panel title="Add a date">
-          <form
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void add();
-            }}
-          >
-            <label className="block text-sm font-medium">
-              Title
-              <input
-                value={title}
-                maxLength={80}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. 1st Term Test"
-                className={field}
-              />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block text-sm font-medium">
-                Type
-                <select
-                  value={kind}
-                  onChange={(e) => setKind(e.target.value as ExamKind)}
-                  className={field}
-                >
-                  {EXAM_KINDS.map((k) => (
-                    <option key={k.id} value={k.id}>
-                      {k.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block text-sm font-medium">
-                Class set
-                <select
-                  value={set}
-                  onChange={(e) => setSet(e.target.value as "ALL" | "S2M3" | "S2M5")}
-                  className={field}
-                >
-                  <option value="ALL">All sets</option>
-                  <option value="S2M3">S2M3</option>
-                  <option value="S2M5">S2M5</option>
-                </select>
-              </label>
-            </div>
-            <label className="block text-sm font-medium">
-              Starts
-              <input
-                type="datetime-local"
-                value={when}
-                onChange={(e) => setWhen(e.target.value)}
-                className={field}
-              />
-            </label>
-            <Button type="submit" disabled={busy}>
-              <Plus /> {busy ? "Adding…" : "Add date"}
-            </Button>
-          </form>
-        </Panel>
-        <Panel title="Upcoming" bodyClassName="px-5 py-1">
-          {upcoming.length === 0 ? (
-            <p className="py-3 text-sm text-muted-foreground">No upcoming dates.</p>
-          ) : (
-            <ul className="divide-y-2 divide-border">
-              {upcoming.map((e) => (
-                <li key={e.id} className="flex items-center gap-3 py-3 text-sm">
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-bold">{e.title}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {e.set === "ALL" ? "All sets" : e.set},{" "}
-                      {new Date(e.startsAt).toLocaleString("en-GB", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </span>
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={() => void remove(e)}>
-                    <Trash2 /> Delete
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
+      <div className="mt-6">
+        <Notice tone="info">
+          Exam and quiz dates are managed on Homework, under New homework.{" "}
+          <Link to="/homework" className="font-semibold underline">
+            Open Homework
+          </Link>
+        </Notice>
       </div>
     </>
   );

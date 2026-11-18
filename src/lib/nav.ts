@@ -8,7 +8,6 @@ import {
   Medal,
   Sparkles,
   Store,
-  Timer,
   Trophy,
   Upload,
   Users,
@@ -55,8 +54,10 @@ export const TEACHER_NAV: NavItem[] = [
   { status: "live", to: "/homework", label: "Homework", icon: ClipboardList },
   { status: "live", to: "/activity", label: "Class activity", icon: Dices },
   { status: "live", to: "/upload", label: "Content", icon: Upload },
-  { status: "live", to: "/mistake-vault", label: "Exam dates", icon: Timer },
+  { status: "live", to: "/mistake-vault", label: "Mistake Vault", icon: Archive },
   { status: "live", to: "/awards", label: "Awards", icon: Gift },
+  { status: "live", to: "/badges", label: "Badges", icon: Medal },
+  { status: "live", to: "/shop", label: "Shop", icon: Store },
   { status: "live", to: "/leaderboard", label: "Rankings", icon: Trophy },
 ];
 

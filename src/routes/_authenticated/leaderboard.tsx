@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
 import { AnonymousAvatar, AvatarBadge, TitleTag } from "@/components/game/AvatarBadge";
 import { BadgeIcon } from "@/components/game/BadgeIcon";
 import { useApp } from "@/lib/app-store";
+import { BADGES, TIER_NAMES } from "@/lib/gamification/badges";
 import type {
   BoardMetric,
   BoardScope,
@@ -86,12 +87,45 @@ function Segmented<T extends string | number>({
 }
 
 function BadgePins({ badges }: { badges: PublicBadge[] | undefined }) {
+  const { badgeDefs } = useApp();
+  const [openId, setOpenId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!openId) return;
+    const close = () => setOpenId(null);
+    window.addEventListener("pointerdown", close);
+    return () => window.removeEventListener("pointerdown", close);
+  }, [openId]);
   if (!badges?.length) return null;
+  const nameFor = (id: string) =>
+    badgeDefs.find((badge) => badge.id === id)?.name ??
+    BADGES.find((badge) => badge.id === id)?.name ??
+    "Badge";
   return (
     <span className="inline-flex flex-wrap items-center gap-0.5 align-middle">
-      {badges.map((b) => (
-        <BadgeIcon key={b.id} emoji={b.emoji} tier={b.tier} size={22} />
-      ))}
+      {badges.map((badge) => {
+        const name = `${nameFor(badge.id)}, ${TIER_NAMES[badge.tier]}`;
+        const open = openId === badge.id;
+        return (
+          <span key={badge.id} className="relative">
+            <button
+              type="button"
+              className="rounded-full"
+              aria-label={name}
+              onPointerDown={(event) => event.stopPropagation()}
+              onMouseEnter={() => setOpenId(badge.id)}
+              onMouseLeave={() => setOpenId((current) => (current === badge.id ? null : current))}
+              onClick={() => setOpenId(open ? null : badge.id)}
+            >
+              <BadgeIcon emoji={badge.emoji} tier={badge.tier} size={22} label={name} />
+            </button>
+            {open && (
+              <span className="absolute bottom-full left-1/2 z-20 mb-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background shadow-md">
+                {name}
+              </span>
+            )}
+          </span>
+        );
+      })}
     </span>
   );
 }

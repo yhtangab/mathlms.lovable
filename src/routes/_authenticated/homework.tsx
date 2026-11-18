@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { CalendarClock, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { CalendarClock, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
@@ -26,6 +26,14 @@ import {
   type HomeworkSet,
 } from "@/lib/homework";
 import { cn } from "@/lib/utils";
+import {
+  DATE_KIND_CHIP,
+  DATE_KIND_EDGE,
+  EXAM_KINDS,
+  dateKindLabel,
+  type ExamDate,
+  type ExamKind,
+} from "@/lib/gamification/vault";
 
 export const Route = createFileRoute("/_authenticated/homework")({
   head: () => ({
@@ -68,8 +76,8 @@ function HomeworkRow({
     .filter(Boolean)
     .join(", ");
   return (
-    <li className="flex flex-wrap items-start gap-3 py-3">
-      <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+    <li className="flex flex-wrap items-start gap-3 border-l-4 border-primary py-3 pl-3">
+      <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="font-medium leading-snug">{item.title}</p>
         <p className="text-xs text-muted-foreground">{meta}</p>
@@ -100,6 +108,9 @@ function HomeworkRow({
           </div>
         )}
       </div>
+      <span className="shrink-0 rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+        Homework
+      </span>
       <span className={cn("shrink-0 rounded px-2 py-0.5 text-xs font-semibold", DUE_TONE[status])}>
         {DUE_LABEL[status]}
       </span>
@@ -109,12 +120,31 @@ function HomeworkRow({
 }
 
 function StudentHomework() {
-  const { me, homework, homeworkError } = useApp();
+  const { me, homework, homeworkError, examDates } = useApp();
   const [captainOf, setCaptainOf] = useState<MatrixStudent[] | null>(null);
   const { upcoming, past } = useMemo(
     () => splitByDue(homeworkForSet(homework, me.set)),
     [homework, me.set],
   );
+  const agenda = useMemo(() => {
+    const now = Date.now();
+    const dates = examDates
+      .filter(
+        (date) =>
+          (date.set === "ALL" || date.set === me.set) && new Date(date.startsAt).getTime() >= now,
+      )
+      .map((date) => ({
+        kind: "date" as const,
+        at: new Date(date.startsAt).getTime(),
+        date,
+      }));
+    const work = upcoming.map((item) => ({
+      kind: "homework" as const,
+      at: new Date(item.due_at).getTime(),
+      item,
+    }));
+    return [...dates, ...work].sort((a, b) => a.at - b.at);
+  }, [examDates, me.set, upcoming]);
 
   useEffect(() => {
     if (!me.id) return;
@@ -178,16 +208,20 @@ function StudentHomework() {
       <div className="mt-6 space-y-6">
         <Panel
           title="Upcoming"
-          description={upcoming.length === 1 ? "1 item" : `${upcoming.length} items`}
+          description={agenda.length === 1 ? "1 item" : `${agenda.length} items`}
           bodyClassName="px-5 py-1"
         >
-          {upcoming.length === 0 ? (
+          {agenda.length === 0 ? (
             <p className="py-3 text-sm text-muted-foreground">Nothing is due at the moment.</p>
           ) : (
             <ul className="divide-y divide-border">
-              {upcoming.map((h) => (
-                <HomeworkRow key={h.id} item={h} showSet={false} />
-              ))}
+              {agenda.map((entry) =>
+                entry.kind === "homework" ? (
+                  <HomeworkRow key={entry.item.id} item={entry.item} showSet={false} />
+                ) : (
+                  <DateRow key={entry.date.id} date={entry.date} />
+                ),
+              )}
             </ul>
           )}
         </Panel>
@@ -357,99 +391,102 @@ function TeacherHomework() {
       <HomeworkMatrix />
       <SubjectCaptains />
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <Panel title={draft.id ? "Edit homework" : "New homework"}>
-          <form
-            className="space-y-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void save();
-            }}
-          >
-            <label className="block text-sm font-medium">
-              Title
-              <input
-                required
-                maxLength={200}
-                value={draft.title}
-                onChange={(e) => change({ title: e.target.value })}
-                placeholder="e.g. Ex 5B Q1–12"
-                className={field}
-              />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-6">
+          <Panel title={draft.id ? "Edit homework" : "New homework"}>
+            <form
+              className="space-y-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void save();
+              }}
+            >
               <label className="block text-sm font-medium">
-                Class set
-                <select
-                  value={draft.mathSet}
-                  onChange={(e) => change({ mathSet: asSet(e.target.value) })}
+                Title
+                <input
+                  required
+                  maxLength={200}
+                  value={draft.title}
+                  onChange={(e) => change({ title: e.target.value })}
+                  placeholder="e.g. Ex 5B Q1–12"
                   className={field}
-                >
-                  {HOMEWORK_SETS.map((s) => (
-                    <option key={s} value={s}>
-                      {setLabel(s)}
-                    </option>
-                  ))}
-                </select>
+                />
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block text-sm font-medium">
+                  Class set
+                  <select
+                    value={draft.mathSet}
+                    onChange={(e) => change({ mathSet: asSet(e.target.value) })}
+                    className={field}
+                  >
+                    {HOMEWORK_SETS.map((s) => (
+                      <option key={s} value={s}>
+                        {setLabel(s)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm font-medium">
+                  Chapter
+                  <select
+                    value={draft.chapter}
+                    onChange={(e) => change({ chapter: e.target.value })}
+                    className={field}
+                  >
+                    <option value="">None</option>
+                    {CHAPTERS.map((c) => (
+                      <option key={c.id} value={String(c.id)}>
+                        Chapter {c.id}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label className="block text-sm font-medium">
+                Due
+                <input
+                  type="datetime-local"
+                  required
+                  value={draft.due}
+                  onChange={(e) => change({ due: e.target.value })}
+                  className={field}
+                />
               </label>
               <label className="block text-sm font-medium">
-                Chapter
-                <select
-                  value={draft.chapter}
-                  onChange={(e) => change({ chapter: e.target.value })}
+                Link <span className="font-normal text-muted-foreground">(optional)</span>
+                <input
+                  type="url"
+                  value={draft.link}
+                  onChange={(e) => change({ link: e.target.value })}
+                  placeholder="https://drive.google.com/…"
                   className={field}
-                >
-                  <option value="">None</option>
-                  {CHAPTERS.map((c) => (
-                    <option key={c.id} value={String(c.id)}>
-                      Chapter {c.id}
-                    </option>
-                  ))}
-                </select>
+                />
               </label>
-            </div>
-            <label className="block text-sm font-medium">
-              Due
-              <input
-                type="datetime-local"
-                required
-                value={draft.due}
-                onChange={(e) => change({ due: e.target.value })}
-                className={field}
-              />
-            </label>
-            <label className="block text-sm font-medium">
-              Link <span className="font-normal text-muted-foreground">(optional)</span>
-              <input
-                type="url"
-                value={draft.link}
-                onChange={(e) => change({ link: e.target.value })}
-                placeholder="https://drive.google.com/…"
-                className={field}
-              />
-            </label>
-            <label className="block text-sm font-medium">
-              Instructions <span className="font-normal text-muted-foreground">(optional)</span>
-              <textarea
-                rows={4}
-                maxLength={2000}
-                value={draft.details}
-                onChange={(e) => change({ details: e.target.value })}
-                placeholder="Show all working. Hand in at the start of the lesson."
-                className={field}
-              />
-            </label>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <Button type="submit" disabled={busy}>
-                {busy ? "Saving…" : draft.id ? "Save changes" : "Post homework"}
-              </Button>
-              {draft.id !== null && (
-                <Button type="button" variant="outline" onClick={() => setDraft(emptyDraft())}>
-                  Cancel
+              <label className="block text-sm font-medium">
+                Instructions <span className="font-normal text-muted-foreground">(optional)</span>
+                <textarea
+                  rows={4}
+                  maxLength={2000}
+                  value={draft.details}
+                  onChange={(e) => change({ details: e.target.value })}
+                  placeholder="Show all working. Hand in at the start of the lesson."
+                  className={field}
+                />
+              </label>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button type="submit" disabled={busy}>
+                  {busy ? "Saving…" : draft.id ? "Save changes" : "Post homework"}
                 </Button>
-              )}
-            </div>
-          </form>
-        </Panel>
+                {draft.id !== null && (
+                  <Button type="button" variant="outline" onClick={() => setDraft(emptyDraft())}>
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </form>
+          </Panel>
+          <ExamQuizDates />
+        </div>
 
         <div className="space-y-6">
           <div className="flex w-fit rounded-md border border-border bg-card p-0.5">
@@ -500,6 +537,159 @@ function TeacherHomework() {
         </div>
       </div>
     </>
+  );
+}
+
+function DateRow({ date, actions }: { date: ExamDate; actions?: ReactNode }) {
+  return (
+    <li
+      className={cn(
+        "flex flex-wrap items-start gap-3 border-l-4 py-3 pl-3",
+        DATE_KIND_EDGE[date.kind],
+      )}
+    >
+      <CalendarClock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      <div className="min-w-0 flex-1">
+        <p className="font-medium leading-snug">{date.title}</p>
+        <p className="text-xs text-muted-foreground">
+          {date.set === "ALL" ? "All sets" : date.set}, {formatDue(date.startsAt)}
+        </p>
+      </div>
+      <span
+        className={cn(
+          "shrink-0 rounded px-2 py-0.5 text-xs font-semibold",
+          DATE_KIND_CHIP[date.kind],
+        )}
+      >
+        {dateKindLabel(date.kind)}
+      </span>
+      {actions}
+    </li>
+  );
+}
+
+function ExamQuizDates() {
+  const { examDates, refresh } = useApp();
+  const [title, setTitle] = useState("");
+  const [kind, setKind] = useState<ExamKind>("quiz");
+  const [set, setSet] = useState<HomeworkSet>("ALL");
+  const [when, setWhen] = useState("");
+  const [busy, setBusy] = useState(false);
+  const upcoming = examDates
+    .filter((date) => new Date(date.startsAt).getTime() >= Date.now())
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+
+  const add = async () => {
+    const startsAt = fromLocalInput(when);
+    if (!title.trim() || !startsAt) {
+      toast.error("Add a title and a date and time");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("exam_dates").insert({
+        title: title.trim(),
+        kind,
+        math_set: set,
+        starts_at: startsAt,
+      });
+      if (error) throw new Error(error.message);
+      await refresh();
+      setTitle("");
+      setWhen("");
+      toast.success("Date added. Students see it on Homework.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not add the date");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (date: ExamDate) => {
+    if (!window.confirm(`Delete "${date.title}"?`)) return;
+    const { error } = await supabase.from("exam_dates").delete().eq("id", date.id);
+    if (error) toast.error(error.message);
+    else await refresh();
+  };
+
+  return (
+    <Panel title="Exam/Quiz date">
+      <form
+        className="space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void add();
+        }}
+      >
+        <label className="block text-sm font-medium">
+          Title
+          <input
+            value={title}
+            maxLength={80}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="e.g. Chapter 3 quiz"
+            className={field}
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-sm font-medium">
+            Type
+            <select
+              value={kind}
+              onChange={(event) => setKind(event.target.value as ExamKind)}
+              className={field}
+            >
+              {EXAM_KINDS.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm font-medium">
+            Class set
+            <select
+              value={set}
+              onChange={(event) => setSet(event.target.value as HomeworkSet)}
+              className={field}
+            >
+              {HOMEWORK_SETS.map((item) => (
+                <option key={item} value={item}>
+                  {setLabel(item)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label className="block text-sm font-medium">
+          Starts
+          <input
+            type="datetime-local"
+            value={when}
+            onChange={(event) => setWhen(event.target.value)}
+            className={field}
+          />
+        </label>
+        <Button type="submit" disabled={busy}>
+          <Plus /> {busy ? "Adding…" : "Add date"}
+        </Button>
+      </form>
+      {upcoming.length > 0 && (
+        <ul className="mt-4 divide-y divide-border">
+          {upcoming.map((date) => (
+            <DateRow
+              key={date.id}
+              date={date}
+              actions={
+                <Button variant="ghost" size="sm" onClick={() => void remove(date)}>
+                  <Trash2 /> Delete
+                </Button>
+              }
+            />
+          ))}
+        </ul>
+      )}
+    </Panel>
   );
 }
 

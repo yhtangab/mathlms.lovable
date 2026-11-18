@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useApp } from "@/lib/app-store";
 import {
   COIN_NAME,
-  QUICK_AMOUNTS,
   QUICK_REASONS,
   coinBalance,
   deleteMarks,
@@ -150,7 +149,7 @@ function QuickPoints({ list }: { list: Student[] }) {
     <Panel
       className="mt-6"
       title={`Quick ${COIN_NAME}`}
-      description="Tick students, choose an amount and a reason, then save."
+      description="Tick students in the list, choose +1, +2 or type an amount, then submit."
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5">
@@ -184,43 +183,37 @@ function QuickPoints({ list }: { list: Student[] }) {
       {list.length === 0 ? (
         <p className="text-sm text-muted-foreground">There are no students in this set yet.</p>
       ) : (
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="divide-y divide-border">
           {shown.map((s) => {
             const on = selected.includes(s.id);
             return (
-              <label
-                key={s.id}
-                className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-md border p-2.5 transition-colors",
-                  on ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={on}
-                  onChange={() => toggle(s.id)}
-                  className="h-4 w-4 shrink-0 accent-[var(--primary)]"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{s.name}</span>
-                  <span className="block text-xs text-muted-foreground">
+              <li key={s.id}>
+                <label className="flex cursor-pointer items-center gap-3 py-2">
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    onChange={() => toggle(s.id)}
+                    className="h-4 w-4 shrink-0 accent-[var(--primary)]"
+                  />
+                  <span className="w-16 shrink-0 text-xs font-semibold text-muted-foreground">
                     {s.className} {s.classNo}
                   </span>
-                </span>
-                <span className="text-sm font-semibold tabular-nums text-muted-foreground">
-                  {coinBalance(s)}
-                </span>
-              </label>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{s.name}</span>
+                  <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+                    {coinBalance(s)} MC
+                  </span>
+                </label>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
 
       <div className="sticky bottom-3 mt-4 flex flex-wrap items-end gap-3 rounded-md border border-border bg-card p-3 shadow-lg">
         <div>
           <p className="mb-1 text-xs font-semibold text-muted-foreground">Amount</p>
           <div className="flex flex-wrap items-center gap-1">
-            {QUICK_AMOUNTS.map((n) => (
+            {([1, 2] as const).map((n) => (
               <button
                 type="button"
                 key={n}
@@ -280,9 +273,7 @@ function QuickPoints({ list }: { list: Student[] }) {
             amount < 0 && "bg-destructive text-destructive-foreground hover:bg-destructive/90",
           )}
         >
-          {busy
-            ? "Saving…"
-            : `Give ${amount > 0 ? "+" : ""}${amount} to ${selected.length} student${selected.length === 1 ? "" : "s"}`}
+          {busy ? "Saving…" : "Submit"}
         </Button>
       </div>
     </Panel>
