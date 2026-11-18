@@ -12,7 +12,7 @@ import { COIN_NAME, redemptionStatus } from "@/lib/coins";
 import { displayCoins } from "@/lib/gamification/rules";
 import { LooksEditor } from "@/components/teacher/LooksEditor";
 import { TeacherPrivileges } from "@/routes/_authenticated/awards";
-import { itemKind } from "@/lib/gamification/catalog";
+import { avatarById, itemKind } from "@/lib/gamification/catalog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/shop")({
@@ -66,25 +66,46 @@ const SHOP_TABS: { id: ShopTab; label: string }[] = [
   { id: "gifts", label: "Gifts" },
 ];
 
+const LOOK_ORDER = { avatar: 0, title: 1, frame: 2 } as const;
+
+function looksForTab(items: readonly ShopItem[], tab: ShopTab): ShopItem[] {
+  return items
+    .filter(
+      (item) =>
+        item.active && item.grants.length === 1 && (tab === "all" || itemKind(item) === tab),
+    )
+    .sort((a, b) => {
+      const byKind = LOOK_ORDER[itemKind(a)] - LOOK_ORDER[itemKind(b)];
+      if (tab === "all" && byKind !== 0) return byKind;
+      return a.position - b.position;
+    });
+}
+
 function ShopTabs({ value, onChange }: { value: ShopTab; onChange: (tab: ShopTab) => void }) {
   return (
-    <div role="group" aria-label="Shop sections" className="mt-4 flex flex-wrap gap-1">
-      {SHOP_TABS.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          aria-pressed={value === tab.id}
-          onClick={() => onChange(tab.id)}
-          className={cn(
-            "rounded-full px-3 py-1 text-sm font-bold",
-            value === tab.id
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground",
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div className="mt-5 flex justify-center">
+      <div
+        role="group"
+        aria-label="Shop sections"
+        className="inline-flex max-w-full flex-wrap justify-center gap-1.5 rounded-2xl border-2 border-border bg-card p-2 shadow-sm"
+      >
+        {SHOP_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            aria-pressed={value === tab.id}
+            onClick={() => onChange(tab.id)}
+            className={cn(
+              "rounded-xl border-2 px-5 py-2 text-base font-bold",
+              value === tab.id
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-muted text-muted-foreground",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -262,58 +283,51 @@ function StudentShop() {
       {tab === "gifts" ? null : (
         <>
           <h2 className="shop-scroll mt-4">Looks (unlock straight away)</h2>
-          {shopItems.filter(
-            (item) =>
-              item.active && item.grants.length === 1 && (tab === "all" || itemKind(item) === tab),
-          ).length === 0 ? (
+          {looksForTab(shopItems, tab).length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">Nothing for sale yet.</p>
           ) : (
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {shopItems
-                .filter(
-                  (item) =>
-                    item.active &&
-                    item.grants.length === 1 &&
-                    (tab === "all" || itemKind(item) === tab),
-                )
-                .map((item) => {
-                  const owned = ownedItems.includes(item.id);
-                  const alreadyEarned = item.grants.every((g) => earned.has(g));
-                  const grant = item.grants[0];
-                  const kind = itemKind(item);
-                  return (
-                    <div key={item.id} className="shop-card flex flex-col rounded-xl p-2.5">
-                      <div className="grid h-16 place-items-center rounded-lg bg-muted/60">
-                        {kind === "frame" && grant ? (
-                          <AvatarBadge avatarId={cosmetics.avatarId} frameId={grant} size="md" />
-                        ) : kind === "avatar" && grant ? (
-                          <AvatarBadge avatarId={grant} frameId={null} size="md" />
-                        ) : (
-                          <TitleTag titleId={grant ?? null} />
-                        )}
-                      </div>
-                      <h3 className="mt-2 text-sm font-bold leading-tight">{item.name}</h3>
-                      <p className="mt-1 line-clamp-2 flex-1 text-xs text-muted-foreground">
-                        {item.description}
-                      </p>
-                      <div className="mt-4">
-                        {owned ? (
-                          <Button asChild variant="outline" className="w-full">
-                            <Link to="/profile">
-                              <Check /> Equip
-                            </Link>
-                          </Button>
-                        ) : alreadyEarned ? (
-                          <Button disabled variant="outline" className="w-full">
-                            Already unlocked by an achievement
-                          </Button>
-                        ) : (
-                          spendButton(`item:${item.id}`, item.price, "Buy", () => void buy(item))
-                        )}
-                      </div>
+              {looksForTab(shopItems, tab).map((item) => {
+                const owned = ownedItems.includes(item.id);
+                const alreadyEarned = item.grants.every((g) => earned.has(g));
+                const grant = item.grants[0];
+                const kind = itemKind(item);
+                const face = grant ? avatarById(grant) : null;
+                return (
+                  <div key={item.id} className="shop-card flex flex-col rounded-xl p-2.5">
+                    <div className="grid h-16 place-items-center rounded-lg bg-muted/60">
+                      {kind === "frame" && grant ? (
+                        <AvatarBadge avatarId={cosmetics.avatarId} frameId={grant} size="md" />
+                      ) : kind === "avatar" && face ? (
+                        <span className="text-4xl leading-none" aria-hidden="true">
+                          {face.emoji}
+                        </span>
+                      ) : (
+                        <TitleTag titleId={grant ?? null} />
+                      )}
                     </div>
-                  );
-                })}
+                    <h3 className="mt-2 text-sm font-bold leading-tight">{item.name}</h3>
+                    <p className="mt-1 line-clamp-2 flex-1 text-xs text-muted-foreground">
+                      {item.description}
+                    </p>
+                    <div className="mt-4">
+                      {owned ? (
+                        <Button asChild variant="outline" className="w-full">
+                          <Link to="/profile">
+                            <Check /> Equip
+                          </Link>
+                        </Button>
+                      ) : alreadyEarned ? (
+                        <Button disabled variant="outline" className="w-full">
+                          Already unlocked by an achievement
+                        </Button>
+                      ) : (
+                        spendButton(`item:${item.id}`, item.price, "Buy", () => void buy(item))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </>

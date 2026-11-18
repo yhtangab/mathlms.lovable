@@ -436,9 +436,12 @@ export interface ShopLook {
 }
 
 export function itemKind(item: ShopLook): "avatar" | "frame" | "title" {
+  const grant = item.grants.find((id) => id.length > 0) ?? "";
+  if (grant.startsWith("avatar-")) return "avatar";
+  if (grant.startsWith("title-")) return "title";
+  if (grant.startsWith("frame-")) return "frame";
   if (item.kind === "avatar" || item.kind === "frame" || item.kind === "title") return item.kind;
-  if (item.grants.some((g) => g.startsWith("avatar-"))) return "avatar";
-  return item.grants.some((g) => g.startsWith("title-")) ? "title" : "frame";
+  return "frame";
 }
 
 export function lookForGrant(items: readonly ShopLook[], grantId: string): ShopLook | null {

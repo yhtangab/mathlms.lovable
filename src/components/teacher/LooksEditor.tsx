@@ -6,7 +6,7 @@ import { Panel, Notice } from "@/components/PageParts";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp, type ShopItem } from "@/lib/app-store";
-import { itemKind } from "@/lib/gamification/catalog";
+import { avatarById, itemKind } from "@/lib/gamification/catalog";
 import { cn } from "@/lib/utils";
 
 const field =
@@ -70,7 +70,7 @@ export function LooksEditor({ kind = "all" }: { kind?: "all" | "avatar" | "frame
           </Notice>
         </div>
       ) : null}
-      {(["avatar", "frame", "title"] as const)
+      {(["avatar", "title", "frame"] as const)
         .filter((section) => kind === "all" || kind === section)
         .map((section) => (
           <div key={section} className="mt-3">
@@ -96,7 +96,9 @@ export function LooksEditor({ kind = "all" }: { kind?: "all" | "avatar" | "frame
                           size="md"
                         />
                       ) : section === "avatar" ? (
-                        <AvatarBadge avatarId={grant} frameId={null} size="md" />
+                        <span className="text-3xl leading-none" aria-hidden="true">
+                          {grant.startsWith("avatar-") ? avatarById(grant).emoji : "🙂"}
+                        </span>
                       ) : (
                         <TitleTag titleId={grant} />
                       )}
