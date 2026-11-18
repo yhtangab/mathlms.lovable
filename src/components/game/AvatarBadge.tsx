@@ -1,4 +1,5 @@
-import { avatarById, frameById, titleById } from "@/lib/gamification/catalog";
+import { useApp } from "@/lib/app-store";
+import { avatarById, frameFromLooks, titleAppearance } from "@/lib/gamification/catalog";
 import { TONES } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
@@ -58,8 +59,9 @@ export function AvatarBadge({
   size?: Size;
   className?: string;
 }) {
+  const { shopItems } = useApp();
   const avatar = avatarById(avatarId);
-  const frame = frameById(frameId);
+  const frame = frameFromLooks(frameId, shopItems);
   return (
     <span
       className={cn("hlc-frame", `hlc-frame-${frame.style}`, className)}
@@ -90,7 +92,8 @@ export function AvatarBadge({
 
 /** The equipped title as a small pill; nothing when no title is equipped. */
 export function TitleTag({ titleId, className }: { titleId: string | null; className?: string }) {
-  const title = titleById(titleId);
+  const { shopItems } = useApp();
+  const title = titleAppearance(titleId, shopItems);
   if (!title) return null;
   return (
     <span
@@ -98,6 +101,9 @@ export function TitleTag({ titleId, className }: { titleId: string | null; class
         "inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary-deep",
         className,
       )}
+      style={
+        title.ink || title.paper ? { color: title.ink, backgroundColor: title.paper } : undefined
+      }
     >
       {title.label}
     </span>

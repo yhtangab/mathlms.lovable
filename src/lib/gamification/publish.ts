@@ -12,7 +12,8 @@ import {
   type SystemConfig,
 } from "./types";
 import { loadBadgeStats } from "./badge-stats";
-import { buildGameWorld } from "./world";
+import { hkDateKey } from "./checkin";
+import { buildGameWorld, buildGameWorldWithBoardDays } from "./world";
 
 type Client = SupabaseClient<Database>;
 type Tables = Database["public"]["Tables"];
@@ -225,16 +226,22 @@ export async function publishGame(
   const realIds = new Set(real.map((s) => s.id));
 
   const badgeStats = await loadBadgeStats(supabase);
-  const world = buildGameWorld({
-    students: real,
-    config,
-    ledger: ledger.filter((e) => realIds.has(e.studentId)),
-    cosmetics,
-    voiceCounts,
-    badgeStats,
-    rewardsSpendable: false,
-    now,
-  });
+  const today = hkDateKey(now);
+  const recorded = buildGameWorldWithBoardDays(
+    {
+      students: real,
+      config,
+      ledger: ledger.filter((e) => realIds.has(e.studentId)),
+      cosmetics,
+      voiceCounts,
+      badgeStats,
+      rewardsSpendable: false,
+      now,
+    },
+    badgeStats.recordedToday,
+    today,
+  );
+  const world = recorded.world;
 
   const newRewards: LedgerEntry[] = [...world.added];
   const snapshots = [...world.snapshots.values()];
@@ -287,6 +294,18 @@ export async function publishGame(
       badgeWarning = message.includes("check")
         ? "Badge coins were not saved. Run supabase/sql/0014_captain_roster_badges.sql in the Supabase SQL Editor, then publish again."
         : `Badge coins were not saved: ${message}`;
+    }
+  }
+  if (recorded.newDays.length) {
+    const { error } = await supabase.from("badge_days").upsert(recorded.newDays, {
+      onConflict: "student_id,badge_id,day",
+      ignoreDuplicates: true,
+    });
+    if (error) {
+      const message = error.message.includes("badge_days")
+        ? "Leaderboard day badges were not saved. Run supabase/sql/0015_looks_badges.sql, then publish again."
+        : `Leaderboard day badges were not saved: ${error.message}`;
+      badgeWarning = badgeWarning ? `${badgeWarning} ${message}` : message;
     }
   }
 

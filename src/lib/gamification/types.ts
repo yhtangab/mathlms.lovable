@@ -164,6 +164,8 @@ export interface GameProfile extends Cosmetics {
   rewards: LedgerEntry[];
   /** Highest tier of each earned badge. */
   badges?: PublicBadge[];
+  /** The count behind each badge, including badges the teacher has hidden. */
+  badgeValues?: Record<string, number>;
 }
 
 /** The six areas on the competency radar. */

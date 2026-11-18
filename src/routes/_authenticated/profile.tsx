@@ -15,6 +15,7 @@ import {
   TITLES,
   avatarById,
   frameById,
+  itemKind,
   titleById,
 } from "@/lib/gamification/catalog";
 import { TONES } from "@/lib/tones";
@@ -37,11 +38,22 @@ export const Route = createFileRoute("/_authenticated/profile")({
 const EXP_PER_LEVEL = 1000;
 
 function ProfilePage() {
-  const { role, me, cosmeticsOf, gameSnapshot, myUnlocks, readOnly, refresh, gameError } = useApp();
+  const {
+    role,
+    me,
+    cosmeticsOf,
+    gameSnapshot,
+    myUnlocks,
+    readOnly,
+    refresh,
+    gameError,
+    shopItems,
+  } = useApp();
   const saved = cosmeticsOf(me.id);
   const [avatarId, setAvatarId] = useState(avatarById(saved.avatarId).id);
   const [frameId, setFrameId] = useState(frameById(saved.equippedFrameId).id);
-  const [titleId, setTitleId] = useState<string | null>(titleById(saved.equippedTitle)?.id ?? null);
+  const equippedTitle = titleById(saved.equippedTitle)?.id ?? saved.equippedTitle ?? null;
+  const [titleId, setTitleId] = useState<string | null>(equippedTitle);
   const [busy, setBusy] = useState(false);
 
   if (role !== "student") {
@@ -58,13 +70,28 @@ function ProfilePage() {
   }
 
   const unlockedFrames = new Set([DEFAULT_FRAME_ID, ...myUnlocks.frames]);
+  const extraFrames = shopItems.filter(
+    (item) =>
+      item.active &&
+      itemKind(item) === "frame" &&
+      item.grants[0] &&
+      !FRAMES.some((f) => f.id === item.grants[0]),
+  );
+  const extraTitles = shopItems.filter(
+    (item) =>
+      item.active &&
+      itemKind(item) === "title" &&
+      item.grants.length === 1 &&
+      item.grants[0] &&
+      !TITLES.some((t) => t.id === item.grants[0]),
+  );
   const unlockedTitles = new Set(myUnlocks.titles);
   const exp = me.game?.exp ?? me.xp;
   const level = me.game?.level ?? Math.floor(exp / EXP_PER_LEVEL) + 1;
   const changed =
     avatarId !== avatarById(saved.avatarId).id ||
     frameId !== frameById(saved.equippedFrameId).id ||
-    titleId !== (titleById(saved.equippedTitle)?.id ?? null);
+    titleId !== equippedTitle;
   const canSave = !readOnly && gameError === null && changed && !busy;
 
   const save = async () => {
@@ -209,6 +236,31 @@ function ProfilePage() {
               </button>
             );
           })}
+          {extraFrames.map((item) => {
+            const id = item.grants[0] ?? item.id;
+            const open = unlockedFrames.has(id);
+            const on = id === frameId;
+            return (
+              <button
+                type="button"
+                key={item.id}
+                disabled={!open}
+                onClick={() => setFrameId(id)}
+                aria-pressed={on}
+                className={cn(
+                  "flex flex-col items-center gap-3 rounded-xl border-2 p-4 text-center",
+                  on ? "border-primary bg-primary/5" : "border-border",
+                  !open && "cursor-not-allowed opacity-60",
+                )}
+              >
+                <AvatarBadge avatarId={avatarId} frameId={id} size="lg" />
+                <span className="text-xs font-bold">{item.name}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {open ? (on ? "Equipped" : "Unlocked") : "Buy it in the Shop"}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </Panel>
 
@@ -246,6 +298,30 @@ function ProfilePage() {
                   {t.label}
                 </span>
                 <span className="mt-0.5 block text-xs text-muted-foreground">{t.requirement}</span>
+              </button>
+            );
+          })}
+          {extraTitles.map((item) => {
+            const id = item.grants[0] ?? item.id;
+            const open = unlockedTitles.has(id);
+            const on = id === titleId;
+            return (
+              <button
+                type="button"
+                key={item.id}
+                disabled={!open}
+                onClick={() => setTitleId(id)}
+                aria-pressed={on}
+                className={cn(
+                  "rounded-xl border-2 px-3 py-2.5 text-left",
+                  on ? "border-primary bg-primary/5" : "border-border",
+                  !open && "cursor-not-allowed opacity-60",
+                )}
+              >
+                <TitleTag titleId={id} />
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  {open ? "Bought in the Shop" : "Buy it in the Shop"}
+                </span>
               </button>
             );
           })}

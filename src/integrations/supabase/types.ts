@@ -673,29 +673,104 @@ export type Database = {
         Row: {
           active: boolean;
           description: string;
+          emoji: string;
           grants: string[];
           id: string;
+          ink: string;
+          kind: string;
           name: string;
+          paper: string;
           position: number;
           price: number;
+          style: string | null;
         };
         Insert: {
           active?: boolean;
           description?: string;
+          emoji?: string;
           grants: string[];
           id: string;
+          ink?: string;
+          kind?: string;
           name: string;
+          paper?: string;
           position?: number;
           price: number;
+          style?: string | null;
         };
         Update: {
           active?: boolean;
           description?: string;
+          emoji?: string;
           grants?: string[];
+          id?: string;
+          ink?: string;
+          kind?: string;
+          name?: string;
+          paper?: string;
+          position?: number;
+          price?: number;
+          style?: string | null;
+        };
+        Relationships: [];
+      };
+      badge_defs: {
+        Row: {
+          bronze: number;
+          description: string;
+          diamond: number;
+          emoji: string;
+          gold: number;
+          id: string;
+          name: string;
+          position: number;
+          published: boolean;
+          silver: number;
+          unit: string;
+        };
+        Insert: {
+          bronze: number;
+          description?: string;
+          diamond: number;
+          emoji: string;
+          gold: number;
+          id: string;
+          name: string;
+          position?: number;
+          published?: boolean;
+          silver: number;
+          unit: string;
+        };
+        Update: {
+          bronze?: number;
+          description?: string;
+          diamond?: number;
+          emoji?: string;
+          gold?: number;
           id?: string;
           name?: string;
           position?: number;
-          price?: number;
+          published?: boolean;
+          silver?: number;
+          unit?: string;
+        };
+        Relationships: [];
+      };
+      badge_days: {
+        Row: {
+          badge_id: string;
+          day: string;
+          student_id: string;
+        };
+        Insert: {
+          badge_id: string;
+          day: string;
+          student_id: string;
+        };
+        Update: {
+          badge_id?: string;
+          day?: string;
+          student_id?: string;
         };
         Relationships: [];
       };

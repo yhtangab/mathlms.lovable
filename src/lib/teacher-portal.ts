@@ -150,7 +150,7 @@ export function missingByStudent(input: {
     .sort((a, b) => a.student.name.localeCompare(b.student.name));
 }
 
-export const CHASE_EMAIL_SUBJECT = "Missing Mathematics homework";
+export const CHASE_EMAIL_SUBJECT = "[Math] Missing Mathematics Homework";
 
 export const CHASE_EMAIL_BODY = `Dear {name},
 

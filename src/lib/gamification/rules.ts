@@ -1,7 +1,7 @@
 import { chapterOfLabel, termSummary, type Assessment } from "@/lib/assessments";
 import { coinBalance } from "@/lib/coins";
 import { level, type MathSet, type Student } from "@/lib/data";
-import { badgeProgress, badgeRewardGrants, highestBadges } from "./badges";
+import { badgeProgress, badgeRewardGrants, highestBadges, type BadgeStats } from "./badges";
 import {
   DEFAULT_COSMETICS,
   type Cosmetics,
@@ -450,12 +450,7 @@ export interface GameInput {
   cosmetics?: ReadonlyMap<string, Cosmetics>;
   voiceCounts?: ReadonlyMap<string, number>;
   /** Extra badge counts. Missing maps count as zero. */
-  badgeStats?: {
-    selfChecks?: ReadonlyMap<string, readonly string[]>;
-    masteredMistakes?: ReadonlyMap<string, number>;
-    bestCheckinStreak?: ReadonlyMap<string, number>;
-    luckyDrawCorrect?: ReadonlyMap<string, number>;
-  };
+  badgeStats?: Partial<BadgeStats>;
   /** False while rewards are only worked out in the browser and not saved yet. Default true. */
   rewardsSpendable?: boolean;
   now?: Date;
@@ -489,6 +484,7 @@ export function buildGameProfiles(input: GameInput): GameOutput {
   const grants: RewardGrant[] = [];
   const bases = new Map<string, ProfileBase>();
   const badgePins = new Map<string, PublicBadge[]>();
+  const badgeValues = new Map<string, Record<string, number>>();
   for (const [set, list] of bySet) {
     const released = releasedHomeworkIds(list);
     const quizzesByStudent = new Map<string, QuizResult[]>();
@@ -507,16 +503,27 @@ export function buildGameProfiles(input: GameInput): GameOutput {
       const homework = summarizeHomework(s.id, homeworkFromAssessments(assessments, released));
       grants.push(...homework.grants);
       const stats = input.badgeStats;
-      const progress = badgeProgress({
-        quizzes: quizzesByStudent.get(s.id) ?? [],
-        bestHomeworkStreak: homework.best,
-        selfChecks: stats?.selfChecks?.get(s.id) ?? [],
-        luckyDrawCorrect: stats?.luckyDrawCorrect?.get(s.id) ?? 0,
-        masteredMistakes: stats?.masteredMistakes?.get(s.id) ?? 0,
-        bestCheckinStreak: stats?.bestCheckinStreak?.get(s.id) ?? 0,
-      });
+      const days = stats?.boardDays?.get(s.id) ?? { top1: 0, top3: 0, top10: 0 };
+      const videosByChapter = stats?.videosByChapter;
+      const watchedByChapter = stats?.watched?.get(s.id);
+      const progress = badgeProgress(
+        {
+          quizzes: quizzesByStudent.get(s.id) ?? [],
+          bestHomeworkStreak: homework.best,
+          selfChecks: stats?.selfChecks?.get(s.id) ?? [],
+          luckyDrawCorrect: stats?.luckyDrawCorrect?.get(s.id) ?? 0,
+          masteredMistakes: stats?.masteredMistakes?.get(s.id) ?? 0,
+          bestCheckinStreak: stats?.bestCheckinStreak?.get(s.id) ?? 0,
+          ...(videosByChapter ? { videosByChapter } : {}),
+          ...(watchedByChapter ? { watchedByChapter } : {}),
+          cqStandings: own,
+          boardDays: days,
+        },
+        stats?.defs?.length ? stats.defs : undefined,
+      );
       grants.push(...badgeRewardGrants(s.id, progress));
       badgePins.set(s.id, highestBadges(progress));
+      badgeValues.set(s.id, Object.fromEntries(progress.map((b) => [b.def.id, b.value])));
       const terms = [termResult(assessments, 1), termResult(assessments, 2)];
       bases.set(s.id, {
         ...DEFAULT_COSMETICS,
@@ -551,6 +558,7 @@ export function buildGameProfiles(input: GameInput): GameOutput {
     const rewardCoins = rewards.reduce((t, e) => t + e.mc, 0);
     const exp = s.xp + rewards.reduce((t, e) => t + e.exp, 0);
     const pins = badgePins.get(s.id) ?? [];
+    const values = badgeValues.get(s.id);
     profiles.set(s.id, {
       ...base,
       rewards,
@@ -560,6 +568,7 @@ export function buildGameProfiles(input: GameInput): GameOutput {
       exp,
       level: level(exp),
       ...(pins.length ? { badges: pins } : {}),
+      ...(values ? { badgeValues: values } : {}),
     });
   }
   return { profiles, added };

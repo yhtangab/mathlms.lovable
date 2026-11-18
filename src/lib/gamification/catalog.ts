@@ -66,6 +66,12 @@ const hasMostImproved = (ctx: UnlockContext) =>
 
 export type FrameStyle = "default" | "gold" | "neon" | "prism" | "poly";
 
+export const FRAME_STYLES: readonly FrameStyle[] = ["default", "gold", "neon", "prism", "poly"];
+
+export function isFrameStyle(value: string | null | undefined): value is FrameStyle {
+  return FRAME_STYLES.some((style) => style === value);
+}
+
 export interface FrameDef {
   id: string;
   name: string;
@@ -217,6 +223,73 @@ export const TITLES: TitleDef[] = [
 export function titleById(id: string | null | undefined): TitleDef | null {
   if (!id) return null;
   return TITLES.find((t) => t.id === id || t.label === id) ?? null;
+}
+
+/** A Shop row the look helpers can read. Extra columns are missing until 0015 is run. */
+export interface ShopLook {
+  id?: string;
+  name: string;
+  grants: readonly string[];
+  kind?: string;
+  style?: string | null;
+  ink?: string;
+  paper?: string;
+  emoji?: string;
+  active?: boolean;
+}
+
+export function itemKind(item: ShopLook): "frame" | "title" {
+  if (item.kind === "title" || item.kind === "frame") return item.kind;
+  return item.grants.some((g) => g.startsWith("title-")) ? "title" : "frame";
+}
+
+export function lookForGrant(items: readonly ShopLook[], grantId: string): ShopLook | null {
+  return items.find((item) => item.grants.includes(grantId)) ?? null;
+}
+
+/** A Shop frame uses the style the teacher picked. Other frames use the built-in look. */
+export function frameFromLooks(
+  id: string | null | undefined,
+  items: readonly ShopLook[],
+): FrameDef {
+  const look = id ? lookForGrant(items, id) : null;
+  if (look && itemKind(look) === "frame" && isFrameStyle(look.style)) {
+    return {
+      id: id ?? DEFAULT_FRAME_ID,
+      name: look.name,
+      style: look.style,
+      requirement: "Buy it in the Shop.",
+      isUnlocked: () => false,
+    };
+  }
+  const built = FRAMES.find((f) => f.id === id);
+  if (built) return built;
+  return (
+    FRAMES[0] ?? {
+      id: DEFAULT_FRAME_ID,
+      name: "Classic",
+      style: "default",
+      requirement: "",
+      isUnlocked: () => true,
+    }
+  );
+}
+
+export function titleAppearance(
+  id: string | null | undefined,
+  items: readonly ShopLook[],
+): { label: string; ink?: string; paper?: string } | null {
+  if (!id) return null;
+  const look = lookForGrant(items, id);
+  if (look && itemKind(look) === "title") {
+    return {
+      label: look.name,
+      ...(look.ink ? { ink: look.ink } : {}),
+      ...(look.paper ? { paper: look.paper } : {}),
+    };
+  }
+  const title = titleById(id);
+  return title ? { label: title.label } : null;
 }
 
 /** Achievement unlocks plus everything the student has bought in the Shop. */

@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp, type Reward, type ShopItem } from "@/lib/app-store";
 import { COIN_NAME, redemptionStatus } from "@/lib/coins";
 import { displayCoins } from "@/lib/gamification/rules";
+import { LooksEditor } from "@/components/teacher/LooksEditor";
+import { itemKind } from "@/lib/gamification/catalog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/shop")({
@@ -56,16 +58,20 @@ function ShopPage() {
 function TeacherNote() {
   return (
     <>
-      <PageHeader title="Shop" />
+      <PageHeader
+        title="Shop"
+        description="Edit the looks students can buy. Class rewards stay on the Awards page."
+      />
       <div className="mt-6">
         <Notice tone="info">
-          The Shop is for students. Approve their redemption tickets on the{" "}
+          Students spend coins here. Approve their gift tickets on the{" "}
           <Link to="/awards" className="font-bold underline">
             Awards
           </Link>{" "}
-          page, or use Preview student version to see the Shop as a student.
+          page.
         </Notice>
       </div>
+      <LooksEditor />
     </>
   );
 }
@@ -223,21 +229,20 @@ function StudentShop() {
       </section>
 
       <h2 className="shop-scroll mt-8">Looks (unlock straight away)</h2>
-      {shopItems.filter((i) => i.active).length === 0 ? (
+      {shopItems.filter(
+        (i) => i.active && i.grants.filter((g) => g.startsWith("title-")).length <= 1,
+      ).length === 0 ? (
         <p className="mt-2 text-sm text-muted-foreground">Nothing for sale yet.</p>
       ) : (
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shopItems
-            .filter((i) => i.active)
+            .filter((i) => i.active && i.grants.filter((g) => g.startsWith("title-")).length <= 1)
             .map((item) => {
               const owned = ownedItems.includes(item.id);
               const alreadyEarned = item.grants.every((g) => earned.has(g));
-              const frame = item.grants.find((g) => g.startsWith("frame-"));
+              const frame = itemKind(item) === "frame" ? item.grants[0] : undefined;
               return (
-                <div
-                  key={item.id}
-                  className="shop-card flex flex-col rounded-2xl p-4"
-                >
+                <div key={item.id} className="shop-card flex flex-col rounded-2xl p-4">
                   <div className="grid h-28 place-items-center rounded-lg bg-muted/60">
                     {frame ? (
                       <AvatarBadge avatarId={cosmetics.avatarId} frameId={frame} size="lg" />
@@ -280,10 +285,7 @@ function StudentShop() {
           {gifts.map((r) => {
             const next = nextAvailable(r);
             return (
-              <div
-                key={r.id}
-                className="shop-card flex flex-col rounded-2xl p-4"
-              >
+              <div key={r.id} className="shop-card flex flex-col rounded-2xl p-4">
                 <div className="flex items-start gap-3">
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-muted text-2xl">
                     {r.emoji}

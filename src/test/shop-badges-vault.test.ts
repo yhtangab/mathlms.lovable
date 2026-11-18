@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { coinBalance } from "@/lib/coins";
-import { BADGES, badgeProgress, tierFor, topicMasterCount } from "@/lib/gamification/badges";
+import {
+  BADGES,
+  badgeProgress,
+  cqBadgeCounts,
+  fullProgressChapters,
+  tierFor,
+} from "@/lib/gamification/badges";
 import { mergeUnlocks, objectivesFor } from "@/lib/gamification/catalog";
 import {
   CHECKIN_QUESTIONS,
@@ -55,9 +61,11 @@ describe("shop unlocks", () => {
 });
 
 describe("badges", () => {
-  it("has the seven badges with four tiers each", () => {
-    expect(BADGES).toHaveLength(7);
+  it("has four tiers on every badge", () => {
+    expect(BADGES.length).toBeGreaterThanOrEqual(7);
     expect(BADGES.every((b) => b.thresholds.length === 4)).toBe(true);
+    expect(BADGES.some((b) => b.id === "cq-top1")).toBe(true);
+    expect(BADGES.some((b) => b.id === "board-top10")).toBe(true);
   });
 
   it("finds the tier from the thresholds", () => {
@@ -66,11 +74,29 @@ describe("badges", () => {
     expect(tierFor(99, [1, 3, 6, 10])).toBe(4);
   });
 
-  it("needs 85% in both the self-check and the chapter quiz for Topic Master", () => {
+  it("counts a chapter only when its progress bar is at 100%", () => {
     const allCh1 = objectivesFor(1).map((o) => o.id);
-    expect(topicMasterCount([cq(1, 90)], allCh1)).toBe(1);
-    expect(topicMasterCount([cq(1, 80)], allCh1)).toBe(0);
-    expect(topicMasterCount([cq(1, 90)], allCh1.slice(0, 2))).toBe(0);
+    expect(fullProgressChapters({ quizzes: [cq(1, 40)], selfChecks: allCh1 })).toBe(1);
+    expect(fullProgressChapters({ quizzes: [], selfChecks: allCh1 })).toBe(0);
+    expect(
+      fullProgressChapters({
+        quizzes: [cq(1, 100)],
+        selfChecks: allCh1,
+        videosByChapter: new Map([[1, 2]]),
+        watchedByChapter: new Map([[1, 1]]),
+      }),
+    ).toBe(0);
+  });
+
+  it("counts chapter-quiz podiums and the bottom 3", () => {
+    expect(
+      cqBadgeCounts([
+        { kind: "CQ", provisional: false, rank: 1, rankedCount: 20, status: "ranked" },
+        { kind: "CQ", provisional: false, rank: 2, rankedCount: 20, status: "ranked" },
+        { kind: "CQ", provisional: false, rank: 18, rankedCount: 20, status: "ranked" },
+        { kind: "SQ", provisional: false, rank: 1, rankedCount: 20, status: "ranked" },
+      ]),
+    ).toEqual({ top1: 1, top3: 2, bottom3: 1 });
   });
 
   it("counts full marks, comebacks, mistakes and streaks", () => {

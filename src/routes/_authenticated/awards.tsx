@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronUp, Minus, Plus, Save, X } from "lucide-react";
+import { Check, GripVertical, Minus, Plus, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Notice, PageHeader, Panel } from "@/components/PageParts";
@@ -396,12 +396,15 @@ function toDraft(r: Reward): Draft {
 }
 
 const field =
-  "w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-primary";
+  "w-full min-w-0 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-primary";
+const REWARD_COLS =
+  "md:grid-cols-[2rem_3.25rem_minmax(0,1.15fr)_minmax(0,1.45fr)_4.75rem_4.75rem_3.25rem_7.75rem]";
 
 function RewardEditor() {
   const { rewards, refresh } = useApp();
   const [edits, setEdits] = useState<Record<string, Draft>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
   const rows = [
     ...rewards.map((r) => edits[r.id] ?? toDraft(r)),
     ...Object.values(edits).filter((d) => !rewards.some((r) => r.id === d.id)),
@@ -463,21 +466,13 @@ function RewardEditor() {
     }
   };
 
-  const move = async (id: string, dir: -1 | 1) => {
-    const index = rows.findIndex((d) => d.id === id);
-    const nextIndex = index + dir;
-    if (index < 0 || nextIndex < 0 || nextIndex >= rows.length) return;
-    const next = [...rows];
-    const [item] = next.splice(index, 1);
-    if (!item) return;
-    next.splice(nextIndex, 0, item);
-    const positioned = next.map((d, i) => ({ ...d, position: i + 1 }));
+  const persistOrder = async (positioned: Draft[], busy: string) => {
     setEdits((current) => {
       const copy = { ...current };
       for (const d of positioned) copy[d.id] = d;
       return copy;
     });
-    setBusyId(id);
+    setBusyId(busy);
     try {
       const saved = positioned.filter((d) => rewards.some((r) => r.id === d.id));
       for (const d of saved) {
@@ -505,6 +500,22 @@ function RewardEditor() {
     }
   };
 
+  const dropOn = (targetId: string) => {
+    if (!dragId || dragId === targetId) return;
+    const from = rows.findIndex((d) => d.id === dragId);
+    const to = rows.findIndex((d) => d.id === targetId);
+    if (from < 0 || to < 0) return;
+    const next = [...rows];
+    const [item] = next.splice(from, 1);
+    if (!item) return;
+    next.splice(to, 0, item);
+    void persistOrder(
+      next.map((d, i) => ({ ...d, position: i + 1 })),
+      dragId,
+    );
+    setDragId(null);
+  };
+
   const remove = async (d: Draft) => {
     if (!window.confirm(`Remove "${d.name || "this reward"}" from the list?`)) return;
     if (!rewards.some((r) => r.id === d.id)) {
@@ -529,20 +540,26 @@ function RewardEditor() {
     <Panel
       className="mt-6"
       title="Reward list"
-      description="Untick Shown to hide a reward. Limit means once every N days for each student; leave it blank for no limit."
+      description="Drag a row to reorder it. Untick Shown to hide a reward. Limit means once every N days; leave it blank for no limit."
       actions={
         <Button variant="outline" size="sm" onClick={add}>
           <Plus /> Add reward
         </Button>
       }
     >
-      <div className="hidden grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] gap-2 px-1 text-xs font-semibold text-muted-foreground md:grid">
+      <div
+        className={cn(
+          "hidden gap-2 px-1 text-xs font-semibold text-muted-foreground md:grid",
+          REWARD_COLS,
+        )}
+      >
+        <span />
         <span>Icon</span>
         <span>Name</span>
         <span>Description</span>
         <span>Cost</span>
         <span>Limit</span>
-        <span>Shown</span>
+        <span className="text-center">Shown</span>
         <span />
       </div>
       <div className="mt-1 space-y-2">
@@ -551,11 +568,24 @@ function RewardEditor() {
           return (
             <div
               key={d.id}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => dropOn(d.id)}
               className={cn(
-                "grid gap-2 rounded-md border p-2 md:grid-cols-[56px_1fr_2fr_80px_80px_64px_auto] md:items-center",
+                "grid gap-2 rounded-md border p-2 md:items-center",
+                REWARD_COLS,
                 dirty ? "border-primary/60 bg-primary/5" : "border-border",
               )}
             >
+              <button
+                type="button"
+                draggable
+                aria-label={`Drag ${d.name || "reward"}`}
+                className="grid h-9 w-8 cursor-grab place-items-center text-muted-foreground"
+                onDragStart={() => setDragId(d.id)}
+                onDragEnd={() => setDragId(null)}
+              >
+                <GripVertical className="h-4 w-4" />
+              </button>
               <input
                 aria-label="Icon"
                 value={d.emoji}
@@ -595,34 +625,16 @@ function RewardEditor() {
                 onChange={(e) => change(d, { cooldown: e.target.value })}
                 className={field}
               />
-              <label className="flex items-center gap-2 text-sm md:justify-center">
+              <label className="flex items-center justify-center gap-2 text-sm">
                 <input
                   type="checkbox"
                   checked={d.active}
                   onChange={(e) => change(d, { active: e.target.checked })}
                   className="h-4 w-4 accent-[var(--primary)]"
                 />
-                <span className="md:hidden">Shown</span>
+                <span className="md:sr-only">Shown</span>
               </label>
-              <div className="flex flex-wrap gap-1">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  aria-label={`Move ${d.name || "reward"} up`}
-                  disabled={busyId === d.id || rows[0]?.id === d.id}
-                  onClick={() => void move(d.id, -1)}
-                >
-                  <ChevronUp />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  aria-label={`Move ${d.name || "reward"} down`}
-                  disabled={busyId === d.id || rows[rows.length - 1]?.id === d.id}
-                  onClick={() => void move(d.id, 1)}
-                >
-                  <ChevronDown />
-                </Button>
+              <div className="flex gap-1">
                 <Button size="sm" disabled={!dirty || busyId === d.id} onClick={() => void save(d)}>
                   <Save /> Save
                 </Button>

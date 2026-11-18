@@ -1,4 +1,5 @@
 import type { MathSet, Student } from "@/lib/data";
+import { addBoardDays, badgeStatsOf } from "./badges";
 import { CHAPTER_STRANDS, STRANDS, computeUnlocks } from "./catalog";
 import {
   buildGameProfiles,
@@ -439,6 +440,59 @@ export function buildGameWorld(input: GameInput): GameWorld {
     });
   }
   return { profiles, added, snapshots, boards, fullBoards };
+}
+
+const BOARD_BADGE: Record<"top1" | "top3" | "top10", string> = {
+  top1: "board-top1",
+  top3: "board-top3",
+  top10: "board-top10",
+};
+
+/**
+ * Counts a student on today's set EXP leaderboard when that day is not stored yet,
+ * then builds the world again so the badge coins include it.
+ */
+export function buildGameWorldWithBoardDays(
+  input: GameInput,
+  recordedToday: ReadonlySet<string>,
+  today: string,
+): { world: GameWorld; newDays: { student_id: string; badge_id: string; day: string }[] } {
+  const first = buildGameWorld(input);
+  const additions: { studentId: string; badgeId: string }[] = [];
+  const seen = new Set<string>();
+  for (const board of first.fullBoards) {
+    if (board.metric !== "exp" || board.scope === "S2") continue;
+    for (const entry of board.top) {
+      const places: ("top1" | "top3" | "top10")[] =
+        entry.rank === 1
+          ? ["top1", "top3", "top10"]
+          : entry.rank <= 3
+            ? ["top3", "top10"]
+            : entry.rank <= 10
+              ? ["top10"]
+              : [];
+      for (const place of places) {
+        const badgeId = BOARD_BADGE[place];
+        const token = `${entry.studentId}|${badgeId}`;
+        if (recordedToday.has(token) || seen.has(token)) continue;
+        seen.add(token);
+        additions.push({ studentId: entry.studentId, badgeId });
+      }
+    }
+  }
+  if (additions.length === 0) return { world: first, newDays: [] };
+  const world = buildGameWorld({
+    ...input,
+    badgeStats: addBoardDays(badgeStatsOf(input.badgeStats), additions),
+  });
+  return {
+    world,
+    newDays: additions.map((row) => ({
+      student_id: row.studentId,
+      badge_id: row.badgeId,
+      day: today,
+    })),
+  };
 }
 
 /* ------------------------------------------------------- Reading saved data */

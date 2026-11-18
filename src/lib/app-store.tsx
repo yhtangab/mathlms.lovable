@@ -24,6 +24,7 @@ import {
 import { mockSelfChecks } from "./gamification/mock-activity";
 import { cosmeticsFromRow, ledgerFromRow } from "./gamification/publish";
 import { loadBadgeStats } from "./gamification/badge-stats";
+import { BADGES, type BadgeDef } from "./gamification/badges";
 import { mergeUnlocks } from "./gamification/catalog";
 import { attachGame, countVoiceMarks } from "./gamification/rules";
 import type { ExamDate, ExamKind } from "./gamification/vault";
@@ -31,13 +32,20 @@ import {
   DEFAULT_COSMETICS,
   DEFAULT_SYSTEM_CONFIG,
   type Cosmetics,
+  type GameProfile,
   type LedgerEntry,
   type Leaderboard,
   type StudentSnapshot,
   type SystemConfig,
   type Unlocks,
 } from "./gamification/types";
-import { buildGameWorld, parseLeaderboard, parseSnapshot } from "./gamification/world";
+import { hkDateKey } from "./gamification/checkin";
+import {
+  buildGameWorld,
+  buildGameWorldWithBoardDays,
+  parseLeaderboard,
+  parseSnapshot,
+} from "./gamification/world";
 
 type PublicTables = Database["public"]["Tables"];
 type AssessmentRow = PublicTables["assessment_scores"]["Row"];
@@ -372,6 +380,10 @@ interface Store {
   /** True for the public demo login, which only ever sees sandbox classmates. */
   isDemo: boolean;
   shopItems: ShopItem[];
+  /** Badge rules. Students only receive the published ones. */
+  badgeDefs: BadgeDef[];
+  /** Live class profiles for the teacher badge list. Null for students. */
+  classProfiles: ReadonlyMap<string, GameProfile> | null;
   /** Shop item ids that `me` has bought. */
   ownedItems: string[];
   /** Frames and titles `me` may equip: earned plus bought. */
@@ -647,15 +659,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // out in the browser; students read what the teacher last published.
   const teacherWorld = useMemo(() => {
     if (!data || data.role !== "teacher" || data.students.length === 0) return null;
-    return buildGameWorld({
-      students: data.students,
-      config: gameConfig,
-      ledger: data.game.ledger,
-      cosmetics: liveCosmetics,
-      voiceCounts: countVoiceMarks(data.markLog),
-      badgeStats: data.badgeStats,
-      rewardsSpendable: false,
-    });
+    return buildGameWorldWithBoardDays(
+      {
+        students: data.students,
+        config: gameConfig,
+        ledger: data.game.ledger,
+        cosmetics: liveCosmetics,
+        voiceCounts: countVoiceMarks(data.markLog),
+        badgeStats: data.badgeStats,
+        rewardsSpendable: false,
+      },
+      data.badgeStats.recordedToday,
+      hkDateKey(),
+    ).world;
   }, [data, gameConfig, liveCosmetics]);
 
   // The sandbox: teachers preview it, and the public demo login plays in it so it never sees
@@ -856,6 +872,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         selfChecks,
         isDemo,
         shopItems: extras?.shopItems ?? [],
+        badgeDefs: data?.badgeStats?.defs?.length ? data.badgeStats.defs : BADGES,
+        classProfiles: actualRole === "teacher" ? (teacherWorld?.profiles ?? null) : null,
         ownedItems,
         myUnlocks,
         examDates: extras?.examDates ?? [],
