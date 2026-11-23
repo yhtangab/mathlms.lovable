@@ -105,3 +105,29 @@ export function toneForPath(pathname: string): Tone {
   }
   return "blue";
 }
+
+/**
+ * Colours for the navigation icons only. Eight links share seven tones, so one pair repeats.
+ * Page banners stay on toneForPath.
+ */
+const NAV_TONES: readonly (readonly [string, Tone])[] = [
+  ["/dashboard", "blue"],
+  ["/courses", "green"],
+  ["/homework", "flame"],
+  ["/leaderboard", "gold"],
+  ["/mistake-vault", "berry"],
+  ["/badges", "sky"],
+  ["/shop", "grape"],
+  ["/gacha", "green"],
+  ["/teacher", "grape"],
+  ["/activity", "berry"],
+  ["/upload", "sky"],
+  ["/awards", "gold"],
+];
+
+export function navToneForPath(pathname: string): Tone {
+  for (const [prefix, tone] of NAV_TONES) {
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`)) return tone;
+  }
+  return toneForPath(pathname);
+}

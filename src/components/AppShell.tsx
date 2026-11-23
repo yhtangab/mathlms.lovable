@@ -6,7 +6,7 @@ import { AvatarBadge, FrameStyles, TitleTags } from "@/components/game/AvatarBad
 import { useApp } from "@/lib/app-store";
 import { displayCoins } from "@/lib/gamification/rules";
 import { STUDENT_NAV, TEACHER_NAV, navKey, visibleNav, type NavItem } from "@/lib/nav";
-import { TONES, toneForPath } from "@/lib/tones";
+import { TONES, navToneForPath } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
 /** The student's Math Coins balance, shown in the top bar. */
@@ -73,7 +73,7 @@ function RailItem({ item }: { item: NavItem }) {
       </span>
     );
   }
-  const tone = TONES[toneForPath(item.to)];
+  const tone = TONES[navToneForPath(item.to)];
   return (
     <Link
       to={item.to}
@@ -118,7 +118,7 @@ function PillItem({ item }: { item: NavItem }) {
       </span>
     );
   }
-  const tone = TONES[toneForPath(item.to)];
+  const tone = TONES[navToneForPath(item.to)];
   return (
     <Link to={item.to} className="shrink-0">
       {({ isActive }) => (
