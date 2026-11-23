@@ -1,3 +1,4 @@
+import { Rocket } from "lucide-react";
 import {
   CartesianGrid,
   Legend,
@@ -43,9 +44,9 @@ function renderDot(props: DotProps) {
         strokeWidth={2}
       />
       {payload.improved ? (
-        <text x={cx} y={cy - 12} textAnchor="middle" fontSize={16}>
-          🚀
-        </text>
+        <foreignObject x={cx - 8} y={cy - 26} width={16} height={16}>
+          <Rocket width={16} height={16} color="var(--flame)" aria-hidden="true" />
+        </foreignObject>
       ) : null}
     </g>
   );
@@ -78,20 +79,25 @@ export function QuizTrajectory({
 
   return (
     <div>
-      <div className="h-64 w-full">
+      <div className="h-80 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 24, right: 16, bottom: 4, left: -16 }}>
+          <LineChart data={data} margin={{ top: 28, right: 12, bottom: 8, left: -8 }}>
             <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="label"
-              tick={{ fill: "var(--muted-foreground)", fontSize: 11, fontWeight: 600 }}
+              interval={0}
+              angle={-35}
+              textAnchor="end"
+              height={52}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 12, fontWeight: 600 }}
               tickLine={false}
               axisLine={{ stroke: "var(--border)" }}
             />
             <YAxis
               domain={[0, 100]}
               ticks={[0, 25, 50, 75, 100]}
-              tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+              width={36}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
               tickLine={false}
               axisLine={false}
             />
@@ -122,8 +128,9 @@ export function QuizTrajectory({
       </div>
 
       {rockets.length > 0 ? (
-        <p className="mt-2 text-sm font-semibold">
-          🚀 Most improved: {rockets.map((q) => q.label).join(", ")}
+        <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
+          <Rocket className="h-4 w-4 text-flame" aria-hidden="true" />
+          Most improved: {rockets.map((q) => q.label).join(", ")}
         </p>
       ) : null}
 

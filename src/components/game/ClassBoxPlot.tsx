@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MapPin } from "lucide-react";
 import type { Distribution, DistributionKind } from "@/lib/gamification/types";
 import { cn } from "@/lib/utils";
 
@@ -56,23 +57,27 @@ export function ClassBoxPlot({
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-[104px_minmax(0,1fr)] gap-x-3 text-[10px] font-semibold text-muted-foreground">
-        <span />
-        <div className="relative h-4">
-          {[0, 25, 50, 75, 100].map((t) => (
-            <span key={t} className="absolute -translate-x-1/2" style={{ left: pct(t) }}>
-              {t}%
-            </span>
-          ))}
-        </div>
+      <div className="relative mt-4 h-5 text-xs font-semibold text-muted-foreground">
+        {[0, 25, 50, 75, 100].map((t) => (
+          <span
+            key={t}
+            className={cn(
+              "absolute",
+              t === 0 ? "left-0" : t === 100 ? "right-0" : "-translate-x-1/2",
+            )}
+            style={t === 0 || t === 100 ? undefined : { left: pct(t) }}
+          >
+            {t}%
+          </span>
+        ))}
       </div>
 
-      <ul className="mt-1 space-y-3">
+      <ul className="mt-2 space-y-4">
         {shown.map((d) => (
-          <li key={d.itemId} className="grid grid-cols-[104px_minmax(0,1fr)] items-center gap-x-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold">{d.label}</p>
-              <p className="text-[11px] text-muted-foreground">
+          <li key={d.itemId}>
+            <div className="mb-1.5 flex items-baseline justify-between gap-3">
+              <p className="text-sm font-bold leading-snug">{d.label}</p>
+              <p className="shrink-0 text-xs text-muted-foreground">
                 {d.mine === null ? "Not sat" : `You ${Math.round(d.mine)}%`}
               </p>
             </div>
@@ -115,17 +120,12 @@ export function ClassBoxPlot({
               />
               {d.mine !== null ? (
                 <span
-                  className="absolute -top-2.5 z-10 -translate-x-1/2"
+                  className="absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
                   style={{ left: pct(d.mine) }}
                 >
-                  <span className="relative flex">
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-0 rounded-full bg-flame/50 motion-safe:animate-ping"
-                    />
-                    <span className="relative whitespace-nowrap rounded-full bg-flame px-1.5 py-0.5 text-[10px] font-bold text-white shadow-chunky-flame">
-                      📍 You
-                    </span>
+                  <span className="flex items-center gap-0.5 whitespace-nowrap rounded-full bg-flame px-1.5 py-0.5 text-xs font-bold text-white shadow-chunky-flame">
+                    <MapPin className="h-3 w-3" aria-hidden="true" />
+                    You
                   </span>
                 </span>
               ) : null}

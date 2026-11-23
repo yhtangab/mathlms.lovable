@@ -235,22 +235,24 @@ function Dashboard() {
             </ul>
           </section>
 
-          <section aria-label="Summary" className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <section aria-label="Summary" className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard
+              appearance="soft"
               tone="grape"
               label={`Level ${level}`}
               value={String(exp)}
               suffix="EXP"
               note={
-                <span className="mt-1 block h-2 overflow-hidden rounded-full bg-white/30">
+                <span className="mt-1 block h-2 overflow-hidden rounded-full bg-grape/20">
                   <span
-                    className="block h-full rounded-full bg-white"
+                    className="block h-full rounded-full bg-grape"
                     style={{ width: `${((exp % EXP_PER_LEVEL) / EXP_PER_LEVEL) * 100}%` }}
                   />
                 </span>
               }
             />
             <StatCard
+              appearance="soft"
               tone="flame"
               label="Homework streak"
               value={String(game?.homeworkStreak ?? 0)}
@@ -258,6 +260,7 @@ function Dashboard() {
               note={game ? `${game.missingHomeworkCount} missing so far` : null}
             />
             <StatCard
+              appearance="soft"
               tone="green"
               label="Times answered in class"
               value={String(game?.activeVoiceCount ?? 0)}
@@ -282,8 +285,9 @@ function Dashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="charts" className="mt-4 space-y-6">
+        <TabsContent value="charts" className="mt-4 space-y-8">
           <Panel
+            heading="lg"
             tone="grape"
             title="Maths strengths"
             description={`You against the ${me.set} average`}
@@ -301,6 +305,7 @@ function Dashboard() {
           </Panel>
 
           <Panel
+            heading="lg"
             tone="green"
             title="Quiz journey"
             description="Short quizzes and chapter quizzes, oldest first"
@@ -312,7 +317,7 @@ function Dashboard() {
             />
           </Panel>
 
-          <Panel tone="sky" title={`Where you stand in ${me.set}, Term ${term}`}>
+          <Panel heading="lg" tone="sky" title={`Where you stand in ${me.set}, Term ${term}`}>
             {gameSnapshot ? (
               <ClassBoxPlot distributions={termDistributions} set={me.set} />
             ) : (
@@ -323,6 +328,7 @@ function Dashboard() {
           </Panel>
 
           <Panel
+            heading="lg"
             tone="green"
             title="Your activity"
             description="Lesson marks, homework on time and videos, last 6 months"

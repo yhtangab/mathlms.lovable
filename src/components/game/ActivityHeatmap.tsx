@@ -99,26 +99,35 @@ export function ActivityHeatmap({ studentId }: { studentId: string }) {
     }),
   );
 
-  const monthLabels = weeks.map((week, w) => {
+  const monthSpans: { label: string; weeks: number }[] = [];
+  for (const week of weeks) {
     const first = week[0]?.date;
-    const prev = weeks[w - 1]?.[0]?.date;
-    if (!first || (prev && prev.getMonth() === first.getMonth())) return "";
-    return first.toLocaleDateString("en-GB", { month: "short" });
-  });
+    if (!first) continue;
+    const label = first.toLocaleDateString("en-GB", { month: "short" });
+    const last = monthSpans[monthSpans.length - 1];
+    if (last && last.label === label) last.weeks += 1;
+    else monthSpans.push({ label, weeks: 1 });
+  }
 
   return (
     <div>
       <div className="overflow-x-auto pb-1">
         <div className="inline-grid grid-cols-[28px_auto] gap-x-1.5">
           <span />
-          <div className="flex gap-1 text-[10px] font-semibold text-muted-foreground">
-            {monthLabels.map((m, i) => (
-              <span key={i} className="w-3.5 overflow-visible whitespace-nowrap">
-                {m}
+          <div className="flex gap-1 text-xs font-semibold text-muted-foreground">
+            {monthSpans.map((m, i) => (
+              <span
+                key={`${m.label}-${i}`}
+                className="truncate"
+                style={{
+                  width: `calc(${m.weeks} * 0.875rem + ${Math.max(0, m.weeks - 1)} * 0.25rem)`,
+                }}
+              >
+                {m.weeks >= 3 ? m.label : m.label.slice(0, 1)}
               </span>
             ))}
           </div>
-          <div className="grid grid-rows-7 gap-1 text-[10px] font-semibold leading-3.5 text-muted-foreground">
+          <div className="grid grid-rows-7 gap-1 text-xs font-semibold leading-3.5 text-muted-foreground">
             {WEEKDAYS.map((d, i) => (
               <span key={i} className="h-3.5">
                 {d}

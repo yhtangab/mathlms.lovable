@@ -25,18 +25,8 @@ export function PageHeader({
   const routeTone = useRouteTone();
   const style = TONES[tone ?? routeTone];
   return (
-    <header
-      className={cn("relative overflow-hidden rounded-xl px-5 py-4 md:px-6 md:py-5", style.solid)}
-    >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-5 -top-7 h-28 w-28 rotate-12 rounded-3xl bg-white/10"
-      />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-9 right-24 h-20 w-20 rounded-full bg-white/10"
-      />
-      <div className="relative flex flex-wrap items-end gap-3">
+    <header className={cn("rounded-xl px-5 py-4 md:px-6 md:py-5", style.solid)}>
+      <div className="flex flex-wrap items-end gap-3">
         <div className="mr-auto min-w-0">
           {eyebrow ? (
             <p className="text-xs font-bold uppercase tracking-wide opacity-80">{eyebrow}</p>
@@ -59,6 +49,7 @@ export function Panel({
   className,
   bodyClassName,
   tone,
+  heading = "base",
 }: {
   title?: ReactNode;
   description?: ReactNode;
@@ -67,6 +58,7 @@ export function Panel({
   className?: string;
   bodyClassName?: string;
   tone?: Tone;
+  heading?: "base" | "lg";
 }) {
   const routeTone = useRouteTone();
   const style = TONES[tone ?? routeTone];
@@ -82,7 +74,11 @@ export function Panel({
               />
             ) : null}
             <div className="min-w-0">
-              {title ? <h2 className="text-base font-bold">{title}</h2> : null}
+              {title ? (
+                <h2 className={cn("font-bold", heading === "lg" ? "text-lg" : "text-base")}>
+                  {title}
+                </h2>
+              ) : null}
               {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
             </div>
           </div>
@@ -125,15 +121,22 @@ export function StatCard({
   suffix,
   note,
   tone,
+  appearance = "solid",
 }: {
   label: string;
   value: string;
   suffix?: string;
   note?: ReactNode;
   tone: Tone;
+  appearance?: "solid" | "soft";
 }) {
   return (
-    <div className={cn("h-full rounded-xl p-4", TONES[tone].solid)}>
+    <div
+      className={cn(
+        "h-full rounded-xl p-4",
+        appearance === "soft" ? cn("border-2 border-border", TONES[tone].soft) : TONES[tone].solid,
+      )}
+    >
       <p className="text-sm font-semibold opacity-90">{label}</p>
       <p className="mt-1 text-3xl font-bold tabular-nums">
         {value}
