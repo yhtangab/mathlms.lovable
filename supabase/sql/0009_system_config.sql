@@ -23,3 +23,9 @@ CREATE POLICY system_config_teacher_update ON public.system_config
   FOR UPDATE TO authenticated
   USING (public.has_role(auth.uid(), 'teacher'))
   WITH CHECK (public.has_role(auth.uid(), 'teacher'));
+
+-- Leaderboard privacy. true: students see every rank. false: students see the top 10 and their own row.
+ALTER TABLE public.system_config
+  ADD COLUMN IF NOT EXISTS leaderboard_show_all boolean NOT NULL DEFAULT true;
+
+NOTIFY pgrst, 'reload schema';

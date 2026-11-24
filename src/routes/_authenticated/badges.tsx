@@ -251,7 +251,7 @@ function TeacherBadges() {
       const message = e instanceof Error ? e.message : "Could not save this badge";
       toast.error(
         message.includes("badge_defs") || message.includes("schema")
-          ? "Run supabase/sql/0015_looks_badges.sql in the Supabase SQL Editor, then save again."
+          ? "Run supabase/sql/0014_badges.sql in the Supabase SQL Editor, then save again."
           : message,
       );
     } finally {

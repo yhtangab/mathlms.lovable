@@ -3,14 +3,21 @@ import type { QuizResult, SystemConfig } from "@/lib/gamification/types";
 import type { MathSet } from "@/lib/data";
 
 /** Cell states on the homework matrix. Blank means the teacher has not marked it yet. */
-export type CheckStatus = "submitted" | "missing" | "late" | "redo";
+export type CheckStatus = "submitted" | "missing" | "late" | "absent" | "redo";
 
-export const CHECK_CYCLE: readonly CheckStatus[] = ["submitted", "missing", "late", "redo"];
+export const CHECK_CYCLE: readonly CheckStatus[] = [
+  "submitted",
+  "missing",
+  "late",
+  "absent",
+  "redo",
+];
 
 export const CHECK_MARK: Record<CheckStatus, string> = {
   submitted: "✅",
   missing: "❌",
   late: "⚠️",
+  absent: "ABS",
   redo: "🔄",
 };
 
@@ -18,6 +25,7 @@ export const CHECK_LABEL: Record<CheckStatus, string> = {
   submitted: "Submitted",
   missing: "Missing",
   late: "Late",
+  absent: "Absent",
   redo: "Redo",
 };
 
@@ -64,17 +72,19 @@ export interface PickWeight {
   reason: string | null;
 }
 
-export function nextCheckStatus(current: CheckStatus | null): CheckStatus {
+/** Tick, missing, late, absent, redo, then clear. The next click after clear is Tick again. */
+export function nextCheckStatus(current: CheckStatus | null): CheckStatus | null {
   if (current === null) return "submitted";
   const i = CHECK_CYCLE.indexOf(current);
-  return CHECK_CYCLE[(i + 1) % CHECK_CYCLE.length] ?? "submitted";
+  if (i < 0 || i >= CHECK_CYCLE.length - 1) return null;
+  return CHECK_CYCLE[i + 1] ?? null;
 }
 
 export function checkKey(studentId: string, homeworkId: string): string {
   return `${studentId}|${homeworkId}`;
 }
 
-/** Submitted and late both count as handed in. Redo breaks the streak without counting as missing. */
+/** Only a tick adds to the streak. Late, redo and missing break it. Absent and a blank cell are skipped. */
 export function summarizeChecks(
   studentId: string,
   assignments: readonly CheckAssignment[],
@@ -90,12 +100,13 @@ export function summarizeChecks(
   );
   for (const hw of ordered) {
     const status = statusOf(hw.id);
-    if (status === null || status === "redo") {
-      if (status === "redo") streak = 0;
-      continue;
-    }
+    if (status === null || status === "absent") continue;
     if (status === "missing") {
       missing += 1;
+      streak = 0;
+      continue;
+    }
+    if (status !== "submitted") {
       streak = 0;
       continue;
     }

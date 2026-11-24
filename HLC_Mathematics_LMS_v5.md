@@ -182,22 +182,17 @@ SQL 只放 `supabase/sql/`。檔案要可以重複執行（`IF NOT EXISTS`、`DR
 
 | 檔 | 做咩 |
 | --- | --- |
-| `0007_homework.sql` | 功課同期限 |
+| `0007_homework.sql` | 功課期限、點名冊、科代表、班名單 |
 | `0008_demo_student_data.sql` | Demo 學生的分數 |
-| `0009_system_config.sql` | 2x MC 開關 |
+| `0009_system_config.sql` | 2x MC 開關、排行榜私隱 |
 | `0010_game_data.sql` | 獎勵帳、snapshot、外觀、self-check |
-| `0011_shop_badges_vault.sql` | 商店、打卡、錯題簿、考試日期 |
-| `0012_teacher_portal.sql` | 功課點名冊、排行榜私隱 |
-| `0013_subject_captains.sql` | 科代表收功課 |
-| `0014_captain_roster_badges.sql` | 修好 students RLS 無限遞迴；徽章金幣 |
-| `0015_looks_badges.sql` | 商店外觀欄位、徽章門檻、排行榜日數 |
-| `0016_ca_board_badges.sql` | 排行榜徽章說明改為 Continuous Assessment |
-| `0017_separate_titles.sql` | 稱號逐件賣、新的動態外框 |
-| `0018_shop_avatars.sql` | 付費頭像、第二個稱號、Demo 外觀 |
+| `0011_checkin_vault.sql` | 每日打卡、錯題簿、考試日期 |
+| `0014_badges.sql` | 成就徽章、徽章金幣、排行榜日數 |
+| `0018_shop_avatars.sql` | 商店：外框、稱號、頭像、餘額 |
 
 規則：
 
-- 如果今次只是修正老師尚未用穩的最新一個 SQL（而家是 `0018_shop_avatars.sql`），改那一個檔，叫老師把**整份新內容**再貼去 Supabase SQL Editor 執行。不要為同一件事再開 `0019`。
+- 如果今次只是修正老師尚未用穩的最新一個 SQL（而家是 `0018_shop_avatars.sql`），改那一個檔，叫老師把**整份新內容**再貼去 Supabase SQL Editor 執行。不要為同一件事再開 `0019`。商店只改 `0018`，成就徽章只改 `0014_badges.sql`。
 - 如果是另一件新功能，先開下一個編號。下一個新檔先是 `0019_*.sql`。
 - 改完 TypeScript 類型要人手同步 `src/integrations/supabase/types.ts`。
 - 新表未在 Supabase 執行時，頁面用英文 `Notice` 話老師要跑哪個 SQL，不要讓成個 app 崩潰。

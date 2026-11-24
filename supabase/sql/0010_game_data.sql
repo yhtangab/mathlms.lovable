@@ -76,7 +76,7 @@ CREATE POLICY game_leaderboards_teacher_write ON public.game_leaderboards FOR AL
   WITH CHECK (public.has_role(auth.uid(), 'teacher'));
 
 -- 4. Avatars, frames and titles. Shown next to top-10 names, so signed-in students can read
---    them (not the demo login). Students change their own only through equip_cosmetics().
+--    them (not the demo login). Students change their own only through equip_cosmetics() in 0018.
 CREATE TABLE IF NOT EXISTS public.student_cosmetics (
   student_id uuid PRIMARY KEY REFERENCES public.students(id) ON DELETE CASCADE,
   avatar_id text NOT NULL DEFAULT 'avatar-owl' CHECK (avatar_id ~ '^avatar-[a-z0-9-]{1,40}$'),
@@ -96,39 +96,9 @@ CREATE POLICY student_cosmetics_teacher_write ON public.student_cosmetics FOR AL
   USING (public.has_role(auth.uid(), 'teacher'))
   WITH CHECK (public.has_role(auth.uid(), 'teacher'));
 
--- Students equip an avatar, frame and title. Frames and titles must be unlocked in the
--- student's latest published snapshot.
-CREATE OR REPLACE FUNCTION public.equip_cosmetics(_avatar text, _frame text, _title text)
-RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE
-  sid uuid;
-  unlocked jsonb;
-BEGIN
-  SELECT id INTO sid FROM public.students WHERE user_id = auth.uid();
-  IF sid IS NULL THEN
-    RAISE EXCEPTION 'Your account is not linked to a student record';
-  END IF;
-  IF _avatar IS NULL OR _avatar !~ '^avatar-[a-z0-9-]{1,40}$' THEN
-    RAISE EXCEPTION 'Choose an avatar';
-  END IF;
-  SELECT payload -> 'unlocks' INTO unlocked FROM public.game_snapshots WHERE student_id = sid;
-  IF _frame IS NOT NULL AND _frame <> 'frame-default'
-     AND NOT coalesce((unlocked -> 'frames') ? _frame, false) THEN
-    RAISE EXCEPTION 'That frame is still locked';
-  END IF;
-  IF _title IS NOT NULL AND NOT coalesce((unlocked -> 'titles') ? _title, false) THEN
-    RAISE EXCEPTION 'That title is still locked';
-  END IF;
-  INSERT INTO public.student_cosmetics (student_id, avatar_id, frame_id, title_id, updated_at)
-  VALUES (sid, _avatar, nullif(_frame, 'frame-default'), _title, now())
-  ON CONFLICT (student_id) DO UPDATE SET
-    avatar_id = EXCLUDED.avatar_id,
-    frame_id = EXCLUDED.frame_id,
-    title_id = EXCLUDED.title_id,
-    updated_at = now();
-END $$;
-REVOKE ALL ON FUNCTION public.equip_cosmetics(text, text, text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.equip_cosmetics(text, text, text) TO authenticated;
+-- Buying and equipping looks lives in 0018_shop_avatars.sql.
+-- Drop the old three-argument function so re-running this file cannot put it back.
+DROP FUNCTION IF EXISTS public.equip_cosmetics(text, text, text);
 
 -- 5. Chapter self-check ("I can…" statements). Students tick and untick their own.
 CREATE TABLE IF NOT EXISTS public.chapter_self_checks (

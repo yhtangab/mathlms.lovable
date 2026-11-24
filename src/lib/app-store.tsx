@@ -300,7 +300,7 @@ async function loadExtras(): Promise<ExtrasData> {
   const error = items.error ?? purchases.error ?? exams.error;
   if (error) {
     return {
-      error: `The Shop, check-ins and Mistake Vault are not set up yet (${error.message}). Run supabase/sql/0011_shop_badges_vault.sql in the Supabase SQL Editor.`,
+      error: `The Shop or exam dates are not set up yet (${error.message}). Run supabase/sql/0018_shop_avatars.sql for the Shop, and supabase/sql/0011_checkin_vault.sql for exam dates.`,
       shopItems: [],
       purchases: [],
       examDates: [],
@@ -832,7 +832,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (error) {
       throw new Error(
         error.message.includes("leaderboard_show_all")
-          ? "Run supabase/sql/0012_teacher_portal.sql in the Supabase SQL Editor, then try the switch again."
+          ? "Run supabase/sql/0009_system_config.sql in the Supabase SQL Editor, then try the switch again."
           : error.message,
       );
     }

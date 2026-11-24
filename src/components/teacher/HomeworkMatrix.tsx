@@ -20,6 +20,7 @@ import {
   homeworkPenalty,
   missingByStudent,
   streakRewardMc,
+  nextCheckStatus,
   summarizeChecks,
   type CheckAssignment,
   type CheckStatus,
@@ -28,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 const SETS: MathSet[] = ["S2M3", "S2M5"];
 const SETUP =
-  "The homework matrix is not set up yet. Run supabase/sql/0012_teacher_portal.sql in the Supabase SQL Editor.";
+  "The homework matrix is not set up yet. Run supabase/sql/0007_homework.sql in the Supabase SQL Editor.";
 
 export interface MatrixStudent {
   id: string;
@@ -54,15 +55,25 @@ function savedEmailTemplate(): { subject: string; body: string } {
   return { subject: CHASE_EMAIL_SUBJECT, body: CHASE_EMAIL_BODY };
 }
 
-type Brush = CheckStatus | "clear";
+type Brush = "cycle" | CheckStatus | "clear";
+
+const PAGE_SIZE = 10;
 
 const BRUSHES: { id: Brush; label: string }[] = [
+  { id: "cycle", label: "Cycle" },
   { id: "submitted", label: "✅ Tick" },
   { id: "missing", label: "❌ Missing" },
   { id: "late", label: "⚠️ Late" },
+  { id: "absent", label: "ABS" },
   { id: "redo", label: "🔄 Redo" },
   { id: "clear", label: "Clear" },
 ];
+
+function dueLabel(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-HK", { day: "numeric", month: "short" });
+}
 
 export function HomeworkMatrix({
   roster,
@@ -77,13 +88,38 @@ export function HomeworkMatrix({
   const [checks, setChecks] = useState<Map<string, CheckStatus>>(new Map());
   const [setupError, setSetupError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [brush, setBrush] = useState<Brush>("submitted");
+  const [brush, setBrush] = useState<Brush>("cycle");
+  const [page, setPage] = useState(0);
   const [focus, setFocus] = useState<{ row: number; col: number } | null>(null);
+  const [captainIds, setCaptainIds] = useState<Set<string>>(new Set());
+  const [captainsReady, setCaptainsReady] = useState<boolean | null>(null);
+  const [captainBusy, setCaptainBusy] = useState<string | null>(null);
   const [mailOpen, setMailOpen] = useState(false);
   const [mailSubject, setMailSubject] = useState(CHASE_EMAIL_SUBJECT);
   const [mailBody, setMailBody] = useState(CHASE_EMAIL_BODY);
 
   const activeSet = fixedSet ?? set;
+  const showCaptains = role === "teacher";
+
+  useEffect(() => {
+    setPage(0);
+  }, [activeSet]);
+
+  useEffect(() => {
+    if (!showCaptains) return;
+    let active = true;
+    void supabase
+      .from("subject_captains")
+      .select("student_id")
+      .then(({ data, error }) => {
+        if (!active) return;
+        setCaptainsReady(!error);
+        setCaptainIds(new Set((data ?? []).map((row) => row.student_id)));
+      });
+    return () => {
+      active = false;
+    };
+  }, [showCaptains]);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -163,7 +199,7 @@ export function HomeworkMatrix({
   const paint = async (student: MatrixStudent, homeworkId: string) => {
     const key = checkKey(student.id, homeworkId);
     const previous = checks.get(key) ?? null;
-    const next = brush === "clear" ? null : brush;
+    const next = brush === "cycle" ? nextCheckStatus(previous) : brush === "clear" ? null : brush;
     if (previous === next) return;
     const before = summaryOf(student.id);
     setChecks((map) => {
@@ -223,7 +259,7 @@ export function HomeworkMatrix({
             if (fallback) throw new Error(fallback.message);
           } else {
             toast.message(
-              "Saved. Streak coins are added once 0013_subject_captains.sql has been run.",
+              "Saved. Streak coins are added once 0007_homework.sql has been run.",
             );
           }
         }
@@ -291,6 +327,59 @@ export function HomeworkMatrix({
     setMailOpen(false);
   };
 
+  const toggleCaptain = async (studentId: string, on: boolean) => {
+    setCaptainBusy(studentId);
+    const previous = new Set(captainIds);
+    setCaptainIds((current) => {
+      const next = new Set(current);
+      if (on) next.add(studentId);
+      else next.delete(studentId);
+      return next;
+    });
+    try {
+      if (on) {
+        const { data: auth } = await supabase.auth.getUser();
+        const { error } = await supabase
+          .from("subject_captains")
+          .insert({ student_id: studentId, appointed_by: auth.user?.id ?? null });
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase
+          .from("subject_captains")
+          .delete()
+          .eq("student_id", studentId);
+        if (error) throw new Error(error.message);
+      }
+      toast.success(on ? "Subject captain added" : "Subject captain removed");
+    } catch (e) {
+      setCaptainIds(previous);
+      toast.error(e instanceof Error ? e.message : "Could not update subject captains");
+    } finally {
+      setCaptainBusy(null);
+    }
+  };
+
+  const pageCount = Math.max(1, Math.ceil(assignments.length / PAGE_SIZE));
+  const pageIndex = Math.min(page, pageCount - 1);
+  const pageStart = pageIndex * PAGE_SIZE;
+  const visibleAssignments = assignments.slice(pageStart, pageStart + PAGE_SIZE);
+  const columns = Array.from(
+    { length: PAGE_SIZE },
+    (_, index) => visibleAssignments[index] ?? null,
+  );
+
+  const showPage = (next: number) => {
+    const clamped = Math.min(pageCount - 1, Math.max(0, next));
+    setPage(clamped);
+    setFocus((current) => {
+      if (!current) return current;
+      const start = clamped * PAGE_SIZE;
+      const end = Math.min(assignments.length - 1, start + PAGE_SIZE - 1);
+      if (current.col >= start && current.col <= end) return current;
+      return { row: current.row, col: start };
+    });
+  };
+
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!focus || rows.length === 0 || assignments.length === 0) return;
     const { row, col } = focus;
@@ -310,17 +399,19 @@ export function HomeworkMatrix({
     const delta = move[event.key];
     if (!delta) return;
     event.preventDefault();
+    const nextCol = Math.min(assignments.length - 1, Math.max(0, col + delta[1]));
     setFocus({
       row: Math.min(rows.length - 1, Math.max(0, row + delta[0])),
-      col: Math.min(assignments.length - 1, Math.max(0, col + delta[1])),
+      col: nextCol,
     });
+    setPage(Math.floor(nextCol / PAGE_SIZE));
   };
 
   return (
     <Panel
       className="mt-6"
       title="Homework tracker"
-      description="Pick a mark, then click a cell or press Enter. Tick is the usual one. The grid stays in step with the teacher and subject captains."
+      description="Click a cell to cycle Tick, Missing, Late, ABS, Redo, then clear. Pick a mark above to stamp that mark instead. Ten homework columns show on each page."
       actions={
         <div className="flex flex-wrap items-center gap-2">
           {fixedSet ? null : (
@@ -342,6 +433,33 @@ export function HomeworkMatrix({
               ))}
             </div>
           )}
+          {assignments.length > 0 ? (
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-label="Previous homework"
+                disabled={pageIndex === 0}
+                onClick={() => showPage(pageIndex - 1)}
+              >
+                &lt;
+              </Button>
+              <span className="min-w-12 text-center text-xs font-semibold tabular-nums">
+                {pageIndex + 1}/{pageCount}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-label="Next homework"
+                disabled={pageIndex >= pageCount - 1}
+                onClick={() => showPage(pageIndex + 1)}
+              >
+                &gt;
+              </Button>
+            </div>
+          ) : null}
           {role === "teacher" ? (
             <Button
               type="button"
@@ -375,7 +493,10 @@ export function HomeworkMatrix({
           </button>
         ))}
         <span className="self-center text-xs text-muted-foreground">
-          Arrows move · Enter applies {brush === "clear" ? "Clear" : CHECK_LABEL[brush]}
+          Arrows move · Enter{" "}
+          {brush === "cycle"
+            ? "cycles the cell"
+            : `applies ${brush === "clear" ? "Clear" : CHECK_LABEL[brush]}`}
         </span>
       </div>
 
@@ -412,7 +533,7 @@ export function HomeworkMatrix({
         <div className="mb-3">
           <Notice tone="info">
             The full class list is not available to this account yet. Run
-            supabase/sql/0014_captain_roster_badges.sql in the Supabase SQL Editor, then sign in
+            supabase/sql/0007_homework.sql in the Supabase SQL Editor, then sign in
             again.
           </Notice>
         </div>
@@ -424,74 +545,156 @@ export function HomeworkMatrix({
       ) : rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">No students in {activeSet} yet.</p>
       ) : (
-        <div tabIndex={0} onKeyDown={onKeyDown} className="outline-none">
-          <table className="w-full border-separate border-spacing-0 text-sm">
-            <thead>
-              <tr>
-                <th className="sticky left-0 bg-card p-2 text-left">Student</th>
-                <th className="bg-card p-2 text-center">Streak</th>
-                <th className="bg-card p-2 text-center">Missing</th>
-                {assignments.map((hw) => (
-                  <th key={hw.id} className="bg-card p-2 text-center font-medium">
-                    <span className="line-clamp-2">{hw.title}</span>
-                  </th>
+        <>
+          {showCaptains && captainsReady === false ? (
+            <div className="mb-3">
+              <Notice tone="info">
+                Subject captains are not set up yet. Run supabase/sql/0007_homework.sql in the
+                Supabase SQL Editor.
+              </Notice>
+            </div>
+          ) : null}
+          <div tabIndex={0} onKeyDown={onKeyDown} className="overflow-x-auto outline-none">
+            <table className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 text-xs">
+              <colgroup>
+                {showCaptains ? <col className="w-16" /> : null}
+                <col className="w-28" />
+                <col className="w-16" />
+                <col className="w-14" />
+                {columns.map((_, index) => (
+                  <col key={index} />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((student, rowIndex) => {
-                const summary = summaryOf(student.id);
-                const alert = summary.missing >= MISSING_ALERT;
-                return (
-                  <tr key={student.id} className={cn(alert && "bg-destructive/5")}>
-                    <th className="sticky left-0 bg-card p-2 text-left font-medium">
-                      {student.name}
-                      <span className="block text-xs font-normal text-muted-foreground">
-                        {student.className} {student.classNo}
-                      </span>
-                    </th>
-                    <td className="p-2 text-center font-semibold tabular-nums">{summary.streak}</td>
-                    <td
-                      className={cn(
-                        "p-2 text-center font-semibold tabular-nums",
-                        alert && "text-destructive",
-                      )}
+              </colgroup>
+              <thead>
+                <tr>
+                  {showCaptains ? <th className="sticky left-0 z-20 bg-card" /> : null}
+                  <th className={cn("sticky z-20 bg-card", showCaptains ? "left-16" : "left-0")} />
+                  <th className="bg-card" />
+                  <th className="bg-card" />
+                  {columns.map((hw, index) => (
+                    <th
+                      key={hw?.id ?? `date-${index}`}
+                      className="bg-card px-0.5 py-1 text-center font-medium"
                     >
-                      {summary.missing}
-                    </td>
-                    {assignments.map((hw, colIndex) => {
-                      const status = statusOf(student.id, hw.id);
-                      const key = checkKey(student.id, hw.id);
-                      const focused = focus?.row === rowIndex && focus?.col === colIndex;
-                      return (
-                        <td key={hw.id} className="p-1 text-center">
-                          <button
-                            type="button"
-                            disabled={busy === key}
-                            aria-label={`${student.name}, ${hw.title}: ${status ? CHECK_LABEL[status] : "Not marked"}`}
-                            onFocus={() => setFocus({ row: rowIndex, col: colIndex })}
-                            onClick={() => void paint(student, hw.id)}
-                            className={cn(
-                              "grid h-9 w-full min-w-9 place-items-center rounded-md border text-base",
-                              status === "missing" && "border-destructive/50 bg-destructive/10",
-                              status === "late" && "border-gold bg-gold/20",
-                              status === "redo" && "border-primary/40 bg-primary/10",
-                              status === "submitted" && "border-success/40 bg-success/10",
-                              status === null && "border-border text-muted-foreground",
-                              focused && "ring-2 ring-primary",
-                            )}
-                          >
-                            {status ? CHECK_MARK[status] : "·"}
-                          </button>
+                      {hw ? dueLabel(hw.dueAt) : ""}
+                    </th>
+                  ))}
+                </tr>
+                <tr>
+                  {showCaptains ? (
+                    <th className="sticky left-0 z-20 bg-card px-0.5 py-1 text-center text-[11px] font-semibold leading-tight">
+                      Captain
+                    </th>
+                  ) : null}
+                  <th
+                    className={cn(
+                      "sticky z-20 bg-card px-1.5 py-1 text-left",
+                      showCaptains ? "left-16" : "left-0",
+                    )}
+                  >
+                    Student
+                  </th>
+                  <th className="bg-card px-0.5 py-1 text-center">Streak</th>
+                  <th className="bg-card px-0.5 py-1 text-center">Missing</th>
+                  {columns.map((hw, index) => (
+                    <th
+                      key={hw?.id ?? `title-${index}`}
+                      className="bg-card px-0.5 py-1 text-center font-medium"
+                    >
+                      {hw ? <span className="line-clamp-2">{hw.title}</span> : null}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((student, rowIndex) => {
+                  const summary = summaryOf(student.id);
+                  const alert = summary.missing >= MISSING_ALERT;
+                  const stickyBg = alert ? "bg-destructive/10" : "bg-card";
+                  return (
+                    <tr key={student.id} className={cn(alert && "bg-destructive/5")}>
+                      {showCaptains ? (
+                        <td className={cn("sticky left-0 z-10 px-0.5 py-1 text-center", stickyBg)}>
+                          <input
+                            type="checkbox"
+                            checked={captainIds.has(student.id)}
+                            disabled={captainsReady !== true || captainBusy === student.id}
+                            aria-label={`Subject captain, ${student.name}`}
+                            onChange={(e) => void toggleCaptain(student.id, e.target.checked)}
+                            className="h-3.5 w-3.5 accent-[var(--primary)]"
+                          />
                         </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      ) : null}
+                      <th
+                        className={cn(
+                          "sticky z-10 px-1.5 py-1 text-left font-medium",
+                          showCaptains ? "left-16" : "left-0",
+                          stickyBg,
+                        )}
+                      >
+                        <span className="block truncate" title={student.name}>
+                          {student.name}
+                        </span>
+                        <span className="block truncate text-[11px] font-normal text-muted-foreground">
+                          {student.className} {student.classNo}
+                        </span>
+                      </th>
+                      <td className="px-0.5 py-1 text-center font-semibold tabular-nums">
+                        🔥 {summary.streak}
+                      </td>
+                      <td
+                        className={cn(
+                          "px-0.5 py-1 text-center font-semibold tabular-nums",
+                          alert && "text-destructive",
+                        )}
+                      >
+                        {summary.missing}
+                      </td>
+                      {columns.map((hw, index) => {
+                        if (!hw) {
+                          return (
+                            <td key={`empty-${index}`} className="px-0.5 py-1 text-center">
+                              <span className="mx-auto grid h-8 w-8 place-items-center rounded-md border border-dashed border-border text-muted-foreground">
+                                ·
+                              </span>
+                            </td>
+                          );
+                        }
+                        const colIndex = pageStart + index;
+                        const status = statusOf(student.id, hw.id);
+                        const key = checkKey(student.id, hw.id);
+                        const focused = focus?.row === rowIndex && focus?.col === colIndex;
+                        return (
+                          <td key={hw.id} className="px-0.5 py-1 text-center">
+                            <button
+                              type="button"
+                              disabled={busy === key}
+                              aria-label={`${student.name}, ${hw.title}: ${status ? CHECK_LABEL[status] : "Not marked"}`}
+                              onFocus={() => setFocus({ row: rowIndex, col: colIndex })}
+                              onClick={() => void paint(student, hw.id)}
+                              className={cn(
+                                "mx-auto grid h-8 w-8 place-items-center rounded-md border text-[11px] font-bold",
+                                status === "missing" && "border-destructive/50 bg-destructive/10",
+                                status === "late" && "border-gold bg-gold/20",
+                                status === "absent" && "border-sky/50 bg-sky/15",
+                                status === "redo" && "border-primary/40 bg-primary/10",
+                                status === "submitted" && "border-success/40 bg-success/10",
+                                status === null && "border-border text-muted-foreground",
+                                focused && "ring-2 ring-primary",
+                              )}
+                            >
+                              {status ? CHECK_MARK[status] : "·"}
+                            </button>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
       {mailOpen ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
@@ -504,10 +707,10 @@ export function HomeworkMatrix({
               Send missing-homework emails
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              One email per student. If they missed more than one piece of homework, it is listed
-              in that same email. Gmail opens from your Google sign-in account. You can edit the
-              draft here; {"{name}"}, {"{class}"}, {"{count}"} and {"{homework}"} are filled in for
-              each student.
+              One email per student. If they missed more than one piece of homework, it is listed in
+              that same email. Gmail opens from your Google sign-in account. You can edit the draft
+              here; {"{name}"}, {"{class}"}, {"{count}"} and {"{homework}"} are filled in for each
+              student.
             </p>
             <label className="mt-4 block text-sm font-medium">
               Subject
@@ -555,5 +758,11 @@ export function HomeworkMatrix({
 }
 
 function isStatus(value: string): value is CheckStatus {
-  return value === "submitted" || value === "missing" || value === "late" || value === "redo";
+  return (
+    value === "submitted" ||
+    value === "missing" ||
+    value === "late" ||
+    value === "absent" ||
+    value === "redo"
+  );
 }

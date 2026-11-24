@@ -42,7 +42,7 @@ async function loadProgress(studentId: string): Promise<StudentProgress> {
   const error = mistakes.error ?? checkins.error ?? lucky.error;
   if (error) {
     throw new Error(
-      `${error.message}. If this mentions a missing table, run supabase/sql/0011_shop_badges_vault.sql.`,
+      `${error.message}. If this mentions a missing table, run supabase/sql/0011_checkin_vault.sql.`,
     );
   }
   return {

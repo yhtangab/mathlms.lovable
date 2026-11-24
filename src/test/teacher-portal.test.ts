@@ -16,31 +16,41 @@ const hw = (id: string, dueAt: string): CheckAssignment => ({ id, title: id, due
 describe("homework matrix", () => {
   const assignments = [hw("a", "2026-01-01"), hw("b", "2026-01-02"), hw("c", "2026-01-03")];
 
-  it("cycles Submitted, Missing, Late, Redo", () => {
+  it("cycles Tick, Missing, Late, ABS, Redo, then clear", () => {
     expect(nextCheckStatus(null)).toBe("submitted");
     expect(nextCheckStatus("submitted")).toBe("missing");
     expect(nextCheckStatus("missing")).toBe("late");
-    expect(nextCheckStatus("late")).toBe("redo");
-    expect(nextCheckStatus("redo")).toBe("submitted");
+    expect(nextCheckStatus("late")).toBe("absent");
+    expect(nextCheckStatus("absent")).toBe("redo");
+    expect(nextCheckStatus("redo")).toBe(null);
   });
 
-  it("counts a streak through late work and pays +3 MC every 10", () => {
+  it("counts a streak only from ticks and pays +3 MC every 10", () => {
     const ids = Array.from({ length: 10 }, (_, i) =>
       hw(String(i), `2026-01-${String(i + 1).padStart(2, "0")}`),
     );
-    const summary = summarizeChecks("s", ids, (id) => (id === "4" ? "late" : "submitted"));
+    const summary = summarizeChecks("s", ids, () => "submitted");
     expect(summary.streak).toBe(10);
     expect(summary.missing).toBe(0);
     expect(summary.grants).toHaveLength(1);
     expect(summary.grants[0]?.baseMc).toBe(3);
+    const broken = summarizeChecks("s", ids, (id) => (id === "4" ? "late" : "submitted"));
+    expect(broken.streak).toBe(5);
+    expect(broken.best).toBe(5);
+    expect(broken.grants).toHaveLength(0);
   });
 
-  it("resets the streak on missing and redo, and only missing counts towards the alert", () => {
+  it("resets the streak on missing, late and redo, and only missing counts towards the alert", () => {
     const summary = summarizeChecks("s", assignments, (id) =>
       id === "a" ? "submitted" : id === "b" ? "missing" : "redo",
     );
     expect(summary.streak).toBe(0);
     expect(summary.missing).toBe(1);
+    const excused = summarizeChecks("s", assignments, (id) =>
+      id === "b" ? "absent" : "submitted",
+    );
+    expect(excused.streak).toBe(2);
+    expect(excused.missing).toBe(0);
     expect(homeworkPenalty(2)).toBe(0);
     expect(homeworkPenalty(3)).toBe(6);
   });

@@ -413,7 +413,7 @@ function Dashboard() {
           <StatCard
             appearance="soft"
             tone="flame"
-            label="Homework streak"
+            label="Homework streak 🔥"
             value={String(game?.homeworkStreak ?? 0)}
             suffix="in a row"
             note={game ? `${game.missingHomeworkCount} missing so far` : null}

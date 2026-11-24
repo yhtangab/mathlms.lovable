@@ -293,7 +293,7 @@ export async function publishGame(
     } catch (e) {
       const message = e instanceof Error ? e.message : "unknown error";
       badgeWarning = message.includes("check")
-        ? "Badge coins were not saved. Run supabase/sql/0014_captain_roster_badges.sql in the Supabase SQL Editor, then publish again."
+        ? "Badge coins were not saved. Run supabase/sql/0014_badges.sql in the Supabase SQL Editor, then publish again."
         : `Badge coins were not saved: ${message}`;
     }
   }
@@ -304,7 +304,7 @@ export async function publishGame(
     });
     if (error) {
       const message = error.message.includes("badge_days")
-        ? "Leaderboard day badges were not saved. Run supabase/sql/0015_looks_badges.sql, then publish again."
+        ? "Leaderboard day badges were not saved. Run supabase/sql/0014_badges.sql, then publish again."
         : `Leaderboard day badges were not saved: ${error.message}`;
       badgeWarning = badgeWarning ? `${badgeWarning} ${message}` : message;
     }
